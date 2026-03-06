@@ -169,7 +169,9 @@ function captureTimestamp() {
       `Start: ${formatTime(time)} -- now select the punch type`;
     updateTimestampButton();
   } else if (state.mode === 'end' && state.selectedPunch) {
+    const maxId = state.labels.reduce((max, l) => Math.max(max, l.id || 0), 0);
     const label = {
+      id: maxId + 1,
       punch: state.selectedPunch,
       angle: document.getElementById('angle-select').value,
       start: state.pendingStart,
@@ -260,7 +262,9 @@ async function fetchLabelsFromSheet() {
 
     if (result.labels && result.labels.length > 0) {
       // Convert sheet labels to local label format
+      let nextId = state.labels.reduce((max, l) => Math.max(max, l.id || 0), 0) + 1;
       const sheetLabels = result.labels.map(l => ({
+        id: nextId++,
         punch: l.punch,
         angle: (l.angle || 'front').toLowerCase(),
         start: parseSheetTime(l.startTime),
@@ -321,7 +325,7 @@ function renderLabels() {
     entry.className = 'label-entry';
     entry.innerHTML = `
       <span class="label-text">
-        <strong>${punch?.label || label.punch}</strong> <small style="color:#888">${label.angle || ''}</small><br>
+        <small style="color:#555">#${label.id || '?'}</small> <strong>${punch?.label || label.punch}</strong> <small style="color:#888">${label.angle || ''}</small><br>
         ${formatTime(label.start)} &rarr; ${formatTime(label.end)}
       </span>
       <button class="label-delete" onclick="deleteLabel(${idx})" title="Delete">&times;</button>
