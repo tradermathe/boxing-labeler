@@ -8,23 +8,26 @@
 </head>
 <body>
   <div id="app">
-    <!-- Top bar: video loader + config -->
+    <!-- Top bar: compact single row -->
     <div id="top-bar">
       <div id="video-loader">
-        <label for="drive-url">Google Drive Video URL:</label>
-        <input type="text" id="drive-url" placeholder="Paste Google Drive share link here">
-        <button onclick="loadDriveVideo()">Load</button>
-        <span id="video-name">No video loaded</span>
-        <span class="separator">|</span>
-        <label for="video-file" class="file-label">or pick local file</label>
-        <input type="file" id="video-file" accept="video/*">
+        <input type="text" id="drive-url" placeholder="Paste Google Drive share link...">
+        <button id="btn-load-drive" onclick="loadDriveVideo()">Load from Drive</button>
+        <button id="btn-pick-file" onclick="document.getElementById('video-file').click()">Open Local File</button>
+        <input type="file" id="video-file" accept="video/*" style="display:none">
+        <span id="video-name"></span>
       </div>
-      <div id="sheet-config">
-        <label for="script-url">Apps Script URL:</label>
-        <input type="text" id="script-url" placeholder="Google Apps Script Web App URL">
-        <button onclick="saveConfig()">Save</button>
-        <span id="connection-status">Not configured</span>
+      <div id="config-toggle">
+        <span id="connection-status"></span>
+        <button id="btn-config" onclick="toggleConfig()">Settings</button>
       </div>
+    </div>
+
+    <!-- Collapsible config panel -->
+    <div id="config-panel" style="display:none">
+      <label for="script-url">Google Apps Script URL:</label>
+      <input type="text" id="script-url" placeholder="https://script.google.com/macros/s/.../exec">
+      <button onclick="saveConfig()">Save</button>
     </div>
 
     <!-- Main layout -->
@@ -37,7 +40,7 @@
 
       <!-- Center: video player -->
       <div id="video-container">
-        <video id="video-player" preload="auto" crossorigin="anonymous"></video>
+        <video id="video-player" preload="auto"></video>
         <div id="video-controls">
           <button id="btn-play" onclick="togglePlay()">Play</button>
           <button onclick="stepFrames(-2)" title="Back 2 frames">&laquo;</button>

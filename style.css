@@ -10,25 +10,6 @@ body {
   overflow: hidden;
 }
 
-#connection-status {
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 3px;
-}
-
-.status-ok { color: #28a745; }
-.status-off { color: #888; }
-
-.separator { color: #333; margin: 0 4px; }
-
-.file-label {
-  cursor: pointer;
-  color: #666 !important;
-  font-size: 12px !important;
-}
-
-#drive-url { width: 340px; }
-
 #app {
   flex: 1;
   display: flex;
@@ -36,36 +17,132 @@ body {
   overflow: hidden;
 }
 
+/* Top bar */
 #top-bar {
   background: #16213e;
-  padding: 10px 16px;
+  padding: 8px 16px;
   display: flex;
   align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
   border-bottom: 1px solid #0f3460;
 }
 
-#top-bar label { font-size: 13px; color: #aaa; }
-#top-bar input[type="file"] { font-size: 13px; }
-#top-bar input[type="text"] {
+#video-loader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+#drive-url {
   background: #1a1a2e;
   border: 1px solid #0f3460;
   color: #e0e0e0;
-  padding: 4px 8px;
+  padding: 7px 12px;
   border-radius: 4px;
   font-size: 13px;
-  width: 280px;
+  width: 360px;
 }
 
-#video-loader, #sheet-config {
+#drive-url:focus {
+  outline: none;
+  border-color: #533483;
+}
+
+#btn-load-drive, #btn-pick-file {
+  padding: 7px 14px;
+  border: 1px solid #0f3460;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+#btn-load-drive {
+  background: #e94560;
+  color: white;
+  border-color: #e94560;
+}
+
+#btn-load-drive:hover { background: #d63851; }
+
+#btn-pick-file {
+  background: #0f3460;
+  color: #ccc;
+}
+
+#btn-pick-file:hover { background: #1a4a7a; }
+
+#video-name {
+  font-size: 12px;
+  color: #28a745;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#config-toggle {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-#sheet-config button {
-  padding: 4px 12px;
+#connection-status {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 10px;
+}
+
+.status-ok {
+  color: #28a745;
+  background: rgba(40, 167, 69, 0.15);
+}
+
+.status-off {
+  color: #888;
+  background: rgba(136, 136, 136, 0.1);
+}
+
+#btn-config {
+  padding: 5px 12px;
+  background: transparent;
+  color: #888;
+  border: 1px solid #333;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#btn-config:hover { color: #ccc; border-color: #555; }
+
+/* Config panel */
+#config-panel {
+  background: #121a30;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #0f3460;
+  font-size: 13px;
+}
+
+#config-panel label { color: #aaa; white-space: nowrap; }
+
+#config-panel input[type="text"] {
+  background: #1a1a2e;
+  border: 1px solid #0f3460;
+  color: #e0e0e0;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  flex: 1;
+  max-width: 500px;
+}
+
+#config-panel button {
+  padding: 6px 16px;
   background: #0f3460;
   color: #e0e0e0;
   border: 1px solid #533483;
@@ -73,8 +150,6 @@ body {
   cursor: pointer;
   font-size: 13px;
 }
-
-#video-name { font-size: 12px; color: #888; }
 
 /* Main layout */
 #main-layout {
@@ -163,7 +238,7 @@ body {
 
 #video-player {
   max-width: 100%;
-  max-height: calc(100vh - 250px);
+  max-height: calc(100vh - 200px);
   background: #000;
   border-radius: 6px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.5);

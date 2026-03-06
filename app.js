@@ -99,15 +99,51 @@ function loadDriveVideo() {
   }
 
   const video = document.getElementById('video-player');
-  // Use the direct download URL for publicly shared files
-  const directUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+
+  // Try multiple URL formats for public Drive files
+  const urls = [
+    `https://lh3.googleusercontent.com/d/${fileId}`,
+    `https://drive.google.com/uc?export=download&id=${fileId}`,
+  ];
 
   state.videoName = `drive:${fileId}`;
-  document.getElementById('video-name').textContent = `Drive: ${fileId.substring(0, 12)}...`;
+  document.getElementById('video-name').textContent = `Loading...`;
 
-  video.src = directUrl;
-  video.load();
-  showToast('Loading video from Google Drive...', 'info');
+  let urlIndex = 0;
+
+  function tryNextUrl() {
+    if (urlIndex >= urls.length) {
+      document.getElementById('video-name').textContent = 'Failed to load';
+      showToast('Could not load video from Drive. Try "Open Local File" instead — download the file from Drive first.', 'error');
+      return;
+    }
+    video.src = urls[urlIndex];
+    video.load();
+    urlIndex++;
+  }
+
+  video.onerror = () => {
+    if (urlIndex < urls.length) {
+      tryNextUrl();
+    } else {
+      document.getElementById('video-name').textContent = 'Failed to load';
+      showToast('Could not load video from Drive. Try "Open Local File" instead.', 'error');
+    }
+  };
+
+  const onLoaded = () => {
+    document.getElementById('video-name').textContent = `Drive: ${fileId.substring(0, 16)}...`;
+    showToast('Video loaded from Drive', 'success');
+    video.removeEventListener('loadedmetadata', onLoaded);
+  };
+  video.addEventListener('loadedmetadata', onLoaded);
+
+  tryNextUrl();
+}
+
+function toggleConfig() {
+  const panel = document.getElementById('config-panel');
+  panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
 }
 
 // ============================================================
