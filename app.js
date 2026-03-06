@@ -39,7 +39,6 @@ window.addEventListener('DOMContentLoaded', () => {
   setupKeyboardShortcuts();
   setupSeekBar();
   loadConfig();
-  loadLabelsFromStorage();
   updateTimestampButton();
   setupDriveLink();
 });
@@ -186,8 +185,8 @@ function captureTimestamp() {
     document.getElementById('pending-label').textContent = '';
     updateTimestampButton();
     renderLabels();
-    saveLabelsToStorage();
-    pushLabelToSheet(label);
+
+    pushLabelToSheet(label).then(() => fetchLabelsFromSheet());
     showToast(`Labeled: ${PUNCH_TYPES.find(p => p.id === label.punch).label} (${formatTime(label.start)} - ${formatTime(label.end)})`, 'success');
   }
 }
@@ -442,27 +441,7 @@ function undoLastLabel() {
   if (state.labels.length === 0) return;
   state.labels.pop();
   renderLabels();
-  saveLabelsToStorage();
   showToast('Undid last label', 'info');
-}
-
-function saveLabelsToStorage() {
-  localStorage.setItem('labeler_labels', JSON.stringify(state.labels));
-}
-
-function loadLabelsFromStorage() {
-  const saved = localStorage.getItem('labeler_labels');
-  if (saved) {
-    try {
-      state.labels = JSON.parse(saved);
-      // Assign IDs to any labels missing them
-      let maxId = state.labels.reduce((max, l) => Math.max(max, l.id || 0), 0);
-      for (const l of state.labels) {
-        if (!l.id) l.id = ++maxId;
-      }
-      renderLabels();
-    } catch (e) { /* ignore */ }
-  }
 }
 
 // ============================================================
