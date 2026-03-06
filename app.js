@@ -40,6 +40,7 @@ window.addEventListener('DOMContentLoaded', () => {
   setupSeekBar();
   loadConfig();
   loadLabelsFromStorage();
+  updateTimestampButton();
 });
 
 // ============================================================
