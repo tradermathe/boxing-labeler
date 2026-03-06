@@ -2,16 +2,17 @@
 // Config
 // ============================================================
 const PUNCH_TYPES = [
-  { id: 'jab_head',         label: 'Jab (Head)',          key: '1' },
-  { id: 'cross_head',       label: 'Cross (Head)',        key: '2' },
-  { id: 'lead_hook',        label: 'Lead Hook',           key: '3' },
-  { id: 'rear_hook',        label: 'Rear Hook',           key: '4' },
-  { id: 'lead_uppercut',    label: 'Lead Uppercut',       key: '5' },
-  { id: 'rear_uppercut',    label: 'Rear Uppercut',       key: '6' },
-  { id: 'lead_bodyshot',    label: 'Lead Bodyshot',       key: '7' },
-  { id: 'rear_bodyshot',    label: 'Rear Bodyshot',       key: '8' },
-  { id: 'jab_body',         label: 'Jab (Body)',          key: '9' },
-  { id: 'cross_body',       label: 'Cross (Body)',        key: '0' },
+  { id: 'jab_head',              label: 'Jab (Head)',          key: '1' },
+  { id: 'cross_head',            label: 'Cross (Head)',        key: '2' },
+  { id: 'lead_hook_head',        label: 'Lead Hook',           key: '3' },
+  { id: 'rear_hook_head',        label: 'Rear Hook',           key: '4' },
+  { id: 'lead_uppercut_head',    label: 'Lead Uppercut',       key: '5' },
+  { id: 'rear_uppercut_head',    label: 'Rear Uppercut',       key: '6' },
+  { id: 'lead_bodyshot',         label: 'Lead Bodyshot',       key: '7' },
+  { id: 'rear_bodyshot',         label: 'Rear Bodyshot',       key: '8' },
+  { id: 'jab_body',              label: 'Jab (Body)',          key: '9' },
+  { id: 'cross_body',            label: 'Cross (Body)',        key: '0' },
+  { id: 'no_punch',              label: 'No Punch',            key: '' },
 ];
 
 const FRAME_DURATION = 1 / 60;
@@ -210,7 +211,7 @@ async function pushLabelToSheet(label) {
       action: 'add',
       videoName: label.videoName,
       punchId: punch.id,
-      angle: label.angle || 'front',
+      angle: label.angle || 'Front',
       startTime: formatTimeSheet(label.start),
       endTime: formatTimeSheet(label.end),
     });
@@ -269,7 +270,7 @@ async function fetchLabelsFromSheet() {
       const sheetLabels = result.labels.map(l => ({
         id: l.id,
         punch: mapPunchType(l.punch),
-        angle: (l.angle || 'front').toLowerCase(),
+        angle: l.angle || 'Front',
         start: typeof l.startTime === 'number' ? l.startTime : parseSheetTime(l.startTime),
         end: typeof l.endTime === 'number' ? l.endTime : parseSheetTime(l.endTime),
         videoName: l.videoName,
@@ -304,24 +305,8 @@ async function fetchLabelsFromSheet() {
 function mapPunchType(sheetPunch) {
   if (!sheetPunch) return 'jab_head';
   const p = String(sheetPunch).toLowerCase().trim();
-  // Direct match
   if (PUNCH_TYPES.find(t => t.id === p)) return p;
-  // Map _head/_body suffix variants
-  const MAP = {
-    'jab_head': 'jab_head',
-    'cross_head': 'cross_head',
-    'lead_hook_head': 'lead_hook',
-    'rear_hook_head': 'rear_hook',
-    'lead_uppercut_head': 'lead_uppercut',
-    'rear_uppercut_head': 'rear_uppercut',
-    'lead_bodyshot': 'lead_bodyshot',
-    'rear_bodyshot': 'rear_bodyshot',
-    'jab_body': 'jab_body',
-    'cross_body': 'cross_body',
-    'lead_hook_body': 'lead_bodyshot',
-    'rear_hook_body': 'rear_bodyshot',
-  };
-  return MAP[p] || p;
+  return p;
 }
 
 function parseSheetTime(timeStr) {
@@ -382,7 +367,7 @@ function openEditLabel(idx) {
   ).join('');
 
   // Build angle options
-  const angles = ['front', 'side', 'back'];
+  const angles = ['Front', 'Side', 'Back'];
   const angleOpts = angles.map(a =>
     `<option value="${a}" ${a === (label.angle || 'front') ? 'selected' : ''}>${a}</option>`
   ).join('');
@@ -691,10 +676,10 @@ function setupKeyboardShortcuts() {
       // Numpad keys (works regardless of NumLock)
       case 'Numpad1': selectPunch('jab_head'); break;
       case 'Numpad2': selectPunch('cross_head'); break;
-      case 'Numpad3': selectPunch('lead_hook'); break;
-      case 'Numpad4': selectPunch('rear_hook'); break;
-      case 'Numpad5': selectPunch('lead_uppercut'); break;
-      case 'Numpad6': selectPunch('rear_uppercut'); break;
+      case 'Numpad3': selectPunch('lead_hook_head'); break;
+      case 'Numpad4': selectPunch('rear_hook_head'); break;
+      case 'Numpad5': selectPunch('lead_uppercut_head'); break;
+      case 'Numpad6': selectPunch('rear_uppercut_head'); break;
       case 'Numpad7': selectPunch('lead_bodyshot'); break;
       case 'Numpad8': selectPunch('rear_bodyshot'); break;
       case 'Numpad9': selectPunch('jab_body'); break;
@@ -704,10 +689,10 @@ function setupKeyboardShortcuts() {
         switch (e.key) {
           case '1': selectPunch('jab_head'); break;
           case '2': selectPunch('cross_head'); break;
-          case '3': selectPunch('lead_hook'); break;
-          case '4': selectPunch('rear_hook'); break;
-          case '5': selectPunch('lead_uppercut'); break;
-          case '6': selectPunch('rear_uppercut'); break;
+          case '3': selectPunch('lead_hook_head'); break;
+          case '4': selectPunch('rear_hook_head'); break;
+          case '5': selectPunch('lead_uppercut_head'); break;
+          case '6': selectPunch('rear_uppercut_head'); break;
           case '7': selectPunch('lead_bodyshot'); break;
           case '8': selectPunch('rear_bodyshot'); break;
           case '9': selectPunch('jab_body'); break;
