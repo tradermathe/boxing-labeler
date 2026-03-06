@@ -260,6 +260,9 @@ async function fetchLabelsFromSheet() {
     const response = await fetch(url);
     const result = await response.json();
 
+    // Clear old local labels before loading from sheet
+    state.labels = state.labels.filter(l => !l.fromSheet);
+
     if (result.labels && result.labels.length > 0) {
       // Convert sheet labels to local label format
       const sheetLabels = result.labels.map(l => ({
