@@ -262,15 +262,15 @@ async function fetchLabelsFromSheet() {
 
     if (result.labels && result.labels.length > 0) {
       // Convert sheet labels to local label format
-      let nextId = state.labels.reduce((max, l) => Math.max(max, l.id || 0), 0) + 1;
       const sheetLabels = result.labels.map(l => ({
-        id: nextId++,
-        punch: l.punch,
+        id: l.rowId,
+        punch: mapPunchType(l.punch),
         angle: (l.angle || 'front').toLowerCase(),
         start: parseSheetTime(l.startTime),
         end: parseSheetTime(l.endTime),
         videoName: l.videoName,
         fromSheet: true,
+        sheetName: l.sheet,
       }));
 
       // Merge: keep local labels, add sheet labels that aren't duplicates
@@ -296,17 +296,42 @@ async function fetchLabelsFromSheet() {
   }
 }
 
+// Map sheet punch types (e.g. lead_hook_head) to our IDs (e.g. lead_hook)
+function mapPunchType(sheetPunch) {
+  if (!sheetPunch) return 'jab_head';
+  const p = String(sheetPunch).toLowerCase().trim();
+  // Direct match
+  if (PUNCH_TYPES.find(t => t.id === p)) return p;
+  // Map _head/_body suffix variants
+  const MAP = {
+    'jab_head': 'jab_head',
+    'cross_head': 'cross_head',
+    'lead_hook_head': 'lead_hook',
+    'rear_hook_head': 'rear_hook',
+    'lead_uppercut_head': 'lead_uppercut',
+    'rear_uppercut_head': 'rear_uppercut',
+    'lead_bodyshot': 'lead_bodyshot',
+    'rear_bodyshot': 'rear_bodyshot',
+    'jab_body': 'jab_body',
+    'cross_body': 'cross_body',
+    'lead_hook_body': 'lead_bodyshot',
+    'rear_hook_body': 'rear_bodyshot',
+  };
+  return MAP[p] || p;
+}
+
 function parseSheetTime(timeStr) {
   if (typeof timeStr === 'number') return timeStr;
   if (!timeStr) return 0;
-  // Handle HH:MM:SS.mmm or MM:SS.mmm or M:SS.mmm
-  const parts = String(timeStr).split(':');
+  // Normalize comma decimals to dots (e.g. 0:0,63 → 0:0.63)
+  let s = String(timeStr).replace(',', '.');
+  const parts = s.split(':');
   if (parts.length === 3) {
     return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
   } else if (parts.length === 2) {
     return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
   }
-  return parseFloat(timeStr) || 0;
+  return parseFloat(s) || 0;
 }
 
 // ============================================================
