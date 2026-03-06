@@ -243,11 +243,77 @@ function renderLabels() {
       <button class="label-delete" onclick="deleteLabel(${idx})" title="Delete">&times;</button>
     `;
     entry.querySelector('.label-text').style.cursor = 'pointer';
-    entry.querySelector('.label-text').onclick = () => {
-      document.getElementById('video-player').currentTime = label.start;
-    };
+    entry.querySelector('.label-text').onclick = () => openEditLabel(idx);
     log.appendChild(entry);
   });
+}
+
+function openEditLabel(idx) {
+  const label = state.labels[idx];
+  const log = document.getElementById('label-log');
+
+  // Find the entry element (labels are rendered in reverse)
+  const reverseIdx = state.labels.length - 1 - idx;
+  const entry = log.children[reverseIdx];
+  if (!entry || entry.classList.contains('editing')) return;
+
+  entry.classList.add('editing');
+
+  // Build punch options
+  const punchOpts = PUNCH_TYPES.map(p =>
+    `<option value="${p.id}" ${p.id === label.punch ? 'selected' : ''}>${p.label}</option>`
+  ).join('');
+
+  // Build angle options
+  const angles = ['front', 'side', 'back'];
+  const angleOpts = angles.map(a =>
+    `<option value="${a}" ${a === (label.angle || 'front') ? 'selected' : ''}>${a}</option>`
+  ).join('');
+
+  entry.innerHTML = `
+    <div class="edit-form">
+      <div class="edit-row">
+        <select class="edit-punch">${punchOpts}</select>
+        <select class="edit-angle">${angleOpts}</select>
+      </div>
+      <div class="edit-row">
+        <label>Start:</label>
+        <input type="number" class="edit-start" value="${label.start.toFixed(3)}" step="0.001" min="0">
+        <label>End:</label>
+        <input type="number" class="edit-end" value="${label.end.toFixed(3)}" step="0.001" min="0">
+      </div>
+      <div class="edit-row edit-actions">
+        <button class="edit-save" onclick="saveEditLabel(${idx})">Save</button>
+        <button class="edit-cancel" onclick="renderLabels()">Cancel</button>
+        <button class="edit-seek" onclick="document.getElementById('video-player').currentTime=${label.start}">Seek</button>
+      </div>
+    </div>
+  `;
+}
+
+function saveEditLabel(idx) {
+  const log = document.getElementById('label-log');
+  const reverseIdx = state.labels.length - 1 - idx;
+  const entry = log.children[reverseIdx];
+
+  const punch = entry.querySelector('.edit-punch').value;
+  const angle = entry.querySelector('.edit-angle').value;
+  const start = parseFloat(entry.querySelector('.edit-start').value);
+  const end = parseFloat(entry.querySelector('.edit-end').value);
+
+  if (isNaN(start) || isNaN(end)) {
+    showToast('Invalid time values', 'error');
+    return;
+  }
+
+  state.labels[idx].punch = punch;
+  state.labels[idx].angle = angle;
+  state.labels[idx].start = start;
+  state.labels[idx].end = end;
+
+  renderLabels();
+  saveLabelsToStorage();
+  showToast('Label updated', 'success');
 }
 
 function deleteLabel(idx) {
