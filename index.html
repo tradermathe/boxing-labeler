@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boxing Punch Labeler</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Google Sign-In -->
+  <div id="auth-bar">
+    <span id="user-info">Not signed in</span>
+    <button id="btn-signin" onclick="handleSignIn()">Sign in with Google</button>
+    <button id="btn-signout" onclick="handleSignOut()" style="display:none">Sign out</button>
+  </div>
+
+  <div id="app">
+    <!-- Top bar: video loader + sheet config -->
+    <div id="top-bar">
+      <div id="video-loader">
+        <label for="video-file">Load Video:</label>
+        <input type="file" id="video-file" accept="video/*">
+        <span id="video-name">No video loaded</span>
+      </div>
+      <div id="sheet-config">
+        <label for="sheet-id">Sheet ID:</label>
+        <input type="text" id="sheet-id" placeholder="Google Spreadsheet ID">
+        <label for="sheet-tab">Tab:</label>
+        <input type="text" id="sheet-tab" value="Labels" placeholder="Sheet tab name">
+        <button onclick="saveSheetConfig()">Save Config</button>
+      </div>
+    </div>
+
+    <!-- Main layout -->
+    <div id="main-layout">
+      <!-- Left sidebar: punch types -->
+      <div id="punch-panel">
+        <h3>Punch Type</h3>
+        <div id="punch-buttons"></div>
+      </div>
+
+      <!-- Center: video player -->
+      <div id="video-container">
+        <video id="video-player" preload="auto"></video>
+        <div id="video-controls">
+          <button id="btn-play" onclick="togglePlay()">Play</button>
+          <button onclick="stepFrames(-2)" title="Back 2 frames">&laquo;</button>
+          <button onclick="stepFrames(-1)" title="Back 1 frame">&lsaquo;</button>
+          <button onclick="stepFrames(1)" title="Forward 1 frame">&rsaquo;</button>
+          <button onclick="stepFrames(2)" title="Forward 2 frames">&raquo;</button>
+          <span id="time-display">0.000s / 0.000s</span>
+          <input type="range" id="seek-bar" min="0" max="1000" value="0">
+          <div id="speed-controls">
+            <label>Speed:</label>
+            <button onclick="setSpeed(0.25)">0.25x</button>
+            <button onclick="setSpeed(0.5)">0.5x</button>
+            <button onclick="setSpeed(1)" class="speed-active">1x</button>
+            <button onclick="setSpeed(2)">2x</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right sidebar: labeling workflow + log -->
+      <div id="label-panel">
+        <h3>Label Punch</h3>
+        <div id="selected-punch">Select a punch type first</div>
+        <button id="btn-timestamp" onclick="captureTimestamp()" disabled>
+          Select a punch type first
+        </button>
+        <div id="pending-label"></div>
+
+        <h3>Labels <span id="label-count">(0)</span></h3>
+        <div id="label-log"></div>
+      </div>
+    </div>
+
+    <!-- Keyboard shortcuts help -->
+    <div id="shortcuts-bar">
+      <strong>Shortcuts:</strong>
+      Space = Play/Pause &nbsp;|&nbsp;
+      &larr;/&rarr; = &plusmn;1 frame &nbsp;|&nbsp;
+      Shift+&larr;/&rarr; = &plusmn;2 frames &nbsp;|&nbsp;
+      1-9,0 = Select punch &nbsp;|&nbsp;
+      Enter = Capture time &nbsp;|&nbsp;
+      Z = Undo last label
+    </div>
+  </div>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
