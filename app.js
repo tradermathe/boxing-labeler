@@ -194,26 +194,28 @@ function captureTimestamp() {
 // ============================================================
 // Google Apps Script Push (no auth needed)
 // ============================================================
+function sheetUrl(params) {
+  const url = new URL(state.scriptUrl);
+  for (const [k, v] of Object.entries(params)) {
+    url.searchParams.set(k, v);
+  }
+  return url.toString();
+}
+
 async function pushLabelToSheet(label) {
   if (!state.scriptUrl) return;
-
   const punch = PUNCH_TYPES.find(p => p.id === label.punch);
-  const payload = {
-    videoName: label.videoName,
-    punchId: punch.id,
-    angle: label.angle || 'front',
-    startTime: formatTimeSheet(label.start),
-    endTime: formatTimeSheet(label.end),
-  };
-
   try {
-    const response = await fetch(state.scriptUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload),
+    const url = sheetUrl({
+      action: 'add',
+      videoName: label.videoName,
+      punchId: punch.id,
+      angle: label.angle || 'front',
+      startTime: formatTimeSheet(label.start),
+      endTime: formatTimeSheet(label.end),
     });
-    // no-cors means we can't read the response, but the request goes through
+    const resp = await fetch(url);
+    const result = await resp.json();
     showToast('Saved to Google Sheet', 'info');
   } catch (e) {
     console.error('Sheet push failed:', e);
@@ -255,7 +257,7 @@ async function fetchLabelsFromSheet() {
   if (!state.scriptUrl || !driveLink) return;
 
   try {
-    const url = state.scriptUrl + '?video=' + encodeURIComponent(driveLink);
+    const url = sheetUrl({ action: 'list', video: driveLink });
     const response = await fetch(url);
     const result = await response.json();
 
@@ -449,22 +451,17 @@ function undoLastLabel() {
 async function updateLabelInSheet(label) {
   if (!state.scriptUrl) { showToast('No script URL configured', 'error'); return; }
   if (!label.id) { showToast('Label has no ID, cannot update sheet', 'error'); return; }
-  const payload = {
-    action: 'update',
-    id: label.id,
-    punchId: label.punch,
-    angle: label.angle,
-    startTime: formatTimeSheet(label.start),
-    endTime: formatTimeSheet(label.end),
-  };
-  console.log('Updating sheet label:', payload);
   try {
-    await fetch(state.scriptUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload),
+    const url = sheetUrl({
+      action: 'update',
+      id: label.id,
+      punchId: label.punch,
+      angle: label.angle,
+      startTime: formatTimeSheet(label.start),
+      endTime: formatTimeSheet(label.end),
     });
+    const resp = await fetch(url);
+    const result = await resp.json();
     showToast(`Updated #${label.id} in sheet`, 'info');
   } catch (e) {
     console.error('Sheet update failed:', e);
@@ -475,15 +472,10 @@ async function updateLabelInSheet(label) {
 async function deleteLabelFromSheet(label) {
   if (!state.scriptUrl || !label.id) return;
   try {
-    await fetch(state.scriptUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        action: 'delete',
-        id: label.id,
-      }),
-    });
+    const url = sheetUrl({ action: 'delete', id: label.id });
+    const resp = await fetch(url);
+    const result = await resp.json();
+    showToast(`Deleted #${label.id} from sheet`, 'info');
   } catch (e) {
     console.error('Sheet delete failed:', e);
     showToast('Sheet delete failed', 'error');

@@ -1,30 +1,98 @@
 // Paste this into Google Apps Script (Extensions > Apps Script in your Google Sheet)
 // Then deploy as a Web App with access set to "Anyone"
+// All operations use doGet with URL parameters for reliable CORS support
 
 function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Labeled Data Software');
-  var data = JSON.parse(e.postData.contents);
+  return ContentService
+    .createTextOutput(JSON.stringify({ status: 'error', message: 'Use GET requests' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
 
-  if (data.action === 'update' && data.id) {
-    // Find row by ID column and update it
-    var allData = sheet.getDataRange().getValues();
-    var header = allData[0];
-    var colId = -1, colAngle = -1, colPunch = -1, colStart = -1, colEnd = -1;
-    for (var c = 0; c < header.length; c++) {
-      var h = String(header[c]).toLowerCase().trim();
-      if (h === 'id') colId = c;
-      else if (h === 'angle') colAngle = c;
-      else if (h === 'punch_type') colPunch = c;
-      else if (h === 'start_sec') colStart = c;
-      else if (h === 'end_sec') colEnd = c;
+function toSeconds(val) {
+  if (!val && val !== 0) return 0;
+  if (val instanceof Date) {
+    return val.getHours() * 3600 + val.getMinutes() * 60 + val.getSeconds() + val.getMilliseconds() / 1000;
+  }
+  if (typeof val === 'number') {
+    if (val < 1) return val * 86400;
+    return val;
+  }
+  var s = String(val).replace(',', '.');
+  var parts = s.split(':');
+  if (parts.length === 3) return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
+  if (parts.length === 2) return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
+  return parseFloat(s) || 0;
+}
+
+function findColumns(header) {
+  var cols = { id: -1, video: -1, angle: -1, punch: -1, start: -1, end: -1 };
+  for (var c = 0; c < header.length; c++) {
+    var h = String(header[c]).toLowerCase().trim();
+    if (h === 'id') cols.id = c;
+    else if (h === 'video_file') cols.video = c;
+    else if (h === 'angle') cols.angle = c;
+    else if (h === 'punch_type') cols.punch = c;
+    else if (h === 'start_sec') cols.start = c;
+    else if (h === 'end_sec') cols.end = c;
+  }
+  return cols;
+}
+
+function doGet(e) {
+  var p = e ? e.parameter : {};
+  var action = p.action || 'list';
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Labeled Data Software');
+
+  // === LIST labels for a video ===
+  if (action === 'list' && p.video) {
+    var data = sheet.getDataRange().getValues();
+    var cols = findColumns(data[0]);
+    var labels = [];
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][cols.video] === p.video) {
+        labels.push({
+          id: cols.id >= 0 ? data[i][cols.id] : i + 1,
+          videoName: data[i][cols.video],
+          angle: cols.angle >= 0 ? data[i][cols.angle] : '',
+          punch: data[i][cols.punch],
+          startTime: cols.start >= 0 ? toSeconds(data[i][cols.start]) : 0,
+          endTime: cols.end >= 0 ? toSeconds(data[i][cols.end]) : 0,
+        });
+      }
     }
-    for (var i = 1; i < allData.length; i++) {
-      if (String(allData[i][colId]) === String(data.id)) {
-        var row = i + 1; // 1-indexed
-        if (colPunch >= 0) sheet.getRange(row, colPunch + 1).setValue(data.punchId);
-        if (colAngle >= 0) sheet.getRange(row, colAngle + 1).setValue(data.angle);
-        if (colStart >= 0) sheet.getRange(row, colStart + 1).setValue(data.startTime);
-        if (colEnd >= 0) sheet.getRange(row, colEnd + 1).setValue(data.endTime);
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'ok', labels: labels }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // === ADD a new label ===
+  if (action === 'add') {
+    sheet.appendRow([
+      p.videoName || '',
+      p.trainingType || '',
+      p.stance || '',
+      p.fighter || '',
+      p.angle || '',
+      p.punchId || '',
+      p.startTime || '',
+      p.endTime || ''
+    ]);
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'ok', action: 'added' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // === UPDATE an existing label by ID ===
+  if (action === 'update' && p.id) {
+    var data = sheet.getDataRange().getValues();
+    var cols = findColumns(data[0]);
+    for (var i = 1; i < data.length; i++) {
+      if (String(data[i][cols.id]) === String(p.id)) {
+        var row = i + 1;
+        if (p.punchId && cols.punch >= 0) sheet.getRange(row, cols.punch + 1).setValue(p.punchId);
+        if (p.angle && cols.angle >= 0) sheet.getRange(row, cols.angle + 1).setValue(p.angle);
+        if (p.startTime && cols.start >= 0) sheet.getRange(row, cols.start + 1).setValue(p.startTime);
+        if (p.endTime && cols.end >= 0) sheet.getRange(row, cols.end + 1).setValue(p.endTime);
         break;
       }
     }
@@ -33,15 +101,12 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  if (data.action === 'delete' && data.id) {
-    var allData = sheet.getDataRange().getValues();
-    var header = allData[0];
-    var colId = -1;
-    for (var c = 0; c < header.length; c++) {
-      if (String(header[c]).toLowerCase().trim() === 'id') { colId = c; break; }
-    }
-    for (var i = 1; i < allData.length; i++) {
-      if (String(allData[i][colId]) === String(data.id)) {
+  // === DELETE a label by ID ===
+  if (action === 'delete' && p.id) {
+    var data = sheet.getDataRange().getValues();
+    var cols = findColumns(data[0]);
+    for (var i = 1; i < data.length; i++) {
+      if (String(data[i][cols.id]) === String(p.id)) {
         sheet.deleteRow(i + 1);
         break;
       }
@@ -51,94 +116,8 @@ function doPost(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  // Default: append new row
-  sheet.appendRow([
-    data.videoName,
-    data.trainingType || '',
-    data.stance || '',
-    data.fighter || '',
-    data.angle,
-    data.punchId,
-    data.startTime,
-    data.endTime
-  ]);
-
+  // === Default: status check ===
   return ContentService
-    .createTextOutput(JSON.stringify({ status: 'ok' }))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-// Convert time cell value to seconds (handles Date objects, numbers, strings)
-function toSeconds(val) {
-  if (!val && val !== 0) return 0;
-  // Date object (Google Sheets returns time-formatted cells as Date)
-  if (val instanceof Date) {
-    return val.getHours() * 3600 + val.getMinutes() * 60 + val.getSeconds() + val.getMilliseconds() / 1000;
-  }
-  // Number: could be fraction of day (< 1) or already seconds
-  if (typeof val === 'number') {
-    if (val < 1) return val * 86400;
-    return val;
-  }
-  // String: parse MM:SS,ms or HH:MM:SS.ms etc.
-  var s = String(val).replace(',', '.');
-  var parts = s.split(':');
-  if (parts.length === 3) return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
-  if (parts.length === 2) return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
-  return parseFloat(s) || 0;
-}
-
-function doGet(e) {
-  var videoFile = e && e.parameter && e.parameter.video;
-
-  // Debug mode: return headers and first row
-  if (e && e.parameter && e.parameter.debug) {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Labeled Data Software');
-    var data = sheet.getDataRange().getValues();
-    var header = data[0];
-    var sample = data.length > 1 ? data[1] : [];
-    var types = sample.map(function(v) { return typeof v + (v instanceof Date ? ' (Date)' : ''); });
-    return ContentService
-      .createTextOutput(JSON.stringify({ headers: header, sampleRow: sample.map(String), types: types }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-
-  if (!videoFile) {
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: 'ok', message: 'Label receiver is running' }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Labeled Data Software');
-  var data = sheet.getDataRange().getValues();
-  var labels = [];
-
-  var header = data[0];
-  var colId = -1, colVideo = -1, colAngle = -1, colPunch = -1, colStart = -1, colEnd = -1;
-  for (var c = 0; c < header.length; c++) {
-    var h = String(header[c]).toLowerCase().trim();
-    if (h === 'id') colId = c;
-    else if (h === 'video_file') colVideo = c;
-    else if (h === 'angle') colAngle = c;
-    else if (h === 'punch_type') colPunch = c;
-    else if (h === 'start_sec') colStart = c;
-    else if (h === 'end_sec') colEnd = c;
-  }
-
-  for (var i = 1; i < data.length; i++) {
-    if (data[i][colVideo] === videoFile) {
-      labels.push({
-        id: colId >= 0 ? data[i][colId] : i + 1,
-        videoName: data[i][colVideo],
-        angle: colAngle >= 0 ? data[i][colAngle] : '',
-        punch: data[i][colPunch],
-        startTime: colStart >= 0 ? toSeconds(data[i][colStart]) : 0,
-        endTime: colEnd >= 0 ? toSeconds(data[i][colEnd]) : 0,
-      });
-    }
-  }
-
-  return ContentService
-    .createTextOutput(JSON.stringify({ status: 'ok', labels: labels, headers: header.map(String), colId: colId }))
+    .createTextOutput(JSON.stringify({ status: 'ok', message: 'Label receiver is running' }))
     .setMimeType(ContentService.MimeType.JSON);
 }
