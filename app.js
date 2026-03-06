@@ -384,8 +384,10 @@ function setupKeyboardShortcuts() {
 // Helpers
 // ============================================================
 function formatTime(seconds) {
-  if (isNaN(seconds)) return '0.000s';
-  return seconds.toFixed(3) + 's';
+  if (isNaN(seconds)) return '0:00.000';
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs < 10 ? '0' : ''}${secs.toFixed(3)}`;
 }
 
 function showToast(message, type = 'info') {
