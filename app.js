@@ -427,21 +427,63 @@ function saveEditLabel(idx) {
   state.labels[idx].end = end;
 
   renderLabels();
-  saveLabelsToStorage();
+  updateLabelInSheet(state.labels[idx]);
   showToast('Label updated', 'success');
 }
 
 function deleteLabel(idx) {
+  const label = state.labels[idx];
   state.labels.splice(idx, 1);
   renderLabels();
-  saveLabelsToStorage();
+  deleteLabelFromSheet(label);
 }
 
 function undoLastLabel() {
   if (state.labels.length === 0) return;
-  state.labels.pop();
+  const label = state.labels.pop();
   renderLabels();
+  deleteLabelFromSheet(label);
   showToast('Undid last label', 'info');
+}
+
+async function updateLabelInSheet(label) {
+  if (!state.scriptUrl || !label.id) return;
+  try {
+    await fetch(state.scriptUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'update',
+        id: label.id,
+        punchId: label.punch,
+        angle: label.angle,
+        startTime: formatTimeSheet(label.start),
+        endTime: formatTimeSheet(label.end),
+      }),
+    });
+  } catch (e) {
+    console.error('Sheet update failed:', e);
+    showToast('Sheet update failed', 'error');
+  }
+}
+
+async function deleteLabelFromSheet(label) {
+  if (!state.scriptUrl || !label.id) return;
+  try {
+    await fetch(state.scriptUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({
+        action: 'delete',
+        id: label.id,
+      }),
+    });
+  } catch (e) {
+    console.error('Sheet delete failed:', e);
+    showToast('Sheet delete failed', 'error');
+  }
 }
 
 // ============================================================

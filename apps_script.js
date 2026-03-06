@@ -5,7 +5,53 @@ function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Labeled Data Software');
   var data = JSON.parse(e.postData.contents);
 
-  // Columns: video_file | training_type | stance | fighter | Angle | punch_type | start_sec | end_sec
+  if (data.action === 'update' && data.id) {
+    // Find row by ID column and update it
+    var allData = sheet.getDataRange().getValues();
+    var header = allData[0];
+    var colId = -1, colAngle = -1, colPunch = -1, colStart = -1, colEnd = -1;
+    for (var c = 0; c < header.length; c++) {
+      var h = String(header[c]).toLowerCase().trim();
+      if (h === 'id') colId = c;
+      else if (h === 'angle') colAngle = c;
+      else if (h === 'punch_type') colPunch = c;
+      else if (h === 'start_sec') colStart = c;
+      else if (h === 'end_sec') colEnd = c;
+    }
+    for (var i = 1; i < allData.length; i++) {
+      if (String(allData[i][colId]) === String(data.id)) {
+        var row = i + 1; // 1-indexed
+        if (colPunch >= 0) sheet.getRange(row, colPunch + 1).setValue(data.punchId);
+        if (colAngle >= 0) sheet.getRange(row, colAngle + 1).setValue(data.angle);
+        if (colStart >= 0) sheet.getRange(row, colStart + 1).setValue(data.startTime);
+        if (colEnd >= 0) sheet.getRange(row, colEnd + 1).setValue(data.endTime);
+        break;
+      }
+    }
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'ok', action: 'updated' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  if (data.action === 'delete' && data.id) {
+    var allData = sheet.getDataRange().getValues();
+    var header = allData[0];
+    var colId = -1;
+    for (var c = 0; c < header.length; c++) {
+      if (String(header[c]).toLowerCase().trim() === 'id') { colId = c; break; }
+    }
+    for (var i = 1; i < allData.length; i++) {
+      if (String(allData[i][colId]) === String(data.id)) {
+        sheet.deleteRow(i + 1);
+        break;
+      }
+    }
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'ok', action: 'deleted' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  // Default: append new row
   sheet.appendRow([
     data.videoName,
     data.trainingType || '',
