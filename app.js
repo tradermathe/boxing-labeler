@@ -427,6 +427,11 @@ function loadLabelsFromStorage() {
   if (saved) {
     try {
       state.labels = JSON.parse(saved);
+      // Assign IDs to any labels missing them
+      let maxId = state.labels.reduce((max, l) => Math.max(max, l.id || 0), 0);
+      for (const l of state.labels) {
+        if (!l.id) l.id = ++maxId;
+      }
       renderLabels();
     } catch (e) { /* ignore */ }
   }
