@@ -11,11 +11,9 @@
     <!-- Top bar: compact single row -->
     <div id="top-bar">
       <div id="video-loader">
-        <input type="text" id="drive-url" placeholder="Paste Google Drive share link...">
-        <button id="btn-load-drive" onclick="loadDriveVideo()">Load from Drive</button>
-        <button id="btn-pick-file" onclick="document.getElementById('video-file').click()">Open Local File</button>
+        <button id="btn-pick-file" onclick="document.getElementById('video-file').click()">Open Video File</button>
         <input type="file" id="video-file" accept="video/*" style="display:none">
-        <span id="video-name"></span>
+        <span id="video-name">No video loaded</span>
       </div>
       <div id="config-toggle">
         <span id="connection-status"></span>

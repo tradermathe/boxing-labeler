@@ -35,39 +35,13 @@ body {
   flex: 1;
 }
 
-#drive-url {
-  background: #1a1a2e;
-  border: 1px solid #0f3460;
-  color: #e0e0e0;
-  padding: 7px 12px;
-  border-radius: 4px;
-  font-size: 13px;
-  width: 360px;
-}
-
-#drive-url:focus {
-  outline: none;
-  border-color: #533483;
-}
-
-#btn-load-drive, #btn-pick-file {
+#btn-pick-file {
   padding: 7px 14px;
   border: 1px solid #0f3460;
   border-radius: 4px;
   cursor: pointer;
   font-size: 13px;
   white-space: nowrap;
-}
-
-#btn-load-drive {
-  background: #e94560;
-  color: white;
-  border-color: #e94560;
-}
-
-#btn-load-drive:hover { background: #d63851; }
-
-#btn-pick-file {
   background: #0f3460;
   color: #ccc;
 }
