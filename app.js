@@ -273,18 +273,20 @@ function setupVideoLoader() {
     updateTimeDisplay();
   });
 
-  video.addEventListener('timeupdate', updateTimeDisplay);
+  video.addEventListener('timeupdate', () => updateTimeDisplay());
+  video.addEventListener('seeked', _onSeeked);
 }
 
-function updateTimeDisplay() {
+function updateTimeDisplay(overrideTime) {
   const video = document.getElementById('video-player');
   const display = document.getElementById('time-display');
   const seekBar = document.getElementById('seek-bar');
+  const t = overrideTime !== undefined ? overrideTime : video.currentTime;
 
-  display.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration || 0)}`;
+  display.textContent = `${formatTime(t)} / ${formatTime(video.duration || 0)}`;
 
   if (video.duration) {
-    seekBar.value = (video.currentTime / video.duration) * 1000;
+    seekBar.value = (t / video.duration) * 1000;
   }
 }
 
@@ -311,8 +313,8 @@ function togglePlay() {
   }
 }
 
-let _pendingSeek = null;
-let _seekRafId = null;
+let _targetTime = null;
+let _seeking = false;
 
 function stepFrames(n) {
   const video = document.getElementById('video-player');
@@ -321,26 +323,37 @@ function stepFrames(n) {
     document.getElementById('btn-play').textContent = 'Play';
   }
 
-  // Accumulate steps and apply once per animation frame
-  if (_pendingSeek === null) {
-    _pendingSeek = video.currentTime;
+  // Accumulate the target time from key repeats
+  if (_targetTime === null) {
+    _targetTime = video.currentTime;
   }
-  _pendingSeek = Math.max(0, Math.min(video.duration, _pendingSeek + n * state.frameDuration));
+  _targetTime = Math.max(0, Math.min(video.duration || 0, _targetTime + n * state.frameDuration));
+  updateTimeDisplay(_targetTime);
 
-  if (_seekRafId) cancelAnimationFrame(_seekRafId);
-  _seekRafId = requestAnimationFrame(() => {
-    video.currentTime = _pendingSeek;
-    _pendingSeek = null;
-    _seekRafId = null;
-    updateTimeDisplay();
-  });
+  // Only issue a seek if the video isn't already seeking
+  if (!_seeking) {
+    _seeking = true;
+    video.currentTime = _targetTime;
+  }
 }
+
+// When a seek completes, check if we need to seek again
+function _onSeeked() {
+  const video = document.getElementById('video-player');
+  if (_targetTime !== null && Math.abs(video.currentTime - _targetTime) > 0.001) {
+    video.currentTime = _targetTime;
+  } else {
+    _seeking = false;
+    _targetTime = null;
+  }
+}
+
 
 function toggleMute() {
   const video = document.getElementById('video-player');
   const btn = document.getElementById('btn-mute');
   video.muted = !video.muted;
-  btn.textContent = video.muted ? 'Unmute' : 'Mute';
+  btn.innerHTML = video.muted ? '&#128263;' : '&#128266;';
 }
 
 function setSpeed(rate) {
