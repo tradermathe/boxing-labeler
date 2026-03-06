@@ -43,10 +43,11 @@ function doGet(e) {
     var data = sheet.getDataRange().getValues();
     // Find column indices from header row
     var header = data[0];
-    var colVideo = -1, colAngle = -1, colPunch = -1, colStart = -1, colEnd = -1;
+    var colId = -1, colVideo = -1, colAngle = -1, colPunch = -1, colStart = -1, colEnd = -1;
     for (var c = 0; c < header.length; c++) {
       var h = String(header[c]).toLowerCase().trim();
-      if (h === 'video_file') colVideo = c;
+      if (h === 'id') colId = c;
+      else if (h === 'video_file') colVideo = c;
       else if (h === 'angle') colAngle = c;
       else if (h === 'punch_type') colPunch = c;
       else if (h === 'start_sec') colStart = c;
@@ -57,7 +58,7 @@ function doGet(e) {
     for (var i = 1; i < data.length; i++) {
       if (data[i][colVideo] === videoFile) {
         labels.push({
-          rowId: i + 1,
+          id: colId >= 0 ? data[i][colId] : i + 1,
           videoName: data[i][colVideo],
           angle: colAngle >= 0 ? data[i][colAngle] : '',
           punch: data[i][colPunch],

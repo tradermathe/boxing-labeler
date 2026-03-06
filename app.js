@@ -263,7 +263,7 @@ async function fetchLabelsFromSheet() {
     if (result.labels && result.labels.length > 0) {
       // Convert sheet labels to local label format
       const sheetLabels = result.labels.map(l => ({
-        id: l.rowId,
+        id: l.id,
         punch: mapPunchType(l.punch),
         angle: (l.angle || 'front').toLowerCase(),
         start: parseSheetTime(l.startTime),
