@@ -9,6 +9,7 @@ function doPost(e) {
     data.videoName,
     data.punchId,
     data.punchLabel,
+    data.angle,
     data.startTime,
     data.endTime,
     data.duration,

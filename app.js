@@ -34,6 +34,7 @@ let state = {
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
   buildPunchButtons();
+  setupAngleSelect();
   setupVideoLoader();
   setupKeyboardShortcuts();
   setupSeekBar();
@@ -74,6 +75,19 @@ function updateConnectionStatus() {
 function toggleConfig() {
   const panel = document.getElementById('config-panel');
   panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+}
+
+// ============================================================
+// Angle Select
+// ============================================================
+function setupAngleSelect() {
+  const select = document.getElementById('angle-select');
+  const saved = localStorage.getItem('labeler_angle');
+  if (saved) select.value = saved;
+
+  select.addEventListener('change', () => {
+    localStorage.setItem('labeler_angle', select.value);
+  });
 }
 
 // ============================================================
@@ -142,6 +156,7 @@ function captureTimestamp() {
   } else {
     const label = {
       punch: state.selectedPunch,
+      angle: document.getElementById('angle-select').value,
       start: state.pendingStart,
       end: time,
       videoName: state.videoName,
@@ -171,6 +186,7 @@ async function pushLabelToSheet(label) {
     videoName: label.videoName,
     punchId: punch.id,
     punchLabel: punch.label,
+    angle: label.angle || 'front',
     startTime: label.start.toFixed(3),
     endTime: label.end.toFixed(3),
     duration: (label.end - label.start).toFixed(3),
@@ -208,7 +224,7 @@ function renderLabels() {
     entry.className = 'label-entry';
     entry.innerHTML = `
       <span class="label-text">
-        <strong>${punch?.label || label.punch}</strong><br>
+        <strong>${punch?.label || label.punch}</strong> <small style="color:#888">${label.angle || ''}</small><br>
         ${formatTime(label.start)} &rarr; ${formatTime(label.end)}
       </span>
       <button class="label-delete" onclick="deleteLabel(${idx})" title="Delete">&times;</button>
