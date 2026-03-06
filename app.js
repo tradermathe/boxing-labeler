@@ -511,9 +511,6 @@ function setSpeed(rate) {
 // ============================================================
 function setupKeyboardShortcuts() {
   document.addEventListener('keydown', (e) => {
-    // DEBUG: remove after fixing numpad
-    document.title = 'code=' + e.code + ' key=' + e.key + ' tag=' + e.target.tagName;
-
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     // Blur focused buttons/selects so they don't consume keys
     if (e.target.tagName === 'BUTTON' || e.target.tagName === 'SELECT') {
@@ -551,8 +548,19 @@ function setupKeyboardShortcuts() {
         }
         break;
 
+      // Numpad keys (works regardless of NumLock)
+      case 'Numpad1': selectPunch('jab_head'); break;
+      case 'Numpad2': selectPunch('cross_head'); break;
+      case 'Numpad3': selectPunch('lead_hook'); break;
+      case 'Numpad4': selectPunch('rear_hook'); break;
+      case 'Numpad5': selectPunch('lead_uppercut'); break;
+      case 'Numpad6': selectPunch('rear_uppercut'); break;
+      case 'Numpad7': selectPunch('lead_bodyshot'); break;
+      case 'Numpad8': selectPunch('rear_bodyshot'); break;
+      case 'Numpad9': selectPunch('jab_body'); break;
+      case 'Numpad0': selectPunch('cross_body'); break;
       default:
-        // Handle number keys (top row and numpad)
+        // Top row number keys via e.key
         switch (e.key) {
           case '1': selectPunch('jab_head'); break;
           case '2': selectPunch('cross_head'); break;
