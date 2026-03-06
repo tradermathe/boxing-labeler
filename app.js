@@ -447,24 +447,28 @@ function undoLastLabel() {
 }
 
 async function updateLabelInSheet(label) {
-  if (!state.scriptUrl || !label.id) return;
+  if (!state.scriptUrl) { showToast('No script URL configured', 'error'); return; }
+  if (!label.id) { showToast('Label has no ID, cannot update sheet', 'error'); return; }
+  const payload = {
+    action: 'update',
+    id: label.id,
+    punchId: label.punch,
+    angle: label.angle,
+    startTime: formatTimeSheet(label.start),
+    endTime: formatTimeSheet(label.end),
+  };
+  console.log('Updating sheet label:', payload);
   try {
     await fetch(state.scriptUrl, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify({
-        action: 'update',
-        id: label.id,
-        punchId: label.punch,
-        angle: label.angle,
-        startTime: formatTimeSheet(label.start),
-        endTime: formatTimeSheet(label.end),
-      }),
+      body: JSON.stringify(payload),
     });
+    showToast(`Updated #${label.id} in sheet`, 'info');
   } catch (e) {
     console.error('Sheet update failed:', e);
-    showToast('Sheet update failed', 'error');
+    showToast('Sheet update failed: ' + e.message, 'error');
   }
 }
 
