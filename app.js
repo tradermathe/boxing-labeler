@@ -114,46 +114,59 @@ function selectPunch(punchId) {
 
   const punch = PUNCH_TYPES.find(p => p.id === punchId);
   document.getElementById('selected-punch').textContent = punch.label;
+
+  // If we were waiting for punch selection, move to end mode
+  if (state.mode === 'punch') {
+    state.mode = 'end';
+    document.getElementById('pending-label').textContent =
+      `Start: ${formatTime(state.pendingStart)} | ${punch.label} -- now set the END time`;
+  }
   updateTimestampButton();
 }
 
 // ============================================================
 // Timestamp / Labeling Workflow
 // ============================================================
+// Workflow: Start time → Select punch → End time
 function updateTimestampButton() {
   const btn = document.getElementById('btn-timestamp');
-
-  if (!state.selectedPunch) {
-    btn.textContent = 'Select a punch type first';
-    btn.disabled = true;
-    btn.className = '';
-    return;
-  }
-
-  btn.disabled = false;
 
   if (state.mode === 'start') {
     btn.textContent = '[ Set START time ]  (Enter)';
     btn.className = 'ready';
+    btn.disabled = false;
+    document.getElementById('selected-punch').textContent = 'Select after setting start';
+  } else if (state.mode === 'punch') {
+    btn.textContent = 'Select a punch type above';
+    btn.className = '';
+    btn.disabled = true;
   } else {
-    btn.textContent = '[ Set END time ]  (Enter)';
-    btn.className = 'end-mode';
+    // end mode — need punch selected
+    if (!state.selectedPunch) {
+      btn.textContent = 'Select a punch type first';
+      btn.className = '';
+      btn.disabled = true;
+    } else {
+      btn.textContent = '[ Set END time ]  (Enter)';
+      btn.className = 'end-mode';
+      btn.disabled = false;
+    }
   }
 }
 
 function captureTimestamp() {
-  if (!state.selectedPunch) return;
-
   const video = document.getElementById('video-player');
   const time = video.currentTime;
 
   if (state.mode === 'start') {
     state.pendingStart = time;
-    state.mode = 'end';
+    state.mode = 'punch';
+    state.selectedPunch = null;
+    document.querySelectorAll('.punch-btn').forEach(btn => btn.classList.remove('selected'));
     document.getElementById('pending-label').textContent =
-      `Start: ${formatTime(time)} -- now set the END time`;
+      `Start: ${formatTime(time)} -- now select the punch type`;
     updateTimestampButton();
-  } else {
+  } else if (state.mode === 'end' && state.selectedPunch) {
     const label = {
       punch: state.selectedPunch,
       angle: document.getElementById('angle-select').value,
