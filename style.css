@@ -10,31 +10,24 @@ body {
   overflow: hidden;
 }
 
-#auth-bar {
-  background: #16213e;
-  padding: 8px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-bottom: 1px solid #0f3460;
+#connection-status {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 3px;
 }
 
-#auth-bar button {
-  padding: 6px 14px;
-  border: none;
-  border-radius: 4px;
+.status-ok { color: #28a745; }
+.status-off { color: #888; }
+
+.separator { color: #333; margin: 0 4px; }
+
+.file-label {
   cursor: pointer;
-  font-size: 13px;
-  background: #4285f4;
-  color: white;
+  color: #666 !important;
+  font-size: 12px !important;
 }
 
-#auth-bar button:hover { background: #3367d6; }
-
-#user-info {
-  font-size: 13px;
-  color: #999;
-}
+#drive-url { width: 340px; }
 
 #app {
   flex: 1;

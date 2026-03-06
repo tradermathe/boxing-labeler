@@ -14,26 +14,19 @@ const PUNCH_TYPES = [
   { id: 'cross_body',       label: 'Cross (Body)',        key: '0' },
 ];
 
-const FRAME_DURATION = 1 / 30; // assume 30fps, adjusted on metadata load
-
-// Google API config - users must provide their own API key and client ID
-// Create these at https://console.cloud.google.com/apis/credentials
-const SCOPES = 'https://www.googleapis.com/auth/spreadsheets';
+const FRAME_DURATION = 1 / 30;
 
 // ============================================================
 // State
 // ============================================================
 let state = {
   selectedPunch: null,
-  mode: 'start',         // 'start' or 'end'
-  pendingStart: null,     // timestamp of pending start
-  labels: [],             // { punch, start, end, videoName }
+  mode: 'start',
+  pendingStart: null,
+  labels: [],
   videoName: '',
   frameDuration: FRAME_DURATION,
-  sheetId: '',
-  sheetTab: 'Labels',
-  accessToken: null,
-  tokenClient: null,
+  scriptUrl: '',
 };
 
 // ============================================================
@@ -44,120 +37,77 @@ window.addEventListener('DOMContentLoaded', () => {
   setupVideoLoader();
   setupKeyboardShortcuts();
   setupSeekBar();
-  loadSheetConfig();
+  loadConfig();
   loadLabelsFromStorage();
-  initGoogleAuth();
 });
 
 // ============================================================
-// Google Auth
+// Config (Apps Script URL)
 // ============================================================
-function initGoogleAuth() {
-  // Load gapi client
-  if (typeof gapi !== 'undefined') {
-    gapi.load('client', async () => {
-      await gapi.client.init({});
-    });
-  }
+function saveConfig() {
+  state.scriptUrl = document.getElementById('script-url').value.trim();
+  localStorage.setItem('labeler_script_url', state.scriptUrl);
+  updateConnectionStatus();
+  showToast('Config saved', 'success');
+}
 
-  // Check for saved credentials config
-  const savedClientId = localStorage.getItem('labeler_client_id');
-  if (!savedClientId) {
-    addClientIdPrompt();
+function loadConfig() {
+  const url = localStorage.getItem('labeler_script_url');
+  if (url) {
+    state.scriptUrl = url;
+    document.getElementById('script-url').value = url;
+  }
+  updateConnectionStatus();
+}
+
+function updateConnectionStatus() {
+  const el = document.getElementById('connection-status');
+  if (state.scriptUrl) {
+    el.textContent = 'Connected';
+    el.className = 'status-ok';
   } else {
-    setupTokenClient(savedClientId);
+    el.textContent = 'Not configured';
+    el.className = 'status-off';
   }
-}
-
-function addClientIdPrompt() {
-  const bar = document.getElementById('auth-bar');
-  const existing = document.getElementById('client-id-input');
-  if (existing) return;
-
-  const wrapper = document.createElement('span');
-  wrapper.innerHTML = `
-    <input type="text" id="client-id-input" placeholder="Google OAuth Client ID"
-           style="width:320px;background:#1a1a2e;border:1px solid #0f3460;color:#e0e0e0;padding:4px 8px;border-radius:4px;font-size:12px;">
-    <button onclick="saveClientId()" style="font-size:12px;padding:4px 8px;">Set</button>
-  `;
-  bar.insertBefore(wrapper, bar.firstChild);
-}
-
-function saveClientId() {
-  const input = document.getElementById('client-id-input');
-  const clientId = input.value.trim();
-  if (!clientId) return;
-  localStorage.setItem('labeler_client_id', clientId);
-  input.parentElement.remove();
-  setupTokenClient(clientId);
-  showToast('Client ID saved', 'success');
-}
-
-function setupTokenClient(clientId) {
-  if (typeof google === 'undefined' || !google.accounts) {
-    // GIS library not loaded yet, retry
-    setTimeout(() => setupTokenClient(clientId), 500);
-    return;
-  }
-
-  state.tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: clientId,
-    scope: SCOPES,
-    callback: (response) => {
-      if (response.error) {
-        showToast('Auth failed: ' + response.error, 'error');
-        return;
-      }
-      state.accessToken = response.access_token;
-      document.getElementById('user-info').textContent = 'Signed in';
-      document.getElementById('btn-signin').style.display = 'none';
-      document.getElementById('btn-signout').style.display = '';
-      showToast('Signed in to Google', 'success');
-    },
-  });
-}
-
-function handleSignIn() {
-  if (!state.tokenClient) {
-    showToast('Set your Google OAuth Client ID first', 'error');
-    return;
-  }
-  state.tokenClient.requestAccessToken();
-}
-
-function handleSignOut() {
-  if (state.accessToken) {
-    google.accounts.oauth2.revoke(state.accessToken);
-  }
-  state.accessToken = null;
-  document.getElementById('user-info').textContent = 'Not signed in';
-  document.getElementById('btn-signin').style.display = '';
-  document.getElementById('btn-signout').style.display = 'none';
-  showToast('Signed out', 'info');
 }
 
 // ============================================================
-// Sheet Config
+// Google Drive Video Loading
 // ============================================================
-function saveSheetConfig() {
-  state.sheetId = document.getElementById('sheet-id').value.trim();
-  state.sheetTab = document.getElementById('sheet-tab').value.trim() || 'Labels';
-  localStorage.setItem('labeler_sheet_id', state.sheetId);
-  localStorage.setItem('labeler_sheet_tab', state.sheetTab);
-  showToast('Sheet config saved', 'success');
+function extractDriveFileId(url) {
+  // Handle various Google Drive URL formats:
+  // https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+  // https://drive.google.com/open?id=FILE_ID
+  // https://drive.google.com/uc?id=FILE_ID
+  let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (match) return match[1];
+  match = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+  if (match) return match[1];
+  // If it looks like a bare ID
+  if (/^[a-zA-Z0-9_-]{20,}$/.test(url.trim())) return url.trim();
+  return null;
 }
 
-function loadSheetConfig() {
-  const id = localStorage.getItem('labeler_sheet_id');
-  const tab = localStorage.getItem('labeler_sheet_tab');
-  if (id) {
-    state.sheetId = id;
-    document.getElementById('sheet-id').value = id;
+function loadDriveVideo() {
+  const input = document.getElementById('drive-url').value.trim();
+  if (!input) return;
+
+  const fileId = extractDriveFileId(input);
+  if (!fileId) {
+    showToast('Could not parse Drive file ID from that URL', 'error');
+    return;
   }
-  if (tab) {
-    state.sheetTab = tab;
-    document.getElementById('sheet-tab').value = tab;
-  }
+
+  const video = document.getElementById('video-player');
+  // Use the direct download URL for publicly shared files
+  const directUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+
+  state.videoName = `drive:${fileId}`;
+  document.getElementById('video-name').textContent = `Drive: ${fileId.substring(0, 12)}...`;
+
+  video.src = directUrl;
+  video.load();
+  showToast('Loading video from Google Drive...', 'info');
 }
 
 // ============================================================
@@ -178,16 +128,12 @@ function buildPunchButtons() {
 function selectPunch(punchId) {
   state.selectedPunch = punchId;
 
-  // Update button states
   document.querySelectorAll('.punch-btn').forEach(btn => {
     btn.classList.toggle('selected', btn.dataset.punchId === punchId);
   });
 
-  // Update label panel
   const punch = PUNCH_TYPES.find(p => p.id === punchId);
   document.getElementById('selected-punch').textContent = punch.label;
-
-  // Update timestamp button
   updateTimestampButton();
 }
 
@@ -225,10 +171,9 @@ function captureTimestamp() {
     state.pendingStart = time;
     state.mode = 'end';
     document.getElementById('pending-label').textContent =
-      `Start: ${formatTime(time)} — now set the END time`;
+      `Start: ${formatTime(time)} -- now set the END time`;
     updateTimestampButton();
   } else {
-    // Complete the label
     const label = {
       punch: state.selectedPunch,
       start: state.pendingStart,
@@ -250,86 +195,34 @@ function captureTimestamp() {
 }
 
 // ============================================================
-// Google Sheets Push
+// Google Apps Script Push (no auth needed)
 // ============================================================
 async function pushLabelToSheet(label) {
-  if (!state.accessToken || !state.sheetId) return;
+  if (!state.scriptUrl) return;
 
   const punch = PUNCH_TYPES.find(p => p.id === label.punch);
-  const values = [[
-    label.videoName,
-    punch.id,
-    punch.label,
-    label.start.toFixed(3),
-    label.end.toFixed(3),
-    (label.end - label.start).toFixed(3),
-    label.timestamp,
-  ]];
+  const payload = {
+    videoName: label.videoName,
+    punchId: punch.id,
+    punchLabel: punch.label,
+    startTime: label.start.toFixed(3),
+    endTime: label.end.toFixed(3),
+    duration: (label.end - label.start).toFixed(3),
+    timestamp: label.timestamp,
+  };
 
   try {
-    const range = `${state.sheetTab}!A:G`;
-    const response = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${state.sheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${state.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ values }),
-      }
-    );
-
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error?.message || response.statusText);
-    }
-
+    const response = await fetch(state.scriptUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(payload),
+    });
+    // no-cors means we can't read the response, but the request goes through
     showToast('Saved to Google Sheet', 'info');
   } catch (e) {
     console.error('Sheet push failed:', e);
     showToast('Sheet save failed: ' + e.message, 'error');
-  }
-}
-
-async function pushAllLabelsToSheet() {
-  if (!state.accessToken || !state.sheetId || state.labels.length === 0) return;
-
-  const values = state.labels.map(label => {
-    const punch = PUNCH_TYPES.find(p => p.id === label.punch);
-    return [
-      label.videoName,
-      punch.id,
-      punch.label,
-      label.start.toFixed(3),
-      label.end.toFixed(3),
-      (label.end - label.start).toFixed(3),
-      label.timestamp,
-    ];
-  });
-
-  try {
-    const range = `${state.sheetTab}!A:G`;
-    const response = await fetch(
-      `https://sheets.googleapis.com/v4/spreadsheets/${state.sheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${state.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ values }),
-      }
-    );
-
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.error?.message || response.statusText);
-    }
-
-    showToast(`Pushed ${state.labels.length} labels to sheet`, 'success');
-  } catch (e) {
-    showToast('Batch push failed: ' + e.message, 'error');
   }
 }
 
@@ -342,7 +235,6 @@ function renderLabels() {
   count.textContent = `(${state.labels.length})`;
 
   log.innerHTML = '';
-  // Show most recent first
   [...state.labels].reverse().forEach((label, reverseIdx) => {
     const idx = state.labels.length - 1 - reverseIdx;
     const punch = PUNCH_TYPES.find(p => p.id === label.punch);
@@ -351,11 +243,10 @@ function renderLabels() {
     entry.innerHTML = `
       <span class="label-text">
         <strong>${punch?.label || label.punch}</strong><br>
-        ${formatTime(label.start)} → ${formatTime(label.end)}
+        ${formatTime(label.start)} &rarr; ${formatTime(label.end)}
       </span>
       <button class="label-delete" onclick="deleteLabel(${idx})" title="Delete">&times;</button>
     `;
-    // Click to seek to the label start time
     entry.querySelector('.label-text').style.cursor = 'pointer';
     entry.querySelector('.label-text').onclick = () => {
       document.getElementById('video-player').currentTime = label.start;
@@ -412,7 +303,6 @@ function setupVideoLoader() {
   });
 
   video.addEventListener('loadedmetadata', () => {
-    // Try to detect frame rate from video, default to 30fps
     state.frameDuration = 1 / 30;
     updateTimeDisplay();
   });
@@ -477,7 +367,6 @@ function setSpeed(rate) {
 // ============================================================
 function setupKeyboardShortcuts() {
   document.addEventListener('keydown', (e) => {
-    // Don't capture when typing in inputs
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
     switch (e.code) {
@@ -511,7 +400,6 @@ function setupKeyboardShortcuts() {
         }
         break;
 
-      // Number keys for punch selection
       case 'Digit1': selectPunch('jab_head'); break;
       case 'Digit2': selectPunch('cross_head'); break;
       case 'Digit3': selectPunch('lead_hook'); break;

@@ -7,27 +7,23 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Google Sign-In -->
-  <div id="auth-bar">
-    <span id="user-info">Not signed in</span>
-    <button id="btn-signin" onclick="handleSignIn()">Sign in with Google</button>
-    <button id="btn-signout" onclick="handleSignOut()" style="display:none">Sign out</button>
-  </div>
-
   <div id="app">
-    <!-- Top bar: video loader + sheet config -->
+    <!-- Top bar: video loader + config -->
     <div id="top-bar">
       <div id="video-loader">
-        <label for="video-file">Load Video:</label>
-        <input type="file" id="video-file" accept="video/*">
+        <label for="drive-url">Google Drive Video URL:</label>
+        <input type="text" id="drive-url" placeholder="Paste Google Drive share link here">
+        <button onclick="loadDriveVideo()">Load</button>
         <span id="video-name">No video loaded</span>
+        <span class="separator">|</span>
+        <label for="video-file" class="file-label">or pick local file</label>
+        <input type="file" id="video-file" accept="video/*">
       </div>
       <div id="sheet-config">
-        <label for="sheet-id">Sheet ID:</label>
-        <input type="text" id="sheet-id" placeholder="Google Spreadsheet ID">
-        <label for="sheet-tab">Tab:</label>
-        <input type="text" id="sheet-tab" value="Labels" placeholder="Sheet tab name">
-        <button onclick="saveSheetConfig()">Save Config</button>
+        <label for="script-url">Apps Script URL:</label>
+        <input type="text" id="script-url" placeholder="Google Apps Script Web App URL">
+        <button onclick="saveConfig()">Save</button>
+        <span id="connection-status">Not configured</span>
       </div>
     </div>
 
@@ -41,7 +37,7 @@
 
       <!-- Center: video player -->
       <div id="video-container">
-        <video id="video-player" preload="auto"></video>
+        <video id="video-player" preload="auto" crossorigin="anonymous"></video>
         <div id="video-controls">
           <button id="btn-play" onclick="togglePlay()">Play</button>
           <button onclick="stepFrames(-2)" title="Back 2 frames">&laquo;</button>
@@ -86,8 +82,6 @@
     </div>
   </div>
 
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="https://apis.google.com/js/api.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
