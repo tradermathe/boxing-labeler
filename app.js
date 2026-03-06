@@ -41,6 +41,7 @@ window.addEventListener('DOMContentLoaded', () => {
   loadConfig();
   loadLabelsFromStorage();
   updateTimestampButton();
+  setupDriveLink();
 });
 
 // ============================================================
@@ -217,6 +218,91 @@ async function pushLabelToSheet(label) {
     console.error('Sheet push failed:', e);
     showToast('Sheet save failed: ' + e.message, 'error');
   }
+}
+
+// ============================================================
+// Drive Link
+// ============================================================
+function setupDriveLink() {
+  const input = document.getElementById('drive-link');
+  const saved = localStorage.getItem('labeler_drive_link');
+  if (saved) input.value = saved;
+
+  let debounceTimer;
+  input.addEventListener('input', () => {
+    localStorage.setItem('labeler_drive_link', input.value.trim());
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      if (input.value.trim()) {
+        state.labels = state.labels.filter(l => !l.fromSheet);
+        fetchLabelsFromSheet();
+      }
+    }, 500);
+  });
+
+  // Auto-fetch on load if link already set
+  if (saved && saved.trim()) {
+    fetchLabelsFromSheet();
+  }
+}
+
+// ============================================================
+// Fetch existing labels from Google Sheet
+// ============================================================
+async function fetchLabelsFromSheet() {
+  const driveLink = document.getElementById('drive-link').value.trim();
+  if (!state.scriptUrl || !driveLink) return;
+
+  try {
+    const url = state.scriptUrl + '?video=' + encodeURIComponent(driveLink);
+    const response = await fetch(url);
+    const result = await response.json();
+
+    if (result.labels && result.labels.length > 0) {
+      // Convert sheet labels to local label format
+      const sheetLabels = result.labels.map(l => ({
+        punch: l.punch,
+        angle: (l.angle || 'front').toLowerCase(),
+        start: parseSheetTime(l.startTime),
+        end: parseSheetTime(l.endTime),
+        videoName: l.videoName,
+        fromSheet: true,
+      }));
+
+      // Merge: keep local labels, add sheet labels that aren't duplicates
+      for (const sl of sheetLabels) {
+        const isDuplicate = state.labels.some(ll =>
+          ll.punch === sl.punch &&
+          Math.abs(ll.start - sl.start) < 0.01 &&
+          Math.abs(ll.end - sl.end) < 0.01
+        );
+        if (!isDuplicate) {
+          state.labels.push(sl);
+        }
+      }
+
+      renderLabels();
+      showToast(`Loaded ${result.labels.length} existing labels from sheet`, 'info');
+    } else {
+      showToast('No existing labels for this video', 'info');
+    }
+  } catch (e) {
+    console.error('Failed to fetch labels:', e);
+    showToast('Failed to load labels from sheet', 'error');
+  }
+}
+
+function parseSheetTime(timeStr) {
+  if (typeof timeStr === 'number') return timeStr;
+  if (!timeStr) return 0;
+  // Handle HH:MM:SS.mmm or MM:SS.mmm or M:SS.mmm
+  const parts = String(timeStr).split(':');
+  if (parts.length === 3) {
+    return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
+  } else if (parts.length === 2) {
+    return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
+  }
+  return parseFloat(timeStr) || 0;
 }
 
 // ============================================================

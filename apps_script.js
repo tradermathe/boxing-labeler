@@ -23,7 +23,31 @@ function doPost(e) {
 }
 
 function doGet(e) {
+  var videoFile = e && e.parameter && e.parameter.video;
+  if (!videoFile) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'ok', message: 'Label receiver is running' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Labeled Data Software');
+  var data = sheet.getDataRange().getValues();
+  var labels = [];
+
+  // Skip header row (row 0)
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][0] === videoFile) {
+      labels.push({
+        videoName: data[i][0],
+        angle: data[i][4],
+        punch: data[i][5],
+        startTime: data[i][6],
+        endTime: data[i][7]
+      });
+    }
+  }
+
   return ContentService
-    .createTextOutput(JSON.stringify({ status: 'ok', message: 'Label receiver is running' }))
+    .createTextOutput(JSON.stringify({ status: 'ok', labels: labels }))
     .setMimeType(ContentService.MimeType.JSON);
 }
