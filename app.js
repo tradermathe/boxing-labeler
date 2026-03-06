@@ -423,14 +423,17 @@ function saveEditLabel(idx) {
     return;
   }
 
-  state.labels[idx].punch = punch;
-  state.labels[idx].angle = angle;
-  state.labels[idx].start = start;
-  state.labels[idx].end = end;
+  const label = state.labels[idx];
+  label.punch = punch;
+  label.angle = angle;
+  label.start = start;
+  label.end = end;
 
   renderLabels();
-  updateLabelInSheet(state.labels[idx]);
-  showToast('Label updated', 'success');
+  showToast('Label updated, syncing...', 'success');
+  updateLabelInSheet(label).then(() => {
+    showToast(`Synced #${label.id} to sheet`, 'info');
+  });
 }
 
 function deleteLabel(idx) {
