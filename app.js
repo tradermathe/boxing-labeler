@@ -311,12 +311,36 @@ function togglePlay() {
   }
 }
 
+let _pendingSeek = null;
+let _seekRafId = null;
+
 function stepFrames(n) {
   const video = document.getElementById('video-player');
-  video.pause();
-  document.getElementById('btn-play').textContent = 'Play';
-  video.currentTime = Math.max(0, Math.min(video.duration, video.currentTime + n * state.frameDuration));
-  updateTimeDisplay();
+  if (!video.paused) {
+    video.pause();
+    document.getElementById('btn-play').textContent = 'Play';
+  }
+
+  // Accumulate steps and apply once per animation frame
+  if (_pendingSeek === null) {
+    _pendingSeek = video.currentTime;
+  }
+  _pendingSeek = Math.max(0, Math.min(video.duration, _pendingSeek + n * state.frameDuration));
+
+  if (_seekRafId) cancelAnimationFrame(_seekRafId);
+  _seekRafId = requestAnimationFrame(() => {
+    video.currentTime = _pendingSeek;
+    _pendingSeek = null;
+    _seekRafId = null;
+    updateTimeDisplay();
+  });
+}
+
+function toggleMute() {
+  const video = document.getElementById('video-player');
+  const btn = document.getElementById('btn-mute');
+  video.muted = !video.muted;
+  btn.textContent = video.muted ? 'Unmute' : 'Mute';
 }
 
 function setSpeed(rate) {
