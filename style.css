@@ -220,8 +220,53 @@ body {
 
 #video-controls {
   width: 100%;
-  max-width: 900px;
   margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Seek bar full width on its own row */
+#seek-bar-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+#seek-bar {
+  width: 100%;
+  accent-color: #e94560;
+  height: 6px;
+  cursor: pointer;
+}
+
+/* Thumbnail preview */
+#seek-thumbnail {
+  display: none;
+  position: absolute;
+  bottom: 24px;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+#thumb-canvas {
+  border: 2px solid #e94560;
+  border-radius: 4px;
+  background: #000;
+}
+
+#thumb-time {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #e94560;
+  background: rgba(0,0,0,0.8);
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-top: 2px;
+}
+
+/* Controls row below seek bar */
+#controls-row {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -246,12 +291,7 @@ body {
   font-size: 14px;
   color: #e94560;
   min-width: 180px;
-}
-
-#seek-bar {
-  flex: 1;
-  min-width: 150px;
-  accent-color: #e94560;
+  margin-left: auto;
 }
 
 #speed-controls {

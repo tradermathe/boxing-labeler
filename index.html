@@ -39,21 +39,30 @@
       <!-- Center: video player -->
       <div id="video-container">
         <video id="video-player" preload="auto"></video>
+        <video id="thumb-video" preload="auto" muted style="display:none"></video>
         <div id="video-controls">
-          <button id="btn-play" onclick="togglePlay()">Play</button>
-          <button id="btn-mute" onclick="toggleMute()">&#128266;</button>
-          <button onclick="stepFrames(-2)" title="Back 2 frames">&laquo;</button>
-          <button onclick="stepFrames(-1)" title="Back 1 frame">&lsaquo;</button>
-          <button onclick="stepFrames(1)" title="Forward 1 frame">&rsaquo;</button>
-          <button onclick="stepFrames(2)" title="Forward 2 frames">&raquo;</button>
-          <span id="time-display">0.000s / 0.000s</span>
-          <input type="range" id="seek-bar" min="0" max="1000" value="0">
-          <div id="speed-controls">
-            <label>Speed:</label>
-            <button onclick="setSpeed(0.25)">0.25x</button>
-            <button onclick="setSpeed(0.5)">0.5x</button>
-            <button onclick="setSpeed(1)" class="speed-active">1x</button>
-            <button onclick="setSpeed(2)">2x</button>
+          <div id="seek-bar-wrapper">
+            <input type="range" id="seek-bar" min="0" max="1000" value="0">
+            <div id="seek-thumbnail">
+              <canvas id="thumb-canvas" width="192" height="108"></canvas>
+              <span id="thumb-time"></span>
+            </div>
+          </div>
+          <div id="controls-row">
+            <button id="btn-play" onclick="togglePlay()">Play</button>
+            <button id="btn-mute" onclick="toggleMute()">&#128266;</button>
+            <button onclick="stepFrames(-2)" title="Back 2 frames">&laquo;</button>
+            <button onclick="stepFrames(-1)" title="Back 1 frame">&lsaquo;</button>
+            <button onclick="stepFrames(1)" title="Forward 1 frame">&rsaquo;</button>
+            <button onclick="stepFrames(2)" title="Forward 2 frames">&raquo;</button>
+            <span id="time-display">0:00.000 / 0:00.000</span>
+            <div id="speed-controls">
+              <label>Speed:</label>
+              <button onclick="setSpeed(0.25)">0.25x</button>
+              <button onclick="setSpeed(0.5)">0.5x</button>
+              <button onclick="setSpeed(1)" class="speed-active">1x</button>
+              <button onclick="setSpeed(2)">2x</button>
+            </div>
           </div>
         </div>
       </div>

@@ -266,6 +266,10 @@ function setupVideoLoader() {
     const url = URL.createObjectURL(file);
     video.src = url;
     video.load();
+
+    const thumbVideo = document.getElementById('thumb-video');
+    thumbVideo.src = url;
+    thumbVideo.load();
   });
 
   video.addEventListener('loadedmetadata', () => {
@@ -298,6 +302,47 @@ function setupSeekBar() {
     if (video.duration) {
       video.currentTime = (seekBar.value / 1000) * video.duration;
     }
+  });
+
+  // Thumbnail preview on hover
+  const wrapper = document.getElementById('seek-bar-wrapper');
+  const thumb = document.getElementById('seek-thumbnail');
+  const thumbVideo = document.getElementById('thumb-video');
+  const thumbCanvas = document.getElementById('thumb-canvas');
+  const thumbCtx = thumbCanvas.getContext('2d');
+  const thumbTime = document.getElementById('thumb-time');
+
+  let thumbReady = false;
+  thumbVideo.addEventListener('seeked', () => {
+    thumbCtx.drawImage(thumbVideo, 0, 0, thumbCanvas.width, thumbCanvas.height);
+    thumbReady = true;
+  });
+
+  wrapper.addEventListener('mousemove', (e) => {
+    if (!video.duration) return;
+
+    const rect = seekBar.getBoundingClientRect();
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    const ratio = x / rect.width;
+    const hoverTime = ratio * video.duration;
+
+    // Position the thumbnail
+    const thumbW = thumbCanvas.width + 4;
+    let left = x - thumbW / 2;
+    left = Math.max(0, Math.min(rect.width - thumbW, left));
+    thumb.style.left = left + 'px';
+    thumb.style.display = 'block';
+    thumbTime.textContent = formatTime(hoverTime);
+
+    // Seek the preview video
+    if (thumbReady || !thumbVideo.seeking) {
+      thumbReady = false;
+      thumbVideo.currentTime = hoverTime;
+    }
+  });
+
+  wrapper.addEventListener('mouseleave', () => {
+    thumb.style.display = 'none';
   });
 }
 
