@@ -511,7 +511,14 @@ function setSpeed(rate) {
 // ============================================================
 function setupKeyboardShortcuts() {
   document.addEventListener('keydown', (e) => {
+    // DEBUG: remove after fixing numpad
+    document.title = 'code=' + e.code + ' key=' + e.key + ' tag=' + e.target.tagName;
+
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    // Blur focused buttons/selects so they don't consume keys
+    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'SELECT') {
+      e.target.blur();
+    }
 
     switch (e.code) {
       case 'Space':
@@ -544,16 +551,21 @@ function setupKeyboardShortcuts() {
         }
         break;
 
-      case 'Digit1': selectPunch('jab_head'); break;
-      case 'Digit2': selectPunch('cross_head'); break;
-      case 'Digit3': selectPunch('lead_hook'); break;
-      case 'Digit4': selectPunch('rear_hook'); break;
-      case 'Digit5': selectPunch('lead_uppercut'); break;
-      case 'Digit6': selectPunch('rear_uppercut'); break;
-      case 'Digit7': selectPunch('lead_bodyshot'); break;
-      case 'Digit8': selectPunch('rear_bodyshot'); break;
-      case 'Digit9': selectPunch('jab_body'); break;
-      case 'Digit0': selectPunch('cross_body'); break;
+      default:
+        // Handle number keys (top row and numpad)
+        switch (e.key) {
+          case '1': selectPunch('jab_head'); break;
+          case '2': selectPunch('cross_head'); break;
+          case '3': selectPunch('lead_hook'); break;
+          case '4': selectPunch('rear_hook'); break;
+          case '5': selectPunch('lead_uppercut'); break;
+          case '6': selectPunch('rear_uppercut'); break;
+          case '7': selectPunch('lead_bodyshot'); break;
+          case '8': selectPunch('rear_bodyshot'); break;
+          case '9': selectPunch('jab_body'); break;
+          case '0': selectPunch('cross_body'); break;
+        }
+        break;
     }
   });
 }
