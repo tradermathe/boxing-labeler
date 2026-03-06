@@ -173,7 +173,7 @@ function captureTimestamp() {
       angle: document.getElementById('angle-select').value,
       start: state.pendingStart,
       end: time,
-      videoName: state.videoName,
+      videoName: document.getElementById('drive-link').value.trim() || state.videoName,
       timestamp: new Date().toISOString(),
     };
 
@@ -199,12 +199,9 @@ async function pushLabelToSheet(label) {
   const payload = {
     videoName: label.videoName,
     punchId: punch.id,
-    punchLabel: punch.label,
     angle: label.angle || 'front',
-    startTime: label.start.toFixed(3),
-    endTime: label.end.toFixed(3),
-    duration: (label.end - label.start).toFixed(3),
-    timestamp: label.timestamp,
+    startTime: formatTimeSheet(label.start),
+    endTime: formatTimeSheet(label.end),
   };
 
   try {
@@ -586,6 +583,14 @@ function formatTime(seconds) {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${secs < 10 ? '0' : ''}${secs.toFixed(3)}`;
+}
+
+function formatTimeSheet(seconds) {
+  if (isNaN(seconds)) return '00:00:00.000';
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${secs < 10 ? '0' : ''}${secs.toFixed(3)}`;
 }
 
 function showToast(message, type = 'info') {

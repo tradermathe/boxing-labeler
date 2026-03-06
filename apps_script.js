@@ -2,18 +2,19 @@
 // Then deploy as a Web App with access set to "Anyone"
 
 function doPost(e) {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Labeled Data Software');
   var data = JSON.parse(e.postData.contents);
 
+  // Columns: video_file | training_type | stance | fighter | Angle | punch_type | start_sec | end_sec
   sheet.appendRow([
     data.videoName,
-    data.punchId,
-    data.punchLabel,
+    data.trainingType || '',
+    data.stance || '',
+    data.fighter || '',
     data.angle,
+    data.punchId,
     data.startTime,
-    data.endTime,
-    data.duration,
-    data.timestamp
+    data.endTime
   ]);
 
   return ContentService
