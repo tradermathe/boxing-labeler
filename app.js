@@ -14,7 +14,7 @@ const PUNCH_TYPES = [
   { id: 'cross_body',       label: 'Cross (Body)',        key: '0' },
 ];
 
-const FRAME_DURATION = 1 / 30;
+const FRAME_DURATION = 1 / 60;
 
 // ============================================================
 // State
