@@ -714,11 +714,12 @@ function formatTime(seconds) {
 }
 
 function formatTimeSheet(seconds) {
-  if (isNaN(seconds)) return '00:00:00.000';
-  const hrs = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
+  if (isNaN(seconds)) return '00:00,00';
+  const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
-  return `${String(hrs).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${secs < 10 ? '0' : ''}${secs.toFixed(3)}`;
+  const whole = Math.floor(secs);
+  const hundredths = Math.round((secs - whole) * 100);
+  return `${String(mins).padStart(2,'0')}:${String(whole).padStart(2,'0')},${String(hundredths).padStart(2,'0')}`;
 }
 
 function showToast(message, type = 'info') {
