@@ -15,7 +15,9 @@ const PUNCH_TYPES = [
   { id: 'no_punch',              label: 'No Punch',            key: '' },
 ];
 
-const FRAME_DURATION = 1 / 60;
+const FRAME_DURATION = 1 / 120;
+const ACCEL_DELAY = 2000;       // ms before acceleration kicks in
+const ACCEL_MULTIPLIER = 8;     // how much faster when accelerated
 
 // ============================================================
 // State
@@ -29,7 +31,7 @@ let state = {
   labels: [],
   videoName: '',
   frameDuration: FRAME_DURATION,
-  scriptUrl: '',
+  scriptUrl: 'https://script.google.com/macros/s/AKfycbwM57VoFCXWIhw8jyechZQLtMzlmeT15bhIy0eozKpA0jHlmuZPSqVzyEcS5Vy0A5cS/exec',
 };
 
 // ============================================================
@@ -63,11 +65,12 @@ function saveConfig() {
 }
 
 function loadConfig() {
+  // scriptUrl is hardcoded in state; localStorage can override if set
   const url = localStorage.getItem('labeler_script_url');
   if (url) {
     state.scriptUrl = url;
-    document.getElementById('script-url').value = url;
   }
+  document.getElementById('script-url').value = state.scriptUrl;
   updateConnectionStatus();
 }
 
@@ -610,6 +613,8 @@ function togglePlay() {
 
 let _targetTime = null;
 let _seeking = false;
+let _arrowHoldStart = null;  // timestamp when arrow key was first pressed
+let _arrowHeldKey = null;    // which arrow key is held
 
 function stepFrames(n) {
   const video = document.getElementById('video-player');
@@ -678,14 +683,19 @@ function setupKeyboardShortcuts() {
         break;
 
       case 'ArrowLeft':
+      case 'ArrowRight': {
         e.preventDefault();
-        stepFrames(e.shiftKey ? -2 : -1);
+        const dir = e.code === 'ArrowLeft' ? -1 : 1;
+        // Track hold start (ignore key repeat for initial timestamp)
+        if (_arrowHeldKey !== e.code) {
+          _arrowHeldKey = e.code;
+          _arrowHoldStart = Date.now();
+        }
+        const held = Date.now() - _arrowHoldStart;
+        const mult = held >= ACCEL_DELAY ? ACCEL_MULTIPLIER : 1;
+        stepFrames(dir * mult * (e.shiftKey ? 2 : 1));
         break;
-
-      case 'ArrowRight':
-        e.preventDefault();
-        stepFrames(e.shiftKey ? 2 : 1);
-        break;
+      }
 
       case 'Enter':
         e.preventDefault();
@@ -728,6 +738,13 @@ function setupKeyboardShortcuts() {
           case '0': selectPunch('cross_body'); break;
         }
         break;
+    }
+  });
+
+  document.addEventListener('keyup', (e) => {
+    if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+      _arrowHeldKey = null;
+      _arrowHoldStart = null;
     }
   });
 }

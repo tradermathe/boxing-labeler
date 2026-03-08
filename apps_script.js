@@ -38,6 +38,27 @@ function findColumns(header) {
   return cols;
 }
 
+// Find the next available ID (max existing + 1)
+function nextId(data, cols) {
+  var maxId = 0;
+  for (var i = 1; i < data.length; i++) {
+    var val = parseInt(data[i][cols.id]);
+    if (!isNaN(val) && val > maxId) maxId = val;
+  }
+  return maxId + 1;
+}
+
+// Find the sheet row number (1-based) for a given ID value
+function findRowById(data, cols, id) {
+  var targetId = parseInt(id);
+  for (var i = 1; i < data.length; i++) {
+    if (parseInt(data[i][cols.id]) === targetId) {
+      return i + 1; // 1-based row number
+    }
+  }
+  return -1;
+}
+
 function doGet(e) {
   var p = e ? e.parameter : {};
   var action = p.action || 'list';
@@ -58,7 +79,7 @@ function doGet(e) {
     for (var i = 1; i < data.length; i++) {
       if (data[i][cols.video] === p.video) {
         labels.push({
-          id: i + 1,
+          id: parseInt(data[i][cols.id]) || (i + 1),
           videoName: data[i][cols.video],
           angle: cols.angle >= 0 ? data[i][cols.angle] : '',
           punch: data[i][cols.punch],
@@ -74,9 +95,11 @@ function doGet(e) {
 
   // === ADD a new label ===
   if (action === 'add') {
-    // id column = row number, set after append
+    var data = sheet.getDataRange().getValues();
+    var cols = findColumns(data[0]);
+    var newId = nextId(data, cols);
     sheet.appendRow([
-      '',
+      newId,
       p.videoName || '',
       p.trainingType || '',
       p.stance || '',
@@ -86,19 +109,21 @@ function doGet(e) {
       p.startTime || '',
       p.endTime || ''
     ]);
-    var newRow = sheet.getLastRow();
-    // Write row number into the id column
-    var cols = findColumns(sheet.getDataRange().getValues()[0]);
-    if (cols.id >= 0) sheet.getRange(newRow, cols.id + 1).setValue(newRow);
     return ContentService
-      .createTextOutput(JSON.stringify({ status: 'ok', action: 'added', id: newRow }))
+      .createTextOutput(JSON.stringify({ status: 'ok', action: 'added', id: newId }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  // === UPDATE an existing label by row number ===
+  // === UPDATE an existing label by ID ===
   if (action === 'update' && p.id) {
-    var row = parseInt(p.id);
-    var cols = findColumns(sheet.getDataRange().getValues()[0]);
+    var data = sheet.getDataRange().getValues();
+    var cols = findColumns(data[0]);
+    var row = findRowById(data, cols, p.id);
+    if (row < 0) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: 'error', message: 'ID not found: ' + p.id }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
     if (p.punchId && cols.punch >= 0) sheet.getRange(row, cols.punch + 1).setValue(p.punchId);
     if (p.angle && cols.angle >= 0) sheet.getRange(row, cols.angle + 1).setValue(p.angle);
     if (p.startTime && cols.start >= 0) sheet.getRange(row, cols.start + 1).setValue(p.startTime);
@@ -108,9 +133,16 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  // === DELETE a label by row number ===
+  // === DELETE a label by ID ===
   if (action === 'delete' && p.id) {
-    var row = parseInt(p.id);
+    var data = sheet.getDataRange().getValues();
+    var cols = findColumns(data[0]);
+    var row = findRowById(data, cols, p.id);
+    if (row < 0) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ status: 'error', message: 'ID not found: ' + p.id }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
     sheet.deleteRow(row);
     return ContentService
       .createTextOutput(JSON.stringify({ status: 'ok', action: 'deleted' }))
