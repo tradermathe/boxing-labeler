@@ -20,6 +20,8 @@ const FRAME_DURATION = 1 / 60;
 // ============================================================
 // State
 // ============================================================
+const LABELER_ID = new URLSearchParams(window.location.search).get('labeler') || '';
+
 let state = {
   selectedPunch: null,
   mode: 'start',
@@ -42,6 +44,12 @@ window.addEventListener('DOMContentLoaded', () => {
   loadConfig();
   updateTimestampButton();
   setupDriveLink();
+  if (LABELER_ID) {
+    const badge = document.getElementById('labeler-badge');
+    badge.textContent = 'Labeler ' + LABELER_ID;
+    badge.style.display = 'inline';
+    document.title = 'Boxing Punch Labeler ' + LABELER_ID;
+  }
 });
 
 // ============================================================
@@ -197,6 +205,7 @@ function captureTimestamp() {
 // ============================================================
 function sheetUrl(params) {
   const url = new URL(state.scriptUrl);
+  if (LABELER_ID) url.searchParams.set('labeler', LABELER_ID);
   for (const [k, v] of Object.entries(params)) {
     url.searchParams.set(k, v);
   }

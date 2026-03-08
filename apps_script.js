@@ -41,7 +41,14 @@ function findColumns(header) {
 function doGet(e) {
   var p = e ? e.parameter : {};
   var action = p.action || 'list';
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Labeled Data Software');
+  var labeler = p.labeler || '';
+  var sheetName = labeler ? 'Labeled Data Software ' + labeler : 'Labeled Data Software';
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  if (!sheet) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ status: 'error', message: 'Sheet not found: ' + sheetName }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 
   // === LIST labels for a video ===
   if (action === 'list' && p.video) {
