@@ -58,7 +58,7 @@ function doGet(e) {
     for (var i = 1; i < data.length; i++) {
       if (data[i][cols.video] === p.video) {
         labels.push({
-          id: cols.id >= 0 ? data[i][cols.id] : i + 1,
+          id: i + 1,
           videoName: data[i][cols.video],
           angle: cols.angle >= 0 ? data[i][cols.angle] : '',
           punch: data[i][cols.punch],
@@ -74,19 +74,7 @@ function doGet(e) {
 
   // === ADD a new label ===
   if (action === 'add') {
-    // Auto-generate next ID
-    var data = sheet.getDataRange().getValues();
-    var cols = findColumns(data[0]);
-    var maxId = 0;
-    for (var i = 1; i < data.length; i++) {
-      var rowId = Number(data[i][cols.id]);
-      if (rowId > maxId) maxId = rowId;
-    }
-    var nextId = maxId + 1;
-
-    // Columns: id | video_file | training_type | stance | fighter | angle | punch_type | start_sec | end_sec
     sheet.appendRow([
-      nextId,
       p.videoName || '',
       p.trainingType || '',
       p.stance || '',
@@ -96,40 +84,29 @@ function doGet(e) {
       p.startTime || '',
       p.endTime || ''
     ]);
+    var newRow = sheet.getLastRow();
     return ContentService
-      .createTextOutput(JSON.stringify({ status: 'ok', action: 'added', id: nextId }))
+      .createTextOutput(JSON.stringify({ status: 'ok', action: 'added', id: newRow }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  // === UPDATE an existing label by ID ===
+  // === UPDATE an existing label by row number ===
   if (action === 'update' && p.id) {
-    var data = sheet.getDataRange().getValues();
-    var cols = findColumns(data[0]);
-    for (var i = 1; i < data.length; i++) {
-      if (String(data[i][cols.id]) === String(p.id)) {
-        var row = i + 1;
-        if (p.punchId && cols.punch >= 0) sheet.getRange(row, cols.punch + 1).setValue(p.punchId);
-        if (p.angle && cols.angle >= 0) sheet.getRange(row, cols.angle + 1).setValue(p.angle);
-        if (p.startTime && cols.start >= 0) sheet.getRange(row, cols.start + 1).setValue(p.startTime);
-        if (p.endTime && cols.end >= 0) sheet.getRange(row, cols.end + 1).setValue(p.endTime);
-        break;
-      }
-    }
+    var row = parseInt(p.id);
+    var cols = findColumns(sheet.getDataRange().getValues()[0]);
+    if (p.punchId && cols.punch >= 0) sheet.getRange(row, cols.punch + 1).setValue(p.punchId);
+    if (p.angle && cols.angle >= 0) sheet.getRange(row, cols.angle + 1).setValue(p.angle);
+    if (p.startTime && cols.start >= 0) sheet.getRange(row, cols.start + 1).setValue(p.startTime);
+    if (p.endTime && cols.end >= 0) sheet.getRange(row, cols.end + 1).setValue(p.endTime);
     return ContentService
       .createTextOutput(JSON.stringify({ status: 'ok', action: 'updated' }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  // === DELETE a label by ID ===
+  // === DELETE a label by row number ===
   if (action === 'delete' && p.id) {
-    var data = sheet.getDataRange().getValues();
-    var cols = findColumns(data[0]);
-    for (var i = 1; i < data.length; i++) {
-      if (String(data[i][cols.id]) === String(p.id)) {
-        sheet.deleteRow(i + 1);
-        break;
-      }
-    }
+    var row = parseInt(p.id);
+    sheet.deleteRow(row);
     return ContentService
       .createTextOutput(JSON.stringify({ status: 'ok', action: 'deleted' }))
       .setMimeType(ContentService.MimeType.JSON);
