@@ -27,9 +27,20 @@
       <input type="text" id="script-url" placeholder="https://script.google.com/macros/s/.../exec">
       <button onclick="saveConfig()">Save</button>
     </div>
-    <div id="drive-link-bar" style="padding:4px 16px; background:#121a30; border-bottom:1px solid #0f3460; display:flex; align-items:center; gap:8px;">
+    <div id="drive-link-bar" style="padding:4px 16px; background:#121a30; border-bottom:1px solid #0f3460; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
       <label for="drive-link" style="font-size:13px; color:#aaa; white-space:nowrap;">Drive Link:</label>
-      <input type="text" id="drive-link" placeholder="Paste Google Drive video link here" style="flex:1; background:#1a1a2e; border:1px solid #0f3460; color:#e0e0e0; padding:6px 10px; border-radius:4px; font-size:13px;">
+      <input type="text" id="drive-link" placeholder="Paste Google Drive video link here" style="flex:1; min-width:200px; background:#1a1a2e; border:1px solid #0f3460; color:#e0e0e0; padding:6px 10px; border-radius:4px; font-size:13px;">
+      <label for="training-type" style="font-size:13px; color:#aaa; white-space:nowrap;">Type:</label>
+      <select id="training-type" style="background:#1a1a2e; border:1px solid #0f3460; color:#e0e0e0; padding:6px 8px; border-radius:4px; font-size:13px;">
+        <option value="shadowboxing">Shadowboxing</option>
+        <option value="sparring">Sparring</option>
+        <option value="bagwork">Bagwork</option>
+      </select>
+      <label for="stance-select" style="font-size:13px; color:#aaa; white-space:nowrap;">Stance:</label>
+      <select id="stance-select" style="background:#1a1a2e; border:1px solid #0f3460; color:#e0e0e0; padding:6px 8px; border-radius:4px; font-size:13px;">
+        <option value="Orthodox">Orthodox</option>
+        <option value="Southpaw">Southpaw</option>
+      </select>
     </div>
 
     <!-- Main layout -->

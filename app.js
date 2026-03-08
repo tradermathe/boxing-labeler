@@ -210,6 +210,8 @@ async function pushLabelToSheet(label) {
     const url = sheetUrl({
       action: 'add',
       videoName: label.videoName,
+      trainingType: document.getElementById('training-type').value,
+      stance: document.getElementById('stance-select').value,
       punchId: punch.id,
       angle: label.angle || 'Front',
       startTime: formatTimeSheet(label.start),
@@ -229,8 +231,25 @@ async function pushLabelToSheet(label) {
 // ============================================================
 function setupDriveLink() {
   const input = document.getElementById('drive-link');
+  const trainingType = document.getElementById('training-type');
+  const stance = document.getElementById('stance-select');
+
   const saved = localStorage.getItem('labeler_drive_link');
   if (saved) input.value = saved;
+
+  // Restore training type and stance
+  const savedType = localStorage.getItem('labeler_training_type');
+  const savedStance = localStorage.getItem('labeler_stance');
+  if (savedType) trainingType.value = savedType;
+  if (savedStance) stance.value = savedStance;
+
+  // Persist training type and stance on change
+  trainingType.addEventListener('change', () => {
+    localStorage.setItem('labeler_training_type', trainingType.value);
+  });
+  stance.addEventListener('change', () => {
+    localStorage.setItem('labeler_stance', stance.value);
+  });
 
   let debounceTimer;
   input.addEventListener('input', () => {

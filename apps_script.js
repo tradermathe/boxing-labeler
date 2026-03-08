@@ -67,7 +67,19 @@ function doGet(e) {
 
   // === ADD a new label ===
   if (action === 'add') {
+    // Auto-generate next ID
+    var data = sheet.getDataRange().getValues();
+    var cols = findColumns(data[0]);
+    var maxId = 0;
+    for (var i = 1; i < data.length; i++) {
+      var rowId = Number(data[i][cols.id]);
+      if (rowId > maxId) maxId = rowId;
+    }
+    var nextId = maxId + 1;
+
+    // Columns: id | video_file | training_type | stance | fighter | angle | punch_type | start_sec | end_sec
     sheet.appendRow([
+      nextId,
       p.videoName || '',
       p.trainingType || '',
       p.stance || '',
@@ -78,7 +90,7 @@ function doGet(e) {
       p.endTime || ''
     ]);
     return ContentService
-      .createTextOutput(JSON.stringify({ status: 'ok', action: 'added' }))
+      .createTextOutput(JSON.stringify({ status: 'ok', action: 'added', id: nextId }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
