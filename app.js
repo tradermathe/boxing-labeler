@@ -345,7 +345,7 @@ function renderLabels() {
         <small style="color:#555">#${label.id || '?'}</small> <strong>${punch?.label || label.punch}</strong> <small style="color:#888">${label.angle || ''}</small><br>
         ${formatTime(label.start)} &rarr; ${formatTime(label.end)}
       </span>
-      <button class="label-delete" onclick="deleteLabel(${idx})" title="Delete">&times;</button>
+      <button class="label-delete" onclick="event.stopPropagation(); deleteLabel(${idx})" title="Delete">&times;</button>
     `;
     entry.querySelector('.label-text').style.cursor = 'pointer';
     entry.querySelector('.label-text').onclick = () => openEditLabel(idx);
