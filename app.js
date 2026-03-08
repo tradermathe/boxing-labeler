@@ -243,26 +243,27 @@ function setupDriveLink() {
   const trainingType = document.getElementById('training-type');
   const stance = document.getElementById('stance-select');
 
-  const saved = localStorage.getItem('labeler_drive_link');
+  const prefix = LABELER_ID ? 'labeler_' + LABELER_ID + '_' : 'labeler_';
+  const saved = localStorage.getItem(prefix + 'drive_link');
   if (saved) input.value = saved;
 
   // Restore training type and stance
-  const savedType = localStorage.getItem('labeler_training_type');
-  const savedStance = localStorage.getItem('labeler_stance');
+  const savedType = localStorage.getItem(prefix + 'training_type');
+  const savedStance = localStorage.getItem(prefix + 'stance');
   if (savedType) trainingType.value = savedType;
   if (savedStance) stance.value = savedStance;
 
   // Persist training type and stance on change
   trainingType.addEventListener('change', () => {
-    localStorage.setItem('labeler_training_type', trainingType.value);
+    localStorage.setItem(prefix + 'training_type', trainingType.value);
   });
   stance.addEventListener('change', () => {
-    localStorage.setItem('labeler_stance', stance.value);
+    localStorage.setItem(prefix + 'stance', stance.value);
   });
 
   let debounceTimer;
   input.addEventListener('input', () => {
-    localStorage.setItem('labeler_drive_link', input.value.trim());
+    localStorage.setItem(prefix + 'drive_link', input.value.trim());
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       if (input.value.trim()) {
