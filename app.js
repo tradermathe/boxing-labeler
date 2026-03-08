@@ -55,39 +55,10 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================================
-// Config (Apps Script URL)
+// Config (Apps Script URL is hardcoded)
 // ============================================================
-function saveConfig() {
-  state.scriptUrl = document.getElementById('script-url').value.trim();
-  localStorage.setItem('labeler_script_url', state.scriptUrl);
-  updateConnectionStatus();
-  showToast('Config saved', 'success');
-}
-
 function loadConfig() {
-  // scriptUrl is hardcoded in state; localStorage can override if set
-  const url = localStorage.getItem('labeler_script_url');
-  if (url) {
-    state.scriptUrl = url;
-  }
-  document.getElementById('script-url').value = state.scriptUrl;
-  updateConnectionStatus();
-}
-
-function updateConnectionStatus() {
-  const el = document.getElementById('connection-status');
-  if (state.scriptUrl) {
-    el.textContent = 'Connected';
-    el.className = 'status-ok';
-  } else {
-    el.textContent = 'Not configured';
-    el.className = 'status-off';
-  }
-}
-
-function toggleConfig() {
-  const panel = document.getElementById('config-panel');
-  panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+  // scriptUrl is hardcoded in state default — nothing to configure
 }
 
 // ============================================================

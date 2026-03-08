@@ -16,18 +16,9 @@
         <span id="video-name">No video loaded</span>
         <span id="labeler-badge" style="background:#0f3460; color:#e94560; padding:2px 10px; border-radius:10px; font-size:13px; font-weight:bold; display:none;"></span>
       </div>
-      <div id="config-toggle">
-        <span id="connection-status"></span>
-        <button id="btn-config" onclick="toggleConfig()">Settings</button>
       </div>
-    </div>
-
-    <!-- Collapsible config panel -->
-    <div id="config-panel" style="display:none">
-      <label for="script-url">Google Apps Script URL:</label>
-      <input type="text" id="script-url" placeholder="https://script.google.com/macros/s/.../exec">
-      <button onclick="saveConfig()">Save</button>
-    </div>
+      <!-- Hidden input to keep loadConfig working -->
+      <input type="hidden" id="script-url">
     <div id="drive-link-bar" style="padding:4px 16px; background:#121a30; border-bottom:1px solid #0f3460; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
       <label for="drive-link" style="font-size:13px; color:#aaa; white-space:nowrap;">Drive Link:</label>
       <input type="text" id="drive-link" placeholder="Paste Google Drive video link here" style="flex:1; min-width:200px; background:#1a1a2e; border:1px solid #0f3460; color:#e0e0e0; padding:6px 10px; border-radius:4px; font-size:13px;">
