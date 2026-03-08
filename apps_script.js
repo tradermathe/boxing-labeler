@@ -41,8 +41,8 @@ function findColumns(header) {
 function doGet(e) {
   var p = e ? e.parameter : {};
   var action = p.action || 'list';
-  var labeler = p.labeler || '';
-  var sheetName = labeler ? 'Labeled Data Software ' + labeler : 'Labeled Data Software';
+  var labeler = p.labeler || '1';
+  var sheetName = 'Labeled Data Software ' + labeler;
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   if (!sheet) {
     return ContentService
