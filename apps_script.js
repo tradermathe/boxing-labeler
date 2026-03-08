@@ -74,7 +74,9 @@ function doGet(e) {
 
   // === ADD a new label ===
   if (action === 'add') {
+    // id column = row number, set after append
     sheet.appendRow([
+      '',
       p.videoName || '',
       p.trainingType || '',
       p.stance || '',
@@ -85,6 +87,9 @@ function doGet(e) {
       p.endTime || ''
     ]);
     var newRow = sheet.getLastRow();
+    // Write row number into the id column
+    var cols = findColumns(sheet.getDataRange().getValues()[0]);
+    if (cols.id >= 0) sheet.getRange(newRow, cols.id + 1).setValue(newRow);
     return ContentService
       .createTextOutput(JSON.stringify({ status: 'ok', action: 'added', id: newRow }))
       .setMimeType(ContentService.MimeType.JSON);
