@@ -368,17 +368,33 @@ body {
 
 .label-entry .label-delete:hover { opacity: 1; }
 
-/* Round active indicator in label panel */
+/* Round indicator in label panel */
 #round-indicator {
-  background: #2e1a1a;
-  border: 1px solid #e94560;
   border-radius: 4px;
   padding: 5px 10px;
   font-size: 11px;
-  color: #e94560;
   text-align: center;
   letter-spacing: 1px;
   text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+#round-indicator.round-idle {
+  background: #1a1a2e;
+  border: 1px solid #0f3460;
+  color: #666;
+}
+
+#round-indicator.round-idle:hover {
+  border-color: #533483;
+  color: #aaa;
+}
+
+#round-indicator.round-active {
+  background: #2e1a1a;
+  border: 1px solid #e94560;
+  color: #e94560;
   animation: pulse 1.5s infinite;
 }
 

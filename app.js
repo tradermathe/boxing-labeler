@@ -836,9 +836,20 @@ function updateRoundIndicator() {
   if (!indicator) return;
   if (state.roundActive) {
     indicator.textContent = '\u25B6 Round Active — press E to end';
-    indicator.style.display = 'block';
+    indicator.className = 'round-active';
+    indicator.onclick = () => {
+      state.roundActive = false;
+      updateRoundIndicator();
+      addRoundMarker('round_end');
+    };
   } else {
-    indicator.style.display = 'none';
+    indicator.textContent = 'Press S to start round';
+    indicator.className = 'round-idle';
+    indicator.onclick = () => {
+      state.roundActive = true;
+      updateRoundIndicator();
+      addRoundMarker('round_start');
+    };
   }
 }
 
