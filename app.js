@@ -313,16 +313,21 @@ async function fetchLabelsFromSheet() {
 
     if (result.labels && result.labels.length > 0) {
       // Convert sheet labels to local label format
-      const sheetLabels = result.labels.map(l => ({
-        id: l.id,
-        punch: mapPunchType(l.punch),
-        angle: l.angle || 'Front',
-        start: typeof l.startTime === 'number' ? l.startTime : parseSheetTime(l.startTime),
-        end: typeof l.endTime === 'number' ? l.endTime : parseSheetTime(l.endTime),
-        videoName: l.videoName,
-        fromSheet: true,
-        sheetName: l.sheet,
-      }));
+      const sheetLabels = result.labels.map(l => {
+        const punch = mapPunchType(l.punch);
+        const isRound = punch === 'round_start' || punch === 'round_end';
+        return {
+          id: l.id,
+          punch: punch,
+          angle: l.angle || 'Front',
+          start: typeof l.startTime === 'number' ? l.startTime : parseSheetTime(l.startTime),
+          end: typeof l.endTime === 'number' ? l.endTime : parseSheetTime(l.endTime),
+          videoName: l.videoName,
+          fromSheet: true,
+          sheetName: l.sheet,
+          isRoundMarker: isRound,
+        };
+      });
 
       // Merge: keep local labels, add sheet labels that aren't duplicates
       for (const sl of sheetLabels) {
