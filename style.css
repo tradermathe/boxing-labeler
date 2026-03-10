@@ -368,6 +368,28 @@ body {
 
 .label-entry .label-delete:hover { opacity: 1; }
 
+/* Round active indicator in label panel */
+#round-indicator {
+  background: #2e1a1a;
+  border: 1px solid #e94560;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 11px;
+  color: #e94560;
+  text-align: center;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  animation: pulse 1.5s infinite;
+}
+
+/* Round marker entries - less prominent */
+.label-entry.round-marker {
+  border-left-color: #444;
+  opacity: 0.65;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
 /* Edit form inside label entry */
 .label-entry.editing {
   border-left-color: #e94560;

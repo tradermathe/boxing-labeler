@@ -210,6 +210,24 @@ async function pushLabelToSheet(label) {
   }
 }
 
+function addRoundMarker(markerType) {
+  const video = document.getElementById('video-player');
+  const time = video.currentTime;
+  const maxId = state.labels.reduce((max, l) => Math.max(max, l.id || 0), 0);
+  const label = {
+    id: maxId + 1,
+    punch: markerType,
+    start: time,
+    end: time,
+    videoName: document.getElementById('drive-link').value.trim() || state.videoName,
+    isRoundMarker: true,
+    timestamp: new Date().toISOString(),
+  };
+  state.labels.push(label);
+  renderLabels();
+  pushRoundMarkerToSheet(markerType);
+}
+
 async function pushRoundMarkerToSheet(markerType) {
   if (!state.scriptUrl) return;
   const video = document.getElementById('video-player');
@@ -357,23 +375,39 @@ function parseSheetTime(timeStr) {
 function renderLabels() {
   const log = document.getElementById('label-log');
   const count = document.getElementById('label-count');
-  count.textContent = `(${state.labels.length})`;
+  const punchCount = state.labels.filter(l => !l.isRoundMarker).length;
+  count.textContent = `(${punchCount})`;
 
   log.innerHTML = '';
   [...state.labels].reverse().forEach((label, reverseIdx) => {
     const idx = state.labels.length - 1 - reverseIdx;
-    const punch = PUNCH_TYPES.find(p => p.id === label.punch);
     const entry = document.createElement('div');
-    entry.className = 'label-entry';
-    entry.innerHTML = `
-      <span class="label-text">
-        <small style="color:#555">#${label.id || '?'}</small> <strong>${punch?.label || label.punch}</strong> <small style="color:#888">${label.angle || ''}</small><br>
-        ${formatTime(label.start)} &rarr; ${formatTime(label.end)}
-      </span>
-      <button class="label-delete" onclick="event.stopPropagation(); deleteLabel(${idx})" title="Delete">&times;</button>
-    `;
-    entry.querySelector('.label-text').style.cursor = 'pointer';
-    entry.querySelector('.label-text').onclick = () => openEditLabel(idx);
+
+    if (label.isRoundMarker) {
+      entry.className = 'label-entry round-marker';
+      const icon = label.punch === 'round_start' ? '\u25B6' : '\u25A0';
+      const text = label.punch === 'round_start' ? 'Round Start' : 'Round End';
+      entry.innerHTML = `
+        <span class="label-text">
+          <small style="color:#555">#${label.id || '?'}</small> ${icon} <span style="color:#888">${text}</span>
+          <small style="color:#666">${formatTime(label.start)}</small>
+        </span>
+        <button class="label-delete" onclick="event.stopPropagation(); deleteLabel(${idx})" title="Delete">&times;</button>
+      `;
+    } else {
+      const punch = PUNCH_TYPES.find(p => p.id === label.punch);
+      entry.className = 'label-entry';
+      entry.innerHTML = `
+        <span class="label-text">
+          <small style="color:#555">#${label.id || '?'}</small> <strong>${punch?.label || label.punch}</strong> <small style="color:#888">${label.angle || ''}</small><br>
+          ${formatTime(label.start)} &rarr; ${formatTime(label.end)}
+        </span>
+        <button class="label-delete" onclick="event.stopPropagation(); deleteLabel(${idx})" title="Delete">&times;</button>
+      `;
+      entry.querySelector('.label-text').style.cursor = 'pointer';
+      entry.querySelector('.label-text').onclick = () => openEditLabel(idx);
+    }
+
     log.appendChild(entry);
   });
 }
@@ -673,6 +707,19 @@ function setupKeyboardShortcuts() {
     }
 
     switch (e.code) {
+      case 'Escape':
+        if (state.mode === 'punch' || state.mode === 'end') {
+          e.preventDefault();
+          state.mode = 'start';
+          state.pendingStart = null;
+          state.selectedPunch = null;
+          document.querySelectorAll('.punch-btn').forEach(btn => btn.classList.remove('selected'));
+          document.getElementById('pending-label').textContent = '';
+          updateTimestampButton();
+          showToast('Punch cancelled', 'info');
+        }
+        break;
+
       case 'Space':
         e.preventDefault();
         togglePlay();
@@ -705,7 +752,7 @@ function setupKeyboardShortcuts() {
         } else {
           state.roundActive = true;
           updateRoundIndicator();
-          pushRoundMarkerToSheet('round_start');
+          addRoundMarker('round_start');
         }
         break;
 
@@ -716,7 +763,7 @@ function setupKeyboardShortcuts() {
         } else {
           state.roundActive = false;
           updateRoundIndicator();
-          pushRoundMarkerToSheet('round_end');
+          addRoundMarker('round_end');
         }
         break;
 
@@ -788,10 +835,9 @@ function updateRoundIndicator() {
   const indicator = document.getElementById('round-indicator');
   if (!indicator) return;
   if (state.roundActive) {
-    indicator.textContent = 'ROUND ACTIVE';
-    indicator.style.display = 'inline';
+    indicator.textContent = '\u25B6 Round Active — press E to end';
+    indicator.style.display = 'block';
   } else {
-    indicator.textContent = '';
     indicator.style.display = 'none';
   }
 }

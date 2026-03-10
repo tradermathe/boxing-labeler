@@ -82,6 +82,7 @@
 
       <!-- Right sidebar: labeling workflow + log -->
       <div id="label-panel">
+        <div id="round-indicator" style="display:none;"></div>
         <h3>Label Punch</h3>
         <div id="selected-punch">Select a punch type first</div>
         <button id="btn-timestamp" onclick="captureTimestamp()" disabled>
@@ -103,9 +104,9 @@
       1-9,0 = Select punch &nbsp;|&nbsp;
       Enter = Capture time &nbsp;|&nbsp;
       Z = Undo last label &nbsp;|&nbsp;
+      Esc = Cancel punch &nbsp;|&nbsp;
       S = Round Start &nbsp;|&nbsp;
       E = Round End
-      <span id="round-indicator" style="display:none; margin-left:12px; background:#e94560; color:#fff; padding:2px 10px; border-radius:10px; font-size:12px; font-weight:bold; animation:pulse 1.5s infinite;"></span>
     </div>
   </div>
 
