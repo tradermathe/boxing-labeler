@@ -32,6 +32,7 @@ let state = {
   videoName: '',
   frameDuration: FRAME_DURATION,
   scriptUrl: 'https://script.google.com/macros/s/AKfycbwM57VoFCXWIhw8jyechZQLtMzlmeT15bhIy0eozKpA0jHlmuZPSqVzyEcS5Vy0A5cS/exec',
+  roundActive: false,
 };
 
 // ============================================================
@@ -206,6 +207,30 @@ async function pushLabelToSheet(label) {
   } catch (e) {
     console.error('Sheet push failed:', e);
     showToast('Sheet save failed: ' + e.message, 'error');
+  }
+}
+
+async function pushRoundMarkerToSheet(markerType) {
+  if (!state.scriptUrl) return;
+  const video = document.getElementById('video-player');
+  const time = formatTimeSheet(video.currentTime);
+  try {
+    const url = sheetUrl({
+      action: 'add',
+      videoName: document.getElementById('drive-link').value.trim() || state.videoName,
+      trainingType: document.getElementById('training-type').value,
+      stance: document.getElementById('stance-select').value,
+      punchId: markerType,
+      angle: document.getElementById('angle-select').value,
+      startTime: time,
+      endTime: time,
+    });
+    const resp = await fetch(url);
+    const result = await resp.json();
+    showToast(`${markerType} saved at ${formatTime(video.currentTime)}`, 'success');
+  } catch (e) {
+    console.error('Round marker push failed:', e);
+    showToast('Round marker save failed: ' + e.message, 'error');
   }
 }
 
@@ -673,6 +698,28 @@ function setupKeyboardShortcuts() {
         captureTimestamp();
         break;
 
+      case 'KeyS':
+        e.preventDefault();
+        if (state.roundActive) {
+          showToast('Round already active — press E to end it first', 'error');
+        } else {
+          state.roundActive = true;
+          updateRoundIndicator();
+          pushRoundMarkerToSheet('round_start');
+        }
+        break;
+
+      case 'KeyE':
+        e.preventDefault();
+        if (!state.roundActive) {
+          showToast('No round in progress — press S to start one', 'error');
+        } else {
+          state.roundActive = false;
+          updateRoundIndicator();
+          pushRoundMarkerToSheet('round_end');
+        }
+        break;
+
       case 'KeyZ':
         if (e.ctrlKey || e.metaKey) {
           e.preventDefault();
@@ -731,12 +778,22 @@ function formatTime(seconds) {
 }
 
 function formatTimeSheet(seconds) {
-  if (isNaN(seconds)) return '00:00,00';
+  if (isNaN(seconds)) return '00:00.000';
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
-  const whole = Math.floor(secs);
-  const hundredths = Math.round((secs - whole) * 100);
-  return `${String(mins).padStart(2,'0')}:${String(whole).padStart(2,'0')},${String(hundredths).padStart(2,'0')}`;
+  return `${String(mins).padStart(2,'0')}:${secs < 10 ? '0' : ''}${secs.toFixed(3)}`;
+}
+
+function updateRoundIndicator() {
+  const indicator = document.getElementById('round-indicator');
+  if (!indicator) return;
+  if (state.roundActive) {
+    indicator.textContent = 'ROUND ACTIVE';
+    indicator.style.display = 'inline';
+  } else {
+    indicator.textContent = '';
+    indicator.style.display = 'none';
+  }
 }
 
 function showToast(message, type = 'info') {
