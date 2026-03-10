@@ -45,6 +45,7 @@ window.addEventListener('DOMContentLoaded', () => {
   setupSeekBar();
   loadConfig();
   updateTimestampButton();
+  updateRoundIndicator();
   setupDriveLink();
   if (LABELER_ID) {
     const badge = document.getElementById('labeler-badge');
