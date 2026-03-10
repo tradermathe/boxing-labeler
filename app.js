@@ -12,7 +12,6 @@ const PUNCH_TYPES = [
   { id: 'rear_bodyshot',         label: 'Rear Bodyshot',       key: '8' },
   { id: 'jab_body',              label: 'Jab (Body)',          key: '9' },
   { id: 'cross_body',            label: 'Cross (Body)',        key: '0' },
-  { id: 'no_punch',              label: 'No Punch',            key: '' },
 ];
 
 const FRAME_DURATION = 1 / 120;
