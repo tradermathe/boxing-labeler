@@ -8,6 +8,11 @@
 </head>
 <body>
   <div id="app">
+    <!-- Temporary warning banner -->
+    <div id="warning-banner" style="background:#e94560; color:#fff; padding:10px 16px; font-size:14px; font-weight:bold; text-align:center; display:flex; justify-content:center; align-items:center; gap:12px;">
+      <span>&#9888; USE PROPER START AND END TIMES — DO NOT use the end of one punch as the start of another punch &#9888;</span>
+      <button onclick="this.parentElement.style.display='none'" style="background:rgba(0,0,0,0.3); color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:12px;">Dismiss</button>
+    </div>
     <!-- Top bar: compact single row -->
     <div id="top-bar">
       <div id="video-loader">
