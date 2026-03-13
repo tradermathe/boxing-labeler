@@ -351,8 +351,10 @@ async function fetchLabelsFromSheet() {
 
   try {
     const url = sheetUrl({ action: 'list', video: driveLink });
+    console.log('Fetching labels from:', url);
     const response = await fetch(url);
     const result = await response.json();
+    console.log('Sheet response:', JSON.stringify(result).substring(0, 500));
 
     // Clear old local labels before loading from sheet
     state.labels = state.labels.filter(l => !l.fromSheet);
@@ -402,8 +404,34 @@ async function fetchLabelsFromSheet() {
 function mapPunchType(sheetPunch) {
   if (!sheetPunch) return 'jab_head';
   const p = String(sheetPunch).toLowerCase().trim();
+  // Direct match on ID (e.g. "jab_head")
   if (PUNCH_TYPES.find(t => t.id === p)) return p;
-  return p;
+  // Match on display label (e.g. "Jab (Head)", "Lead Hook", etc.)
+  const byLabel = PUNCH_TYPES.find(t => t.label.toLowerCase() === p);
+  if (byLabel) return byLabel.id;
+  // Partial / fuzzy matching for common sheet formats
+  const MAP = {
+    'jab': 'jab_head', 'jab head': 'jab_head', 'jab (head)': 'jab_head',
+    'jab body': 'jab_body', 'jab (body)': 'jab_body',
+    'cross': 'cross_head', 'cross head': 'cross_head', 'cross (head)': 'cross_head',
+    'cross body': 'cross_body', 'cross (body)': 'cross_body',
+    'lead hook': 'lead_hook_head', 'lead hook head': 'lead_hook_head', 'lead hook (head)': 'lead_hook_head',
+    'rear hook': 'rear_hook_head', 'rear hook head': 'rear_hook_head', 'rear hook (head)': 'rear_hook_head',
+    'lead uppercut': 'lead_uppercut_head', 'lead uppercut head': 'lead_uppercut_head',
+    'rear uppercut': 'rear_uppercut_head', 'rear uppercut head': 'rear_uppercut_head',
+    'lead bodyshot': 'lead_bodyshot', 'rear bodyshot': 'rear_bodyshot',
+    'lead slip': 'lead_slip', 'rear slip': 'rear_slip',
+    'lead roll': 'lead_roll', 'rear roll': 'rear_roll',
+    'pull back': 'pull_back', 'pullback': 'pull_back',
+    'step back': 'step_back', 'stepback': 'step_back',
+    'round start': 'round_start', 'round end': 'round_end',
+  };
+  if (MAP[p]) return MAP[p];
+  // Try replacing spaces with underscores
+  const underscored = p.replace(/\s+/g, '_');
+  if (PUNCH_TYPES.find(t => t.id === underscored)) return underscored;
+  console.warn('Unknown punch type from sheet:', sheetPunch, '→ defaulting to jab_head');
+  return 'jab_head';
 }
 
 function parseSheetTime(timeStr) {
@@ -970,6 +998,49 @@ function renderTimelineOverlay() {
   overlay.innerHTML = '';
   if (!duration || duration <= 0) return;
 
+  // Build round intervals from round_start/round_end markers
+  const roundStarts = state.labels
+    .filter(l => l.punch === 'round_start' || (l.isRoundMarker && l.punch?.includes?.('start')))
+    .map(l => l.start)
+    .sort((a, b) => a - b);
+  const roundEnds = state.labels
+    .filter(l => l.punch === 'round_end' || (l.isRoundMarker && l.punch?.includes?.('end')))
+    .map(l => l.start)
+    .sort((a, b) => a - b);
+
+  // Pair starts with ends to get round intervals
+  const rounds = [];
+  for (let i = 0; i < roundStarts.length; i++) {
+    const rStart = roundStarts[i];
+    // Find the first end that comes after this start
+    const rEnd = roundEnds.find(e => e > rStart);
+    rounds.push({ start: rStart, end: rEnd !== undefined ? rEnd : duration });
+  }
+
+  // Shade areas outside rounds (only if there are rounds)
+  if (rounds.length > 0) {
+    let pos = 0;
+    for (const r of rounds) {
+      if (r.start > pos) {
+        const seg = document.createElement('div');
+        seg.className = 'seek-segment outside-round';
+        seg.style.left = (pos / duration) * 100 + '%';
+        seg.style.width = ((r.start - pos) / duration) * 100 + '%';
+        overlay.appendChild(seg);
+      }
+      pos = r.end;
+    }
+    // After last round
+    if (pos < duration) {
+      const seg = document.createElement('div');
+      seg.className = 'seek-segment outside-round';
+      seg.style.left = (pos / duration) * 100 + '%';
+      seg.style.width = ((duration - pos) / duration) * 100 + '%';
+      overlay.appendChild(seg);
+    }
+  }
+
+  // Punch segments on top
   for (const label of state.labels) {
     if (label.isRoundMarker) continue;
     const seg = document.createElement('div');
@@ -988,23 +1059,66 @@ function updateVideoOverlay() {
   const video = document.getElementById('video-player');
   const t = video.currentTime;
 
+  // Determine current round
+  if (!updateVideoOverlay._logged && state.labels.length > 0) {
+    console.log('DEBUG all punch types:', [...new Set(state.labels.map(l => l.punch))]);
+    console.log('DEBUG isRoundMarker labels:', state.labels.filter(l => l.isRoundMarker).length);
+    updateVideoOverlay._logged = true;
+  }
+  const roundStarts = state.labels
+    .filter(l => l.punch === 'round_start' || (l.isRoundMarker && l.punch?.includes?.('start')))
+    .map(l => l.start)
+    .sort((a, b) => a - b);
+  const roundEnds = state.labels
+    .filter(l => l.punch === 'round_end' || (l.isRoundMarker && l.punch?.includes?.('end')))
+    .map(l => l.start)
+    .sort((a, b) => a - b);
+
+  // Build round intervals
+  const rounds = [];
+  for (let i = 0; i < roundStarts.length; i++) {
+    const rStart = roundStarts[i];
+    const rEnd = roundEnds.find(e => e > rStart);
+    rounds.push({ start: rStart, end: rEnd });
+  }
+
+  let currentRound = null;
+  let insideRound = false;
+  for (let i = 0; i < rounds.length; i++) {
+    const r = rounds[i];
+    if (t >= r.start && (r.end === undefined || t <= r.end)) {
+      currentRound = i + 1;
+      insideRound = true;
+      break;
+    }
+  }
+
   const activeLabels = state.labels.filter(l =>
     !l.isRoundMarker && t >= l.start && t <= l.end
   );
 
-  if (activeLabels.length === 0) {
-    if (overlay.innerHTML !== '') {
-      overlay.innerHTML = '';
-      overlay.dataset.activeKey = '';
-    }
-    return;
-  }
-
-  const key = activeLabels.map(l => l.id).join(',');
+  const roundKey = currentRound ? 'R' + currentRound : 'out';
+  const key = roundKey + '|' + activeLabels.map(l => l.id).join(',');
   if (overlay.dataset.activeKey === key) return;
   overlay.dataset.activeKey = key;
 
   overlay.innerHTML = '';
+
+  // Show round indicator (always, if any round markers exist)
+  if (roundStarts.length > 0) {
+    const tag = document.createElement('div');
+    tag.className = 'video-overlay-tag';
+    if (insideRound) {
+      tag.style.borderLeftColor = '#28a745';
+      tag.textContent = 'Round ' + currentRound;
+    } else {
+      tag.style.borderLeftColor = '#e94560';
+      tag.style.background = 'rgba(233, 69, 96, 0.3)';
+      tag.textContent = 'Outside Round';
+    }
+    overlay.appendChild(tag);
+  }
+
   for (const label of activeLabels) {
     const punch = PUNCH_TYPES.find(p => p.id === label.punch);
     const tag = document.createElement('div');

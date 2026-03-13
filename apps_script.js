@@ -31,7 +31,7 @@ function findColumns(header) {
     if (h === 'id') cols.id = c;
     else if (h === 'video_file') cols.video = c;
     else if (h === 'angle') cols.angle = c;
-    else if (h === 'punch_type') cols.punch = c;
+    else if (h === 'punch_type' || h === 'label') cols.punch = c;
     else if (h === 'start_sec') cols.start = c;
     else if (h === 'end_sec') cols.end = c;
   }
