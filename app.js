@@ -2,19 +2,25 @@
 // Config
 // ============================================================
 const PUNCH_TYPES = [
-  { id: 'jab_head',              label: 'Jab (Head)',          key: '1' },
-  { id: 'cross_head',            label: 'Cross (Head)',        key: '2' },
-  { id: 'lead_hook_head',        label: 'Lead Hook',           key: '3' },
-  { id: 'rear_hook_head',        label: 'Rear Hook',           key: '4' },
-  { id: 'lead_uppercut_head',    label: 'Lead Uppercut',       key: '5' },
-  { id: 'rear_uppercut_head',    label: 'Rear Uppercut',       key: '6' },
-  { id: 'lead_bodyshot',         label: 'Lead Bodyshot',       key: '7' },
-  { id: 'rear_bodyshot',         label: 'Rear Bodyshot',       key: '8' },
-  { id: 'jab_body',              label: 'Jab (Body)',          key: '9' },
-  { id: 'cross_body',            label: 'Cross (Body)',        key: '0' },
+  { id: 'jab_head',              label: 'Jab (Head)',          key: '1', group: 'offense' },
+  { id: 'cross_head',            label: 'Cross (Head)',        key: '2', group: 'offense' },
+  { id: 'lead_hook_head',        label: 'Lead Hook',           key: '3', group: 'offense' },
+  { id: 'rear_hook_head',        label: 'Rear Hook',           key: '4', group: 'offense' },
+  { id: 'lead_uppercut_head',    label: 'Lead Uppercut',       key: '5', group: 'offense' },
+  { id: 'rear_uppercut_head',    label: 'Rear Uppercut',       key: '6', group: 'offense' },
+  { id: 'lead_bodyshot',         label: 'Lead Bodyshot',       key: '7', group: 'offense' },
+  { id: 'rear_bodyshot',         label: 'Rear Bodyshot',       key: '8', group: 'offense' },
+  { id: 'jab_body',              label: 'Jab (Body)',          key: '9', group: 'offense' },
+  { id: 'cross_body',            label: 'Cross (Body)',        key: '0', group: 'offense' },
+  { id: 'lead_slip',             label: 'Lead Slip',           key: 'q', group: 'defense' },
+  { id: 'rear_slip',             label: 'Rear Slip',           key: 'w', group: 'defense' },
+  { id: 'lead_roll',             label: 'Lead Roll',           key: 'a', group: 'defense' },
+  { id: 'rear_roll',             label: 'Rear Roll',           key: 'd', group: 'defense' },
+  { id: 'pull_back',             label: 'Pull Back',           key: 'r', group: 'defense' },
+  { id: 'step_back',             label: 'Step Back',           key: 'f', group: 'defense' },
 ];
 
-const FRAME_DURATION = 1 / 120;
+const FRAME_DURATION_FALLBACK = 1 / 30;
 const ACCEL_DELAY = 2000;       // ms before acceleration kicks in
 const ACCEL_MULTIPLIER = 8;     // how much faster when accelerated
 
@@ -29,7 +35,8 @@ let state = {
   pendingStart: null,
   labels: [],
   videoName: '',
-  frameDuration: FRAME_DURATION,
+  frameDuration: FRAME_DURATION_FALLBACK,
+  fpsDetected: false,
   scriptUrl: 'https://script.google.com/macros/s/AKfycbwM57VoFCXWIhw8jyechZQLtMzlmeT15bhIy0eozKpA0jHlmuZPSqVzyEcS5Vy0A5cS/exec',
   roundActive: false,
 };
@@ -80,11 +87,19 @@ function setupAngleSelect() {
 // ============================================================
 function buildPunchButtons() {
   const container = document.getElementById('punch-buttons');
+  let currentGroup = null;
   PUNCH_TYPES.forEach((punch) => {
+    if (punch.group !== currentGroup) {
+      currentGroup = punch.group;
+      const header = document.createElement('div');
+      header.className = 'punch-group-header';
+      header.textContent = currentGroup === 'offense' ? 'Offense' : 'Defense';
+      container.appendChild(header);
+    }
     const btn = document.createElement('button');
     btn.className = 'punch-btn';
     btn.dataset.punchId = punch.id;
-    btn.innerHTML = `${punch.label} <span class="shortcut">${punch.key}</span>`;
+    btn.innerHTML = `${punch.label} <span class="shortcut">${punch.key.toUpperCase()}</span>`;
     btn.onclick = () => selectPunch(punch.id);
     container.appendChild(btn);
   });
@@ -561,12 +576,50 @@ function setupVideoLoader() {
   });
 
   video.addEventListener('loadedmetadata', () => {
-    state.frameDuration = 1 / 30;
+    state.frameDuration = FRAME_DURATION_FALLBACK;
+    state.fpsDetected = false;
+    detectFrameRate(video);
     updateTimeDisplay();
   });
 
   video.addEventListener('timeupdate', () => updateTimeDisplay());
   video.addEventListener('seeked', _onSeeked);
+}
+
+function detectFrameRate(video) {
+  if (!('requestVideoFrameCallback' in HTMLVideoElement.prototype)) {
+    console.warn('requestVideoFrameCallback not supported, using fallback FPS:', Math.round(1 / FRAME_DURATION_FALLBACK));
+    return;
+  }
+
+  const frameTimes = [];
+  const SAMPLES_NEEDED = 6;
+
+  function onFrame(now, metadata) {
+    frameTimes.push(metadata.mediaTime);
+
+    if (frameTimes.length >= SAMPLES_NEEDED) {
+      const intervals = [];
+      for (let i = 1; i < frameTimes.length; i++) {
+        intervals.push(frameTimes[i] - frameTimes[i - 1]);
+      }
+      intervals.sort((a, b) => a - b);
+      const median = intervals[Math.floor(intervals.length / 2)];
+
+      if (median > 0.001 && median < 0.5) {
+        state.frameDuration = median;
+        state.fpsDetected = true;
+        const fps = Math.round(1 / median);
+        console.log(`Detected video FPS: ${fps} (frame duration: ${median.toFixed(5)}s)`);
+        showToast(`Detected ${fps} FPS`, 'info');
+      }
+      return;
+    }
+
+    video.requestVideoFrameCallback(onFrame);
+  }
+
+  video.requestVideoFrameCallback(onFrame);
 }
 
 function updateTimeDisplay(overrideTime) {
@@ -793,6 +846,15 @@ function setupKeyboardShortcuts() {
       case 'Numpad8': selectPunch('rear_bodyshot'); break;
       case 'Numpad9': selectPunch('jab_body'); break;
       case 'Numpad0': selectPunch('cross_body'); break;
+
+      // Defense keys
+      case 'KeyQ': selectPunch('lead_slip'); break;
+      case 'KeyW': selectPunch('rear_slip'); break;
+      case 'KeyA': selectPunch('lead_roll'); break;
+      case 'KeyD': selectPunch('rear_roll'); break;
+      case 'KeyR': selectPunch('pull_back'); break;
+      case 'KeyF': selectPunch('step_back'); break;
+
       default:
         // Top row number keys via e.key
         switch (e.key) {

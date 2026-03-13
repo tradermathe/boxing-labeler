@@ -135,6 +135,20 @@ body {
   box-shadow: 0 0 10px rgba(233, 69, 96, 0.3);
 }
 
+.punch-group-header {
+  font-size: 11px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 6px 0 2px;
+  border-bottom: 1px solid #0f3460;
+  margin-top: 4px;
+}
+
+.punch-group-header:first-child {
+  margin-top: 0;
+}
+
 .punch-btn .shortcut {
   font-size: 11px;
   color: #666;

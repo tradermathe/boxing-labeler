@@ -8,11 +8,6 @@
 </head>
 <body>
   <div id="app">
-    <!-- Temporary warning banner -->
-    <div id="warning-banner" style="background:#e94560; color:#fff; padding:10px 16px; font-size:14px; font-weight:bold; text-align:center; display:flex; justify-content:center; align-items:center; gap:12px;">
-      <span>&#9888; USE PROPER START AND END TIMES — DO NOT use the end of one punch as the start of another punch &#9888;</span>
-      <button onclick="this.parentElement.style.display='none'" style="background:rgba(0,0,0,0.3); color:#fff; border:none; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:12px;">Dismiss</button>
-    </div>
     <!-- Top bar: compact single row -->
     <div id="top-bar">
       <div id="video-loader">
@@ -44,7 +39,7 @@
     <div id="main-layout">
       <!-- Left sidebar: punch types -->
       <div id="punch-panel">
-        <h3>Punch Type</h3>
+        <h3>Move Type</h3>
         <div id="punch-buttons"></div>
         <h3>Angle</h3>
         <select id="angle-select">
@@ -106,7 +101,8 @@
       Space = Play/Pause &nbsp;|&nbsp;
       &larr;/&rarr; = &plusmn;1 frame &nbsp;|&nbsp;
       Shift+&larr;/&rarr; = &plusmn;2 frames &nbsp;|&nbsp;
-      1-9,0 = Select punch &nbsp;|&nbsp;
+      1-9,0 = Offense &nbsp;|&nbsp;
+      Q/W/A/D/R/F = Defense &nbsp;|&nbsp;
       Enter = Capture time &nbsp;|&nbsp;
       Z = Undo last label &nbsp;|&nbsp;
       Esc = Cancel punch &nbsp;|&nbsp;
