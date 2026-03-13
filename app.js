@@ -128,6 +128,8 @@ function buildPunchButtons() {
     const btn = document.createElement('button');
     btn.className = 'punch-btn';
     btn.dataset.punchId = punch.id;
+    btn.style.borderLeftColor = getPunchColor(punch.id);
+    btn.style.borderLeftWidth = '4px';
     btn.innerHTML = `${punch.label} <span class="shortcut">${punch.key.toUpperCase()}</span>`;
     btn.onclick = () => selectPunch(punch.id);
     container.appendChild(btn);
@@ -446,6 +448,7 @@ function renderLabels() {
     } else {
       const punch = PUNCH_TYPES.find(p => p.id === label.punch);
       entry.className = 'label-entry';
+      entry.style.borderLeftColor = getPunchColor(label.punch);
       entry.innerHTML = `
         <span class="label-text">
           <small style="color:#555">#${label.id || '?'}</small> <strong>${punch?.label || label.punch}</strong> <small style="color:#888">${label.angle || ''}</small><br>
