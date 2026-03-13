@@ -21,24 +21,24 @@ const PUNCH_TYPES = [
 ];
 
 const PUNCH_COLORS = {
-  // Offense - warm spectrum
-  jab_head:           '#e94560',
-  cross_head:         '#ff6b35',
-  lead_hook_head:     '#ffd166',
-  rear_hook_head:     '#f77f00',
-  lead_uppercut_head: '#ef476f',
-  rear_uppercut_head: '#d62828',
-  lead_bodyshot:      '#fcbf49',
-  rear_bodyshot:      '#f4845f',
-  jab_body:           '#e76f51',
-  cross_body:         '#ff9f1c',
-  // Defense - cool spectrum
-  lead_slip:  '#06d6a0',
-  rear_slip:  '#1b9aaa',
-  lead_roll:  '#118ab2',
-  rear_roll:  '#073b4c',
-  pull_back:  '#7209b7',
-  step_back:  '#3a0ca3',
+  // Offense - each punch gets a distinct, vivid color
+  jab_head:           '#ff2244',  // bright red
+  cross_head:         '#ff8800',  // orange
+  lead_hook_head:     '#ffdd00',  // yellow
+  rear_hook_head:     '#ff00aa',  // hot pink
+  lead_uppercut_head: '#cc44ff',  // purple
+  rear_uppercut_head: '#ff5577',  // coral
+  lead_bodyshot:      '#ff6600',  // dark orange
+  rear_bodyshot:      '#ffaa33',  // amber
+  jab_body:           '#ee1166',  // magenta
+  cross_body:         '#ff3366',  // rose
+  // Defense - cool/bright tones, clearly distinct from offense
+  lead_slip:  '#00ff88',  // bright green
+  rear_slip:  '#00ddff',  // cyan
+  lead_roll:  '#3388ff',  // blue
+  rear_roll:  '#00ffcc',  // turquoise
+  pull_back:  '#aa66ff',  // lavender
+  step_back:  '#ffff00',  // lime yellow
   // Round markers
   round_start: '#28a745',
   round_end:   '#666666',
