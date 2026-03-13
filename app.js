@@ -430,8 +430,10 @@ function renderLabels() {
   count.textContent = `(${punchCount})`;
 
   log.innerHTML = '';
-  [...state.labels].reverse().forEach((label, reverseIdx) => {
-    const idx = state.labels.length - 1 - reverseIdx;
+  // Sort by start time descending (latest clip on top)
+  const sorted = state.labels.map((label, idx) => ({ label, idx }));
+  sorted.sort((a, b) => b.label.start - a.label.start);
+  sorted.forEach(({ label, idx }) => {
     const entry = document.createElement('div');
 
     if (label.isRoundMarker) {
@@ -460,6 +462,7 @@ function renderLabels() {
       entry.querySelector('.label-text').onclick = () => openEditLabel(idx);
     }
 
+    entry.dataset.labelIdx = idx;
     log.appendChild(entry);
   });
   renderTimelineOverlay();
@@ -469,9 +472,7 @@ function openEditLabel(idx) {
   const label = state.labels[idx];
   const log = document.getElementById('label-log');
 
-  // Find the entry element (labels are rendered in reverse)
-  const reverseIdx = state.labels.length - 1 - idx;
-  const entry = log.children[reverseIdx];
+  const entry = log.querySelector(`[data-label-idx="${idx}"]`);
   if (!entry || entry.classList.contains('editing')) return;
 
   entry.classList.add('editing');
@@ -510,8 +511,7 @@ function openEditLabel(idx) {
 
 function saveEditLabel(idx) {
   const log = document.getElementById('label-log');
-  const reverseIdx = state.labels.length - 1 - idx;
-  const entry = log.children[reverseIdx];
+  const entry = log.querySelector(`[data-label-idx="${idx}"]`);
 
   const punch = entry.querySelector('.edit-punch').value;
   const angle = entry.querySelector('.edit-angle').value;
