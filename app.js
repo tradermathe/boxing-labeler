@@ -27,11 +27,11 @@ const PUNCH_COLORS = {
   lead_hook_head:     '#ffdd00',  // yellow
   rear_hook_head:     '#ff00aa',  // hot pink
   lead_uppercut_head: '#cc44ff',  // purple
-  rear_uppercut_head: '#ff5577',  // coral
-  lead_bodyshot:      '#ff6600',  // dark orange
+  rear_uppercut_head: '#33cccc',  // teal
+  lead_bodyshot:      '#88dd00',  // lime green
   rear_bodyshot:      '#ffaa33',  // amber
-  jab_body:           '#ee1166',  // magenta
-  cross_body:         '#ff3366',  // rose
+  jab_body:           '#0088ff',  // sky blue
+  cross_body:         '#ff6699',  // pink
   // Defense - cool/bright tones, clearly distinct from offense
   lead_slip:  '#00ff88',  // bright green
   rear_slip:  '#00ddff',  // cyan
