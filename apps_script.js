@@ -63,7 +63,14 @@ function doGet(e) {
   var p = e ? e.parameter : {};
   var action = p.action || 'list';
   var labeler = p.labeler || '1';
-  var sheetName = 'Labeled Data Software ' + labeler;
+
+  var sheetName;
+  if (labeler === 'combined') {
+    sheetName = 'Combined Data';
+  } else {
+    sheetName = 'Labeled Data Software ' + labeler;
+  }
+
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
   if (!sheet) {
     return ContentService
