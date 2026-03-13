@@ -351,10 +351,8 @@ async function fetchLabelsFromSheet() {
 
   try {
     const url = sheetUrl({ action: 'list', video: driveLink });
-    console.log('Fetching labels from:', url);
     const response = await fetch(url);
     const result = await response.json();
-    console.log('Sheet response:', JSON.stringify(result).substring(0, 500));
 
     // Clear old local labels before loading from sheet
     state.labels = state.labels.filter(l => !l.fromSheet);
@@ -404,6 +402,9 @@ async function fetchLabelsFromSheet() {
 function mapPunchType(sheetPunch) {
   if (!sheetPunch) return 'jab_head';
   const p = String(sheetPunch).toLowerCase().trim();
+  // Round markers (not in PUNCH_TYPES but valid)
+  if (p === 'round_start' || p === 'round start') return 'round_start';
+  if (p === 'round_end' || p === 'round end') return 'round_end';
   // Direct match on ID (e.g. "jab_head")
   if (PUNCH_TYPES.find(t => t.id === p)) return p;
   // Match on display label (e.g. "Jab (Head)", "Lead Hook", etc.)
@@ -1060,11 +1061,6 @@ function updateVideoOverlay() {
   const t = video.currentTime;
 
   // Determine current round
-  if (!updateVideoOverlay._logged && state.labels.length > 0) {
-    console.log('DEBUG all punch types:', [...new Set(state.labels.map(l => l.punch))]);
-    console.log('DEBUG isRoundMarker labels:', state.labels.filter(l => l.isRoundMarker).length);
-    updateVideoOverlay._logged = true;
-  }
   const roundStarts = state.labels
     .filter(l => l.punch === 'round_start' || (l.isRoundMarker && l.punch?.includes?.('start')))
     .map(l => l.start)
