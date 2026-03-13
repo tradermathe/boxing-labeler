@@ -279,6 +279,37 @@ body {
   );
 }
 
+/* Video dim overlay (outside round) */
+#video-dim-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 9;
+  transition: opacity 0.3s;
+  display: none;
+}
+
+#video-dim-overlay.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+#video-dim-overlay .dim-label {
+  font-size: 28px;
+  font-weight: bold;
+  color: rgba(233, 69, 96, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+
 /* Video overlay */
 #video-container {
   position: relative;
@@ -325,7 +356,8 @@ body {
 
 /* Hidden overlays */
 .overlays-hidden #seek-bar-overlay,
-.overlays-hidden #video-overlay {
+.overlays-hidden #video-overlay,
+.overlays-hidden #video-dim-overlay {
   display: none !important;
 }
 

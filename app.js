@@ -1100,6 +1100,18 @@ function updateVideoOverlay() {
 
   overlay.innerHTML = '';
 
+  // Dim overlay when outside round
+  const dimOverlay = document.getElementById('video-dim-overlay');
+  if (roundStarts.length > 0 && !insideRound) {
+    if (!dimOverlay.classList.contains('active')) {
+      dimOverlay.classList.add('active');
+      dimOverlay.innerHTML = '<span class="dim-label">Outside Round</span>';
+    }
+  } else {
+    dimOverlay.classList.remove('active');
+    dimOverlay.innerHTML = '';
+  }
+
   // Show round indicator (always, if any round markers exist)
   if (roundStarts.length > 0) {
     const tag = document.createElement('div');
