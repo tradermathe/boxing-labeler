@@ -20,6 +20,34 @@ const PUNCH_TYPES = [
   { id: 'step_back',             label: 'Step Back',           key: 'f', group: 'defense' },
 ];
 
+const PUNCH_COLORS = {
+  // Offense - warm spectrum
+  jab_head:           '#e94560',
+  cross_head:         '#ff6b35',
+  lead_hook_head:     '#ffd166',
+  rear_hook_head:     '#f77f00',
+  lead_uppercut_head: '#ef476f',
+  rear_uppercut_head: '#d62828',
+  lead_bodyshot:      '#fcbf49',
+  rear_bodyshot:      '#f4845f',
+  jab_body:           '#e76f51',
+  cross_body:         '#ff9f1c',
+  // Defense - cool spectrum
+  lead_slip:  '#06d6a0',
+  rear_slip:  '#1b9aaa',
+  lead_roll:  '#118ab2',
+  rear_roll:  '#073b4c',
+  pull_back:  '#7209b7',
+  step_back:  '#3a0ca3',
+  // Round markers
+  round_start: '#28a745',
+  round_end:   '#666666',
+};
+
+function getPunchColor(punchId) {
+  return PUNCH_COLORS[punchId] || '#533483';
+}
+
 const FRAME_DURATION_FALLBACK = 1 / 30;
 const ACCEL_DELAY = 2000;       // ms before acceleration kicks in
 const ACCEL_MULTIPLIER = 8;     // how much faster when accelerated
@@ -39,6 +67,7 @@ let state = {
   fpsDetected: false,
   scriptUrl: 'https://script.google.com/macros/s/AKfycbwM57VoFCXWIhw8jyechZQLtMzlmeT15bhIy0eozKpA0jHlmuZPSqVzyEcS5Vy0A5cS/exec',
   roundActive: false,
+  overlayVisible: true,
 };
 
 // ============================================================
@@ -430,6 +459,7 @@ function renderLabels() {
 
     log.appendChild(entry);
   });
+  renderTimelineOverlay();
 }
 
 function openEditLabel(idx) {
@@ -580,6 +610,7 @@ function setupVideoLoader() {
     state.fpsDetected = false;
     detectFrameRate(video);
     updateTimeDisplay();
+    renderTimelineOverlay();
   });
 
   video.addEventListener('timeupdate', () => updateTimeDisplay());
@@ -633,6 +664,7 @@ function updateTimeDisplay(overrideTime) {
   if (video.duration) {
     seekBar.value = (t / video.duration) * 1000;
   }
+  updateVideoOverlay();
 }
 
 function setupSeekBar() {
@@ -825,6 +857,11 @@ function setupKeyboardShortcuts() {
         }
         break;
 
+      case 'KeyL':
+        e.preventDefault();
+        toggleOverlay();
+        break;
+
       case 'KeyZ':
         if (e.ctrlKey || e.metaKey) {
           e.preventDefault();
@@ -917,6 +954,76 @@ function updateRoundIndicator() {
       updateRoundIndicator();
       addRoundMarker('round_start');
     };
+  }
+}
+
+// ============================================================
+// Overlay Rendering
+// ============================================================
+function renderTimelineOverlay() {
+  const overlay = document.getElementById('seek-bar-overlay');
+  const video = document.getElementById('video-player');
+  const duration = video.duration;
+  overlay.innerHTML = '';
+  if (!duration || duration <= 0) return;
+
+  for (const label of state.labels) {
+    if (label.isRoundMarker) continue;
+    const seg = document.createElement('div');
+    seg.className = 'seek-segment';
+    const leftPct = (label.start / duration) * 100;
+    const widthPct = ((label.end - label.start) / duration) * 100;
+    seg.style.left = leftPct + '%';
+    seg.style.width = Math.max(widthPct, 0.15) + '%';
+    seg.style.backgroundColor = getPunchColor(label.punch);
+    overlay.appendChild(seg);
+  }
+}
+
+function updateVideoOverlay() {
+  const overlay = document.getElementById('video-overlay');
+  const video = document.getElementById('video-player');
+  const t = video.currentTime;
+
+  const activeLabels = state.labels.filter(l =>
+    !l.isRoundMarker && t >= l.start && t <= l.end
+  );
+
+  if (activeLabels.length === 0) {
+    if (overlay.innerHTML !== '') {
+      overlay.innerHTML = '';
+      overlay.dataset.activeKey = '';
+    }
+    return;
+  }
+
+  const key = activeLabels.map(l => l.id).join(',');
+  if (overlay.dataset.activeKey === key) return;
+  overlay.dataset.activeKey = key;
+
+  overlay.innerHTML = '';
+  for (const label of activeLabels) {
+    const punch = PUNCH_TYPES.find(p => p.id === label.punch);
+    const tag = document.createElement('div');
+    tag.className = 'video-overlay-tag';
+    tag.style.borderLeftColor = getPunchColor(label.punch);
+    tag.textContent = punch ? punch.label : label.punch;
+    overlay.appendChild(tag);
+  }
+}
+
+function toggleOverlay() {
+  state.overlayVisible = !state.overlayVisible;
+  const btn = document.getElementById('btn-overlay');
+  const app = document.getElementById('app');
+  if (state.overlayVisible) {
+    btn.textContent = 'Labels: ON';
+    btn.classList.remove('overlay-off');
+    app.classList.remove('overlays-hidden');
+  } else {
+    btn.textContent = 'Labels: OFF';
+    btn.classList.add('overlay-off');
+    app.classList.add('overlays-hidden');
   }
 }
 

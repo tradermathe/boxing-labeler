@@ -52,9 +52,11 @@
       <!-- Center: video player -->
       <div id="video-container">
         <video id="video-player" preload="auto"></video>
+        <div id="video-overlay"></div>
         <video id="thumb-video" preload="auto" muted style="display:none"></video>
         <div id="video-controls">
           <div id="seek-bar-wrapper">
+            <div id="seek-bar-overlay"></div>
             <input type="range" id="seek-bar" min="0" max="1000" value="0">
             <div id="seek-thumbnail">
               <canvas id="thumb-canvas" width="192" height="108"></canvas>
@@ -69,6 +71,7 @@
             <button onclick="stepFrames(1)" title="Forward 1 frame">&rsaquo;</button>
             <button onclick="stepFrames(2)" title="Forward 2 frames">&raquo;</button>
             <span id="time-display">0:00.000 / 0:00.000</span>
+            <button id="btn-overlay" onclick="toggleOverlay()" title="Toggle label overlays (L)">Labels: ON</button>
             <div id="speed-controls">
               <label>Speed:</label>
               <button onclick="setSpeed(0.25)">0.25x</button>
@@ -107,7 +110,8 @@
       Z = Undo last label &nbsp;|&nbsp;
       Esc = Cancel punch &nbsp;|&nbsp;
       S = Round Start &nbsp;|&nbsp;
-      E = Round End
+      E = Round End &nbsp;|&nbsp;
+      L = Toggle Labels
     </div>
   </div>
 

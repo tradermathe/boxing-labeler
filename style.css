@@ -202,6 +202,120 @@ body {
   cursor: pointer;
 }
 
+/* Seek bar overlay */
+#seek-bar-overlay {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 6px;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: 3px;
+}
+
+#seek-bar {
+  position: relative;
+  z-index: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+#seek-bar::-webkit-slider-runnable-track {
+  background: rgba(255,255,255,0.1);
+  height: 6px;
+  border-radius: 3px;
+}
+
+#seek-bar::-moz-range-track {
+  background: rgba(255,255,255,0.1);
+  height: 6px;
+  border-radius: 3px;
+}
+
+#seek-bar::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #e94560;
+  cursor: pointer;
+  margin-top: -4px;
+}
+
+#seek-bar::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #e94560;
+  cursor: pointer;
+  border: none;
+}
+
+.seek-segment {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  opacity: 0.6;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* Video overlay */
+#video-container {
+  position: relative;
+}
+
+#video-overlay {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+#video-overlay:empty {
+  display: none;
+}
+
+.video-overlay-tag {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.7);
+  border-left: 3px solid;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+}
+
+/* Overlay toggle button */
+#btn-overlay {
+  font-size: 11px;
+  padding: 3px 10px;
+  min-width: auto;
+}
+
+#btn-overlay.overlay-off {
+  opacity: 0.5;
+}
+
+/* Hidden overlays */
+.overlays-hidden #seek-bar-overlay,
+.overlays-hidden #video-overlay {
+  display: none !important;
+}
+
 /* Thumbnail preview */
 #seek-thumbnail {
   display: none;
