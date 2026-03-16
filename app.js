@@ -524,14 +524,16 @@ function openEditLabel(idx) {
       <div class="edit-row">
         <select class="edit-punch">${punchOpts}</select>
         <select class="edit-angle">${angleOpts}</select>
-        <button class="edit-save" onclick="saveEditLabel(${idx})">&#10003;</button>
-        <button class="edit-cancel" onclick="renderLabels()">&times;</button>
-        <button class="edit-seek" onclick="document.getElementById('video-player').currentTime=${label.start}">&#9654;</button>
       </div>
       <div class="edit-row">
         <input type="text" class="edit-start" value="${formatTime(label.start)}" title="Start">
         <span style="color:#666">&rarr;</span>
         <input type="text" class="edit-end" value="${formatTime(label.end)}" title="End">
+      </div>
+      <div class="edit-row">
+        <button class="edit-save" onclick="saveEditLabel(${idx})">Save</button>
+        <button class="edit-cancel" onclick="renderLabels()">Cancel</button>
+        <button class="edit-seek" onclick="document.getElementById('video-player').currentTime=${label.start}">Seek</button>
       </div>
     </div>
   `;
@@ -552,10 +554,15 @@ function openEditRoundMarker(idx) {
     <div class="edit-form">
       <div class="edit-row">
         <strong style="color:#888">${text}</strong>
-        <input type="text" class="edit-start" value="${formatTime(label.start)}" title="Time">
-        <button class="edit-save" onclick="saveEditRoundMarker(${idx})">&#10003;</button>
-        <button class="edit-cancel" onclick="renderLabels()">&times;</button>
-        <button class="edit-seek" onclick="document.getElementById('video-player').currentTime=${label.start}">&#9654;</button>
+      </div>
+      <div class="edit-row">
+        <label>Time:</label>
+        <input type="text" class="edit-start" value="${formatTime(label.start)}">
+      </div>
+      <div class="edit-row">
+        <button class="edit-save" onclick="saveEditRoundMarker(${idx})">Save</button>
+        <button class="edit-cancel" onclick="renderLabels()">Cancel</button>
+        <button class="edit-seek" onclick="document.getElementById('video-player').currentTime=${label.start}">Seek</button>
       </div>
     </div>
   `;
