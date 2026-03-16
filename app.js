@@ -638,6 +638,7 @@ async function updateLabelInSheet(label) {
     const url = sheetUrl({
       action: 'update',
       id: label.id,
+      video: label.videoName,
       punchId: label.punch,
       angle: label.angle,
       startTime: formatTimeSheet(label.start),
@@ -660,7 +661,7 @@ async function updateLabelInSheet(label) {
 async function deleteLabelFromSheet(label) {
   if (!state.scriptUrl || !label.id) return;
   try {
-    const url = sheetUrl({ action: 'delete', id: label.id });
+    const url = sheetUrl({ action: 'delete', id: label.id, video: label.videoName });
     const resp = await fetch(url);
     const result = await resp.json();
     showToast(`Deleted #${label.id} from sheet`, 'info');

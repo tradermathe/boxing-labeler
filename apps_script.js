@@ -48,11 +48,12 @@ function nextId(data, cols) {
   return maxId + 1;
 }
 
-// Find the sheet row number (1-based) for a given ID value
-function findRowById(data, cols, id) {
+// Find the sheet row number (1-based) for a given ID and optional video name
+function findRowById(data, cols, id, video) {
   var targetId = parseInt(id);
   for (var i = 1; i < data.length; i++) {
     if (parseInt(data[i][cols.id]) === targetId) {
+      if (video && cols.video >= 0 && data[i][cols.video] !== video) continue;
       return i + 1; // 1-based row number
     }
   }
@@ -125,7 +126,7 @@ function doGet(e) {
   if (action === 'update' && p.id) {
     var data = sheet.getDataRange().getValues();
     var cols = findColumns(data[0]);
-    var row = findRowById(data, cols, p.id);
+    var row = findRowById(data, cols, p.id, p.video);
     if (row < 0) {
       return ContentService
         .createTextOutput(JSON.stringify({ status: 'error', message: 'ID not found: ' + p.id, sheet: sheetName, cols: cols, headers: String(data[0]) }))
@@ -145,7 +146,7 @@ function doGet(e) {
   if (action === 'delete' && p.id) {
     var data = sheet.getDataRange().getValues();
     var cols = findColumns(data[0]);
-    var row = findRowById(data, cols, p.id);
+    var row = findRowById(data, cols, p.id, p.video);
     if (row < 0) {
       return ContentService
         .createTextOutput(JSON.stringify({ status: 'error', message: 'ID not found: ' + p.id }))
