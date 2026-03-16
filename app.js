@@ -476,6 +476,8 @@ function renderLabels() {
         </span>
         <button class="label-delete" onclick="event.stopPropagation(); deleteLabel(${idx})" title="Delete">&times;</button>
       `;
+      entry.querySelector('.label-text').style.cursor = 'pointer';
+      entry.querySelector('.label-text').onclick = () => openEditRoundMarker(idx);
     } else {
       const punch = PUNCH_TYPES.find(p => p.id === label.punch);
       entry.className = 'label-entry';
@@ -536,6 +538,56 @@ function openEditLabel(idx) {
       </div>
     </div>
   `;
+}
+
+function openEditRoundMarker(idx) {
+  const label = state.labels[idx];
+  const log = document.getElementById('label-log');
+
+  const entry = log.querySelector(`[data-label-idx="${idx}"]`);
+  if (!entry || entry.classList.contains('editing')) return;
+
+  entry.classList.add('editing');
+
+  const text = label.punch === 'round_start' ? 'Round Start' : 'Round End';
+
+  entry.innerHTML = `
+    <div class="edit-form">
+      <div class="edit-row">
+        <strong style="color:#888">${text}</strong>
+      </div>
+      <div class="edit-row">
+        <label>Time:</label>
+        <input type="number" class="edit-start" value="${label.start.toFixed(3)}" step="0.001" min="0">
+      </div>
+      <div class="edit-row edit-actions">
+        <button class="edit-save" onclick="saveEditRoundMarker(${idx})">Save</button>
+        <button class="edit-cancel" onclick="renderLabels()">Cancel</button>
+        <button class="edit-seek" onclick="document.getElementById('video-player').currentTime=${label.start}">Seek</button>
+      </div>
+    </div>
+  `;
+}
+
+function saveEditRoundMarker(idx) {
+  const log = document.getElementById('label-log');
+  const entry = log.querySelector(`[data-label-idx="${idx}"]`);
+
+  const start = parseFloat(entry.querySelector('.edit-start').value);
+
+  if (isNaN(start)) {
+    showToast('Invalid time value', 'error');
+    return;
+  }
+
+  const label = state.labels[idx];
+  label.start = start;
+
+  renderLabels();
+  showToast('Round marker updated, syncing...', 'success');
+  updateLabelInSheet(label).then(() => {
+    showToast(`Synced #${label.id} to sheet`, 'info');
+  });
 }
 
 function saveEditLabel(idx) {
