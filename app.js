@@ -645,6 +645,10 @@ async function updateLabelInSheet(label) {
     });
     const resp = await fetch(url);
     const result = await resp.json();
+    if (result.status === 'error') {
+      showToast('Update failed: ' + result.message, 'error');
+      return;
+    }
     showToast(`Updated #${label.id} in sheet`, 'info');
   } catch (e) {
     console.error('Sheet update failed:', e);
