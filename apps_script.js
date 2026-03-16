@@ -128,15 +128,16 @@ function doGet(e) {
     var row = findRowById(data, cols, p.id);
     if (row < 0) {
       return ContentService
-        .createTextOutput(JSON.stringify({ status: 'error', message: 'ID not found: ' + p.id }))
+        .createTextOutput(JSON.stringify({ status: 'error', message: 'ID not found: ' + p.id, sheet: sheetName, cols: cols, headers: String(data[0]) }))
         .setMimeType(ContentService.MimeType.JSON);
     }
-    if (p.punchId && cols.punch >= 0) sheet.getRange(row, cols.punch + 1).setValue(p.punchId);
-    if (p.angle && cols.angle >= 0) sheet.getRange(row, cols.angle + 1).setValue(p.angle);
-    if (p.startTime && cols.start >= 0) sheet.getRange(row, cols.start + 1).setValue(p.startTime);
-    if (p.endTime && cols.end >= 0) sheet.getRange(row, cols.end + 1).setValue(p.endTime);
+    var updated = [];
+    if (p.punchId && cols.punch >= 0) { sheet.getRange(row, cols.punch + 1).setValue(p.punchId); updated.push('punch'); }
+    if (p.angle && cols.angle >= 0) { sheet.getRange(row, cols.angle + 1).setValue(p.angle); updated.push('angle'); }
+    if (p.startTime && cols.start >= 0) { sheet.getRange(row, cols.start + 1).setValue(p.startTime); updated.push('start'); }
+    if (p.endTime && cols.end >= 0) { sheet.getRange(row, cols.end + 1).setValue(p.endTime); updated.push('end'); }
     return ContentService
-      .createTextOutput(JSON.stringify({ status: 'ok', action: 'updated' }))
+      .createTextOutput(JSON.stringify({ status: 'ok', action: 'updated', sheet: sheetName, row: row, cols: cols, updated: updated }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 

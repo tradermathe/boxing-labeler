@@ -645,11 +645,12 @@ async function updateLabelInSheet(label) {
     });
     const resp = await fetch(url);
     const result = await resp.json();
+    console.log('Update response:', result);
     if (result.status === 'error') {
       showToast('Update failed: ' + result.message, 'error');
       return;
     }
-    showToast(`Updated #${label.id} in sheet`, 'info');
+    showToast(`Updated #${label.id} → sheet="${result.sheet}" row=${result.row} fields=[${result.updated}]`, 'info');
   } catch (e) {
     console.error('Sheet update failed:', e);
     showToast('Sheet update failed: ' + e.message, 'error');
