@@ -613,17 +613,16 @@ body {
   font-size: 11px;
 }
 
-.edit-form select { flex: 1; }
-.edit-form input[type="number"] { width: 75px; }
+.edit-form select { flex: 1; min-width: 0; }
+.edit-form input[type="text"] { width: 65px; }
 
-.edit-actions { margin-top: 2px; }
-
-.edit-actions button {
-  padding: 3px 10px;
+.edit-row button {
+  padding: 2px 6px;
   border: none;
   border-radius: 3px;
   cursor: pointer;
   font-size: 11px;
+  flex-shrink: 0;
 }
 
 .edit-save { background: #28a745; color: white; }
