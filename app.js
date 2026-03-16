@@ -527,9 +527,9 @@ function openEditLabel(idx) {
       </div>
       <div class="edit-row">
         <label>Start:</label>
-        <input type="number" class="edit-start" value="${label.start.toFixed(3)}" step="0.001" min="0">
+        <input type="text" class="edit-start" value="${formatTime(label.start)}">
         <label>End:</label>
-        <input type="number" class="edit-end" value="${label.end.toFixed(3)}" step="0.001" min="0">
+        <input type="text" class="edit-end" value="${formatTime(label.end)}">
       </div>
       <div class="edit-row edit-actions">
         <button class="edit-save" onclick="saveEditLabel(${idx})">Save</button>
@@ -558,7 +558,7 @@ function openEditRoundMarker(idx) {
       </div>
       <div class="edit-row">
         <label>Time:</label>
-        <input type="number" class="edit-start" value="${label.start.toFixed(3)}" step="0.001" min="0">
+        <input type="text" class="edit-start" value="${formatTime(label.start)}">
       </div>
       <div class="edit-row edit-actions">
         <button class="edit-save" onclick="saveEditRoundMarker(${idx})">Save</button>
@@ -573,7 +573,7 @@ function saveEditRoundMarker(idx) {
   const log = document.getElementById('label-log');
   const entry = log.querySelector(`[data-label-idx="${idx}"]`);
 
-  const start = parseFloat(entry.querySelector('.edit-start').value);
+  const start = parseTime(entry.querySelector('.edit-start').value);
 
   if (isNaN(start)) {
     showToast('Invalid time value', 'error');
@@ -596,8 +596,8 @@ function saveEditLabel(idx) {
 
   const punch = entry.querySelector('.edit-punch').value;
   const angle = entry.querySelector('.edit-angle').value;
-  const start = parseFloat(entry.querySelector('.edit-start').value);
-  const end = parseFloat(entry.querySelector('.edit-end').value);
+  const start = parseTime(entry.querySelector('.edit-start').value);
+  const end = parseTime(entry.querySelector('.edit-end').value);
 
   if (isNaN(start) || isNaN(end)) {
     showToast('Invalid time values', 'error');
@@ -1010,6 +1010,15 @@ function formatTime(seconds) {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${secs < 10 ? '0' : ''}${secs.toFixed(3)}`;
+}
+
+function parseTime(str) {
+  str = str.trim();
+  const parts = str.split(':');
+  if (parts.length === 2) {
+    return parseFloat(parts[0]) * 60 + parseFloat(parts[1]);
+  }
+  return parseFloat(str);
 }
 
 function formatTimeSheet(seconds) {
