@@ -524,12 +524,14 @@ function openEditLabel(idx) {
       <div class="edit-row">
         <select class="edit-punch">${punchOpts}</select>
         <select class="edit-angle">${angleOpts}</select>
-        <input type="text" class="edit-start" value="${formatTime(label.start)}" title="Start">
-        <span style="color:#666">&rarr;</span>
-        <input type="text" class="edit-end" value="${formatTime(label.end)}" title="End">
         <button class="edit-save" onclick="saveEditLabel(${idx})">&#10003;</button>
         <button class="edit-cancel" onclick="renderLabels()">&times;</button>
         <button class="edit-seek" onclick="document.getElementById('video-player').currentTime=${label.start}">&#9654;</button>
+      </div>
+      <div class="edit-row">
+        <input type="text" class="edit-start" value="${formatTime(label.start)}" title="Start">
+        <span style="color:#666">&rarr;</span>
+        <input type="text" class="edit-end" value="${formatTime(label.end)}" title="End">
       </div>
     </div>
   `;
