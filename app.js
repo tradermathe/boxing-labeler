@@ -249,7 +249,12 @@ async function pushLabelToSheet(label) {
     });
     const resp = await fetch(url);
     const result = await resp.json();
-    showToast('Saved to Google Sheet', 'info');
+    if (result.status === 'error') {
+      console.error('Sheet push error:', result.message);
+      showToast('Sheet save failed: ' + result.message, 'error');
+    } else {
+      showToast('Saved to Google Sheet', 'info');
+    }
   } catch (e) {
     console.error('Sheet push failed:', e);
     showToast('Sheet save failed: ' + e.message, 'error');
@@ -330,7 +335,7 @@ function setupDriveLink() {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       if (input.value.trim()) {
-        state.labels = state.labels.filter(l => !l.fromSheet);
+        state.labels = [];
         fetchLabelsFromSheet();
       }
     }, 500);
@@ -353,6 +358,12 @@ async function fetchLabelsFromSheet() {
     const url = sheetUrl({ action: 'list', video: driveLink });
     const response = await fetch(url);
     const result = await response.json();
+
+    if (result.status === 'error') {
+      console.error('Sheet fetch error:', result.message);
+      showToast('Sheet error: ' + result.message, 'error');
+      return;
+    }
 
     // Clear old local labels before loading from sheet
     state.labels = state.labels.filter(l => !l.fromSheet);
@@ -391,6 +402,7 @@ async function fetchLabelsFromSheet() {
       showToast(`Loaded ${result.labels.length} existing labels from sheet`, 'info');
     } else {
       showToast('No existing labels for this video', 'info');
+      renderLabels();
     }
   } catch (e) {
     console.error('Failed to fetch labels:', e);
