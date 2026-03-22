@@ -40,12 +40,11 @@ function findColumns(header) {
 
 // Find the next available ID (max existing + 1)
 function nextId(data, cols) {
-  var maxId = 0;
+  var count = 0;
   for (var i = 1; i < data.length; i++) {
-    var val = parseInt(data[i][cols.id]);
-    if (!isNaN(val) && val > maxId) maxId = val;
+    if (data[i][cols.id] !== '' && data[i][cols.id] != null) count++;
   }
-  return maxId + 1;
+  return count + 1;
 }
 
 // Find the sheet row number (1-based) for a given ID and optional video name

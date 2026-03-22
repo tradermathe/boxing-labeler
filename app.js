@@ -66,7 +66,7 @@ let state = {
   frameDuration: FRAME_DURATION_FALLBACK,
   fpsDetected: false,
   scriptUrl: 'https://script.google.com/macros/s/AKfycbwM57VoFCXWIhw8jyechZQLtMzlmeT15bhIy0eozKpA0jHlmuZPSqVzyEcS5Vy0A5cS/exec',
-  roundActive: false,
+  roundActive: localStorage.getItem('roundActive') === 'true',
   overlayVisible: true,
 };
 
@@ -846,7 +846,8 @@ function stepFrames(n) {
 
   // Accumulate the target time from key repeats
   if (_targetTime === null) {
-    _targetTime = video.currentTime;
+    // Snap to nearest frame boundary so all users land on the same grid
+    _targetTime = Math.round(video.currentTime / state.frameDuration) * state.frameDuration;
   }
   _targetTime = Math.max(0, Math.min(video.duration || 0, _targetTime + n * state.frameDuration));
   updateTimeDisplay(_targetTime);
@@ -942,6 +943,7 @@ function setupKeyboardShortcuts() {
           showToast('Round already active — press E to end it first', 'error');
         } else {
           state.roundActive = true;
+          localStorage.setItem('roundActive', 'true');
           updateRoundIndicator();
           addRoundMarker('round_start');
         }
@@ -953,6 +955,7 @@ function setupKeyboardShortcuts() {
           showToast('No round in progress — press S to start one', 'error');
         } else {
           state.roundActive = false;
+          localStorage.setItem('roundActive', 'false');
           updateRoundIndicator();
           addRoundMarker('round_end');
         }
