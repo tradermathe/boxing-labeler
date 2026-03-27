@@ -17,7 +17,11 @@ Web-based video labeling tool for boxing punch annotation.
 
 ## Sheet Columns
 
+**Labeler sheets** ("Labeled Data Software {N}"):
 id | video_file | training_type | stance | fighter | angle | punch_type | start_sec | end_sec
+
+**Combined Data sheet**:
+id | video_name | video_file | training_type | stance | fighter | angle | label | start_sec | end_sec
 
 ## Setup
 

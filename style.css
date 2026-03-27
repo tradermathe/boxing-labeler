@@ -342,6 +342,8 @@ body {
   white-space: nowrap;
   text-shadow: 0 1px 3px rgba(0,0,0,0.9);
   transition: background 0.15s;
+  pointer-events: auto;
+  cursor: pointer;
 }
 .video-overlay-tag:hover {
   background: rgba(255, 255, 255, 0.15);
