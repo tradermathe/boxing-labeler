@@ -2,6 +2,24 @@
 // Then deploy as a Web App with access set to "Anyone"
 // All operations use doGet with URL parameters for reliable CORS support
 
+// ONE-TIME: Run this from Apps Script to backfill IDs in Combined Data.
+// Go to Run > backfillCombinedIds, then delete this function after.
+function backfillCombinedIds() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Combined Data');
+  if (!sheet) { Logger.log('Combined Data sheet not found'); return; }
+  var data = sheet.getDataRange().getValues();
+  var cols = findColumns(data[0]);
+  if (cols.id < 0) { Logger.log('No id column found'); return; }
+  var count = 0;
+  for (var i = 1; i < data.length; i++) {
+    if (data[i][cols.id] === '' || data[i][cols.id] == null) {
+      sheet.getRange(i + 1, cols.id + 1).setValue(i);
+      count++;
+    }
+  }
+  Logger.log('Backfilled ' + count + ' IDs in Combined Data');
+}
+
 function doPost(e) {
   return ContentService
     .createTextOutput(JSON.stringify({ status: 'error', message: 'Use GET requests' }))
@@ -131,15 +149,6 @@ function doGet(e) {
     var data = sheet.getDataRange().getValues();
     var cols = findColumns(data[0]);
     var row = findRowById(data, cols, p.id, p.video);
-    // Fallback: use ID as direct row number (for sheets with empty ID column)
-    if (row < 0) {
-      var directRow = parseInt(p.id);
-      if (directRow >= 2 && directRow <= data.length) {
-        if (!p.video || cols.video < 0 || data[directRow - 1][cols.video] === p.video) {
-          row = directRow;
-        }
-      }
-    }
     if (row < 0) {
       return ContentService
         .createTextOutput(JSON.stringify({ status: 'error', message: 'ID not found: ' + p.id, sheet: sheetName, cols: cols, headers: String(data[0]) }))
@@ -163,17 +172,6 @@ function doGet(e) {
     var data = sheet.getDataRange().getValues();
     var cols = findColumns(data[0]);
     var row = findRowById(data, cols, p.id, p.video);
-    // Fallback: if ID column is empty (e.g. Combined Data), the list action
-    // returns row numbers as fake IDs, so try using the ID as a direct row number
-    if (row < 0) {
-      var directRow = parseInt(p.id);
-      if (directRow >= 2 && directRow <= data.length) {
-        // Verify the video matches to avoid deleting the wrong row
-        if (!p.video || cols.video < 0 || data[directRow - 1][cols.video] === p.video) {
-          row = directRow;
-        }
-      }
-    }
     if (row < 0) {
       return ContentService
         .createTextOutput(JSON.stringify({ status: 'error', message: 'ID not found: ' + p.id, sheet: sheetName, video: p.video }))
