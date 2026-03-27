@@ -593,7 +593,7 @@ function openEditLabel(idx) {
       </div>
       <div class="edit-row">
         <button class="edit-save" onclick="saveEditLabel(${idx})">Save</button>
-        <button class="edit-cancel" onclick="renderLabels()">Cancel</button>
+        <button class="edit-cancel" onclick="cancelEdit(${idx})">Cancel</button>
         <button class="edit-seek" onclick="document.getElementById('video-player').currentTime=${label.start}">Seek</button>
       </div>
     </div>
@@ -622,7 +622,7 @@ function openEditRoundMarker(idx) {
       </div>
       <div class="edit-row">
         <button class="edit-save" onclick="saveEditRoundMarker(${idx})">Save</button>
-        <button class="edit-cancel" onclick="renderLabels()">Cancel</button>
+        <button class="edit-cancel" onclick="cancelEdit(${idx})">Cancel</button>
         <button class="edit-seek" onclick="document.getElementById('video-player').currentTime=${label.start}">Seek</button>
       </div>
     </div>
@@ -643,6 +643,7 @@ function saveEditRoundMarker(idx) {
   const label = state.labels[idx];
   label.start = start;
 
+  entry.classList.remove('editing');
   renderLabels();
   showToast('Round marker updated, syncing...', 'success');
   updateLabelInSheet(label).then(() => {
@@ -670,11 +671,18 @@ function saveEditLabel(idx) {
   label.start = start;
   label.end = end;
 
+  entry.classList.remove('editing');
   renderLabels();
   showToast('Label updated, syncing...', 'success');
   updateLabelInSheet(label).then(() => {
     showToast(`Synced #${label.id} to sheet`, 'info');
   });
+}
+
+function cancelEdit(idx) {
+  const entry = document.querySelector(`#label-log [data-label-idx="${idx}"]`);
+  if (entry) entry.classList.remove('editing');
+  renderLabels();
 }
 
 function deleteLabel(idx) {
