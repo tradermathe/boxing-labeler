@@ -728,15 +728,23 @@ async function updateLabelInSheet(label) {
 }
 
 async function deleteLabelFromSheet(label) {
-  if (!state.scriptUrl || !label.id) return;
+  if (!state.scriptUrl) { showToast('No script URL configured', 'error'); return; }
+  if (!label.id) { showToast('Label has no ID, cannot delete from sheet', 'error'); return; }
   try {
     const url = sheetUrl({ action: 'delete', id: label.id, video: label.videoName });
+    console.log('Delete request:', url);
     const resp = await fetch(url);
-    const result = await resp.json();
+    const text = await resp.text();
+    console.log('Delete response:', text);
+    const result = JSON.parse(text);
+    if (result.status === 'error') {
+      showToast('Delete failed: ' + result.message, 'error');
+      return;
+    }
     showToast(`Deleted #${label.id} from sheet`, 'info');
   } catch (e) {
     console.error('Sheet delete failed:', e);
-    showToast('Sheet delete failed', 'error');
+    showToast('Sheet delete failed: ' + e.message, 'error');
   }
 }
 
