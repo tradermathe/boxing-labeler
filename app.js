@@ -582,6 +582,7 @@ function openEditLabel(idx) {
 
   entry.innerHTML = `
     <div class="edit-form">
+      <button class="label-delete" onclick="event.stopPropagation(); deleteLabel(${idx})" title="Delete">&times;</button>
       <div class="edit-row">
         <select class="edit-punch">${punchOpts}</select>
         <select class="edit-angle">${angleOpts}</select>
@@ -613,6 +614,7 @@ function openEditRoundMarker(idx) {
 
   entry.innerHTML = `
     <div class="edit-form">
+      <button class="label-delete" onclick="event.stopPropagation(); deleteLabel(${idx})" title="Delete">&times;</button>
       <div class="edit-row">
         <strong style="color:#888">${text}</strong>
       </div>
