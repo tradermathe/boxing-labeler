@@ -25,11 +25,15 @@ function toSeconds(val) {
 }
 
 function findColumns(header) {
-  var cols = { id: -1, video: -1, angle: -1, punch: -1, start: -1, end: -1 };
+  var cols = { id: -1, videoName: -1, video: -1, trainingType: -1, stance: -1, fighter: -1, angle: -1, punch: -1, start: -1, end: -1 };
   for (var c = 0; c < header.length; c++) {
     var h = String(header[c]).toLowerCase().trim();
     if (h === 'id') cols.id = c;
+    else if (h === 'video_name') cols.videoName = c;
     else if (h === 'video_file') cols.video = c;
+    else if (h === 'training_type') cols.trainingType = c;
+    else if (h === 'stance') cols.stance = c;
+    else if (h === 'fighter') cols.fighter = c;
     else if (h === 'angle') cols.angle = c;
     else if (h === 'punch_type' || h === 'label') cols.punch = c;
     else if (h === 'start_sec') cols.start = c;
@@ -105,17 +109,18 @@ function doGet(e) {
     var data = sheet.getDataRange().getValues();
     var cols = findColumns(data[0]);
     var newId = nextId(data, cols);
-    sheet.appendRow([
-      newId,
-      p.videoName || '',
-      p.trainingType || '',
-      p.stance || '',
-      p.fighter || '',
-      p.angle || '',
-      p.punchId || '',
-      p.startTime || '',
-      p.endTime || ''
-    ]);
+    var row = new Array(data[0].length).fill('');
+    if (cols.id >= 0) row[cols.id] = newId;
+    if (cols.videoName >= 0) row[cols.videoName] = '';
+    if (cols.video >= 0) row[cols.video] = p.videoName || '';
+    if (cols.trainingType >= 0) row[cols.trainingType] = p.trainingType || '';
+    if (cols.stance >= 0) row[cols.stance] = p.stance || '';
+    if (cols.fighter >= 0) row[cols.fighter] = p.fighter || '';
+    if (cols.angle >= 0) row[cols.angle] = p.angle || '';
+    if (cols.punch >= 0) row[cols.punch] = p.punchId || '';
+    if (cols.start >= 0) row[cols.start] = p.startTime || '';
+    if (cols.end >= 0) row[cols.end] = p.endTime || '';
+    sheet.appendRow(row);
     return ContentService
       .createTextOutput(JSON.stringify({ status: 'ok', action: 'added', id: newId }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -126,6 +131,15 @@ function doGet(e) {
     var data = sheet.getDataRange().getValues();
     var cols = findColumns(data[0]);
     var row = findRowById(data, cols, p.id, p.video);
+    // Fallback: use ID as direct row number (for sheets with empty ID column)
+    if (row < 0) {
+      var directRow = parseInt(p.id);
+      if (directRow >= 2 && directRow <= data.length) {
+        if (!p.video || cols.video < 0 || data[directRow - 1][cols.video] === p.video) {
+          row = directRow;
+        }
+      }
+    }
     if (row < 0) {
       return ContentService
         .createTextOutput(JSON.stringify({ status: 'error', message: 'ID not found: ' + p.id, sheet: sheetName, cols: cols, headers: String(data[0]) }))
@@ -134,6 +148,9 @@ function doGet(e) {
     var updated = [];
     if (p.punchId && cols.punch >= 0) { sheet.getRange(row, cols.punch + 1).setValue(p.punchId); updated.push('punch'); }
     if (p.angle && cols.angle >= 0) { sheet.getRange(row, cols.angle + 1).setValue(p.angle); updated.push('angle'); }
+    if (p.trainingType && cols.trainingType >= 0) { sheet.getRange(row, cols.trainingType + 1).setValue(p.trainingType); updated.push('trainingType'); }
+    if (p.stance && cols.stance >= 0) { sheet.getRange(row, cols.stance + 1).setValue(p.stance); updated.push('stance'); }
+    if (p.fighter && cols.fighter >= 0) { sheet.getRange(row, cols.fighter + 1).setValue(p.fighter); updated.push('fighter'); }
     if (p.startTime && cols.start >= 0) { sheet.getRange(row, cols.start + 1).setValue(p.startTime); updated.push('start'); }
     if (p.endTime && cols.end >= 0) { sheet.getRange(row, cols.end + 1).setValue(p.endTime); updated.push('end'); }
     return ContentService
@@ -146,14 +163,25 @@ function doGet(e) {
     var data = sheet.getDataRange().getValues();
     var cols = findColumns(data[0]);
     var row = findRowById(data, cols, p.id, p.video);
+    // Fallback: if ID column is empty (e.g. Combined Data), the list action
+    // returns row numbers as fake IDs, so try using the ID as a direct row number
+    if (row < 0) {
+      var directRow = parseInt(p.id);
+      if (directRow >= 2 && directRow <= data.length) {
+        // Verify the video matches to avoid deleting the wrong row
+        if (!p.video || cols.video < 0 || data[directRow - 1][cols.video] === p.video) {
+          row = directRow;
+        }
+      }
+    }
     if (row < 0) {
       return ContentService
-        .createTextOutput(JSON.stringify({ status: 'error', message: 'ID not found: ' + p.id }))
+        .createTextOutput(JSON.stringify({ status: 'error', message: 'ID not found: ' + p.id, sheet: sheetName, video: p.video }))
         .setMimeType(ContentService.MimeType.JSON);
     }
     sheet.deleteRow(row);
     return ContentService
-      .createTextOutput(JSON.stringify({ status: 'ok', action: 'deleted' }))
+      .createTextOutput(JSON.stringify({ status: 'ok', action: 'deleted', sheet: sheetName, row: row }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
