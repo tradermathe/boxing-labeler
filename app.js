@@ -470,6 +470,31 @@ function renderLabels() {
   const punchCount = state.labels.filter(l => !l.isRoundMarker).length;
   count.textContent = `(${punchCount})`;
 
+  // Capture open editors before wiping the list
+  const openEditors = {};
+  log.querySelectorAll('.label-entry.editing').forEach(entry => {
+    const idx = parseInt(entry.dataset.labelIdx);
+    const label = state.labels[idx];
+    if (!label) return;
+    const key = label.id || ('idx_' + idx);
+    if (label.isRoundMarker) {
+      const startInput = entry.querySelector('.edit-start');
+      openEditors[key] = { isRoundMarker: true, start: startInput ? startInput.value : null };
+    } else {
+      const punchSel = entry.querySelector('.edit-punch');
+      const angleSel = entry.querySelector('.edit-angle');
+      const startInput = entry.querySelector('.edit-start');
+      const endInput = entry.querySelector('.edit-end');
+      openEditors[key] = {
+        isRoundMarker: false,
+        punch: punchSel ? punchSel.value : null,
+        angle: angleSel ? angleSel.value : null,
+        start: startInput ? startInput.value : null,
+        end: endInput ? endInput.value : null,
+      };
+    }
+  });
+
   log.innerHTML = '';
   // Sort by start time descending (latest clip on top)
   const sorted = state.labels.map((label, idx) => ({ label, idx }));
@@ -508,6 +533,30 @@ function renderLabels() {
     entry.dataset.labelIdx = idx;
     log.appendChild(entry);
   });
+
+  // Restore open editors with their unsaved form values
+  sorted.forEach(({ label, idx }) => {
+    const key = label.id || ('idx_' + idx);
+    const saved = openEditors[key];
+    if (!saved) return;
+    if (saved.isRoundMarker) {
+      openEditRoundMarker(idx);
+      const entry = log.querySelector(`[data-label-idx="${idx}"]`);
+      if (entry && saved.start !== null) {
+        entry.querySelector('.edit-start').value = saved.start;
+      }
+    } else {
+      openEditLabel(idx);
+      const entry = log.querySelector(`[data-label-idx="${idx}"]`);
+      if (entry) {
+        if (saved.punch !== null) entry.querySelector('.edit-punch').value = saved.punch;
+        if (saved.angle !== null) entry.querySelector('.edit-angle').value = saved.angle;
+        if (saved.start !== null) entry.querySelector('.edit-start').value = saved.start;
+        if (saved.end !== null) entry.querySelector('.edit-end').value = saved.end;
+      }
+    }
+  });
+
   renderTimelineOverlay();
 }
 
@@ -1213,7 +1262,14 @@ function updateVideoOverlay() {
     const tag = document.createElement('div');
     tag.className = 'video-overlay-tag';
     tag.style.borderLeftColor = getPunchColor(label.punch);
+    tag.style.cursor = 'pointer';
     tag.textContent = punch ? punch.label : label.punch;
+    const idx = state.labels.indexOf(label);
+    tag.onclick = () => {
+      openEditLabel(idx);
+      const entry = document.querySelector(`#label-log [data-label-idx="${idx}"]`);
+      if (entry) entry.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
     overlay.appendChild(tag);
   }
 }
