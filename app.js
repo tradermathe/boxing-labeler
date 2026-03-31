@@ -18,6 +18,7 @@ const PUNCH_TYPES = [
   { id: 'rear_roll',             label: 'Rear Roll',           key: 'd', group: 'defense' },
   { id: 'pull_back',             label: 'Pull Back',           key: 'r', group: 'defense' },
   { id: 'step_back',             label: 'Step Back',           key: 'f', group: 'defense' },
+  { id: 'unsure',                label: 'Unsure',              key: 'u', group: 'other' },
 ];
 
 const PUNCH_COLORS = {
@@ -39,6 +40,8 @@ const PUNCH_COLORS = {
   rear_roll:  '#00ffcc',  // turquoise
   pull_back:  '#aa66ff',  // lavender
   step_back:  '#ffff00',  // lime yellow
+  // Other
+  unsure:      '#999999',  // gray
   // Round markers
   round_start: '#28a745',
   round_end:   '#666666',
@@ -75,7 +78,6 @@ let state = {
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
   buildPunchButtons();
-  setupAngleSelect();
   setupVideoLoader();
   setupKeyboardShortcuts();
   setupSeekBar();
@@ -98,18 +100,6 @@ function loadConfig() {
   // scriptUrl is hardcoded in state default — nothing to configure
 }
 
-// ============================================================
-// Angle Select
-// ============================================================
-function setupAngleSelect() {
-  const select = document.getElementById('angle-select');
-  const saved = localStorage.getItem('labeler_angle');
-  if (saved) select.value = saved;
-
-  select.addEventListener('change', () => {
-    localStorage.setItem('labeler_angle', select.value);
-  });
-}
 
 // ============================================================
 // Punch Buttons
@@ -122,7 +112,7 @@ function buildPunchButtons() {
       currentGroup = punch.group;
       const header = document.createElement('div');
       header.className = 'punch-group-header';
-      header.textContent = currentGroup === 'offense' ? 'Offense' : 'Defense';
+      header.textContent = currentGroup === 'offense' ? 'Offense' : currentGroup === 'defense' ? 'Defense' : 'Other';
       container.appendChild(header);
     }
     const btn = document.createElement('button');
@@ -202,7 +192,7 @@ function captureTimestamp() {
     const label = {
       id: maxId + 1,
       punch: state.selectedPunch,
-      angle: document.getElementById('angle-select').value,
+      angle: '',
       start: state.pendingStart,
       end: time,
       videoName: document.getElementById('drive-link').value.trim() || state.videoName,
@@ -243,7 +233,7 @@ async function pushLabelToSheet(label) {
       trainingType: document.getElementById('training-type').value,
       stance: document.getElementById('stance-select').value,
       punchId: punch.id,
-      angle: label.angle || 'Front',
+      angle: label.angle || '',
       startTime: formatTimeSheet(label.start),
       endTime: formatTimeSheet(label.end),
     });
@@ -290,7 +280,7 @@ async function pushRoundMarkerToSheet(markerType) {
       trainingType: document.getElementById('training-type').value,
       stance: document.getElementById('stance-select').value,
       punchId: markerType,
-      angle: document.getElementById('angle-select').value,
+      angle: '',
       startTime: time,
       endTime: time,
     });
@@ -376,7 +366,7 @@ async function fetchLabelsFromSheet() {
         return {
           id: l.id,
           punch: punch,
-          angle: l.angle || 'Front',
+          angle: l.angle || '',
           start: typeof l.startTime === 'number' ? l.startTime : parseSheetTime(l.startTime),
           end: typeof l.endTime === 'number' ? l.endTime : parseSheetTime(l.endTime),
           videoName: l.videoName,
@@ -438,6 +428,7 @@ function mapPunchType(sheetPunch) {
     'pull back': 'pull_back', 'pullback': 'pull_back',
     'step back': 'step_back', 'stepback': 'step_back',
     'round start': 'round_start', 'round end': 'round_end',
+    'unsure': 'unsure', '?': 'unsure',
   };
   if (MAP[p]) return MAP[p];
   // Try replacing spaces with underscores
@@ -482,13 +473,11 @@ function renderLabels() {
       openEditors[key] = { isRoundMarker: true, start: startInput ? startInput.value : null };
     } else {
       const punchSel = entry.querySelector('.edit-punch');
-      const angleSel = entry.querySelector('.edit-angle');
       const startInput = entry.querySelector('.edit-start');
       const endInput = entry.querySelector('.edit-end');
       openEditors[key] = {
         isRoundMarker: false,
         punch: punchSel ? punchSel.value : null,
-        angle: angleSel ? angleSel.value : null,
         start: startInput ? startInput.value : null,
         end: endInput ? endInput.value : null,
       };
@@ -521,7 +510,7 @@ function renderLabels() {
       entry.style.borderLeftColor = getPunchColor(label.punch);
       entry.innerHTML = `
         <span class="label-text">
-          <small style="color:#555">#${label.id || '?'}</small> <strong>${punch?.label || label.punch}</strong> <small style="color:#888">${label.angle || ''}</small><br>
+          <small style="color:#555">#${label.id || '?'}</small> <strong>${punch?.label || label.punch}</strong><br>
           ${formatTime(label.start)} &rarr; ${formatTime(label.end)}
         </span>
         <button class="label-delete" onclick="event.stopPropagation(); deleteLabel(${idx})" title="Delete">&times;</button>
@@ -550,7 +539,6 @@ function renderLabels() {
       const entry = log.querySelector(`[data-label-idx="${idx}"]`);
       if (entry) {
         if (saved.punch !== null) entry.querySelector('.edit-punch').value = saved.punch;
-        if (saved.angle !== null) entry.querySelector('.edit-angle').value = saved.angle;
         if (saved.start !== null) entry.querySelector('.edit-start').value = saved.start;
         if (saved.end !== null) entry.querySelector('.edit-end').value = saved.end;
       }
@@ -574,18 +562,11 @@ function openEditLabel(idx) {
     `<option value="${p.id}" ${p.id === label.punch ? 'selected' : ''}>${p.label}</option>`
   ).join('');
 
-  // Build angle options
-  const angles = ['Front', 'Side', 'Back'];
-  const angleOpts = angles.map(a =>
-    `<option value="${a}" ${a === (label.angle || 'front') ? 'selected' : ''}>${a}</option>`
-  ).join('');
-
   entry.innerHTML = `
     <div class="edit-form">
       <button class="label-delete" onclick="event.stopPropagation(); deleteLabel(${idx})" title="Delete">&times;</button>
       <div class="edit-row">
         <select class="edit-punch">${punchOpts}</select>
-        <select class="edit-angle">${angleOpts}</select>
       </div>
       <div class="edit-row">
         <input type="text" class="edit-start" value="${formatTime(label.start)}" title="Start">
@@ -658,7 +639,6 @@ function saveEditLabel(idx) {
   const entry = log.querySelector(`[data-label-idx="${idx}"]`);
 
   const punch = entry.querySelector('.edit-punch').value;
-  const angle = entry.querySelector('.edit-angle').value;
   const start = parseTime(entry.querySelector('.edit-start').value);
   const end = parseTime(entry.querySelector('.edit-end').value);
 
@@ -669,7 +649,6 @@ function saveEditLabel(idx) {
 
   const label = state.labels[idx];
   label.punch = punch;
-  label.angle = angle;
   label.start = start;
   label.end = end;
 
