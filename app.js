@@ -69,7 +69,7 @@ let state = {
   frameDuration: FRAME_DURATION_FALLBACK,
   fpsDetected: false,
   scriptUrl: 'https://script.google.com/macros/s/AKfycbwM57VoFCXWIhw8jyechZQLtMzlmeT15bhIy0eozKpA0jHlmuZPSqVzyEcS5Vy0A5cS/exec',
-  roundActive: localStorage.getItem('roundActive') === 'true',
+  roundActive: false,
   overlayVisible: true,
 };
 
@@ -388,9 +388,11 @@ async function fetchLabelsFromSheet() {
         }
       }
 
+      syncRoundActiveFromLabels();
       renderLabels();
       showToast(`Loaded ${result.labels.length} existing labels from sheet`, 'info');
     } else {
+      syncRoundActiveFromLabels();
       showToast('No existing labels for this video', 'info');
       renderLabels();
     }
@@ -1092,6 +1094,19 @@ function formatTimeSheet(seconds) {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${String(mins).padStart(2,'0')}:${secs < 10 ? '0' : ''}${secs.toFixed(3)}`;
+}
+
+function syncRoundActiveFromLabels() {
+  const starts = state.labels.filter(l => l.punch === 'round_start').map(l => l.start).sort((a, b) => a - b);
+  const ends = state.labels.filter(l => l.punch === 'round_end').map(l => l.start).sort((a, b) => a - b);
+  // A round is active if there's a round_start with no subsequent round_end
+  let active = false;
+  for (const s of starts) {
+    if (!ends.some(e => e > s)) { active = true; break; }
+  }
+  state.roundActive = active;
+  localStorage.setItem('roundActive', String(active));
+  updateRoundIndicator();
 }
 
 function updateRoundIndicator() {
