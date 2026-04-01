@@ -341,6 +341,7 @@ function setupDriveLink() {
 // Fetch existing labels from Google Sheet
 // ============================================================
 async function fetchLabelsFromSheet() {
+  if (_pendingDeletes > 0) return; // don't re-fetch while deletes are in-flight
   const driveLink = document.getElementById('drive-link').value.trim();
   if (!state.scriptUrl || !driveLink) return;
 
@@ -710,9 +711,12 @@ async function updateLabelInSheet(label) {
   }
 }
 
+let _pendingDeletes = 0;
+
 async function deleteLabelFromSheet(label) {
   if (!state.scriptUrl) { showToast('No script URL configured', 'error'); return; }
   if (!label.id) { showToast('Label has no ID, cannot delete from sheet', 'error'); return; }
+  _pendingDeletes++;
   try {
     const url = sheetUrl({ action: 'delete', id: label.id, video: label.videoName });
     console.log('Delete request:', url);
@@ -728,6 +732,10 @@ async function deleteLabelFromSheet(label) {
   } catch (e) {
     console.error('Sheet delete failed:', e);
     showToast('Sheet delete failed: ' + e.message, 'error');
+  } finally {
+    _pendingDeletes--;
+    // Re-fetch after delete completes so local state matches the sheet
+    if (_pendingDeletes === 0) fetchLabelsFromSheet();
   }
 }
 
