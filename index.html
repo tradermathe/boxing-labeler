@@ -65,26 +65,26 @@
             </div>
           </div>
           <div id="controls-row">
-            <div id="zoom-controls">
-              <button id="btn-zoom-out" onclick="zoomOut()" title="Zoom out (Ctrl+-)">&#8722;</button>
-              <span id="zoom-level-display">1x</span>
-              <button id="btn-zoom-in" onclick="zoomIn()" title="Zoom in (Ctrl+=)">+</button>
-              <button id="btn-zoom-fit" onclick="zoomFit()" title="Fit all (Ctrl+0)">Fit</button>
-            </div>
             <button id="btn-play" onclick="togglePlay()">Play</button>
             <button id="btn-mute" onclick="toggleMute()">&#128266;</button>
             <button onclick="stepFrames(-2)" title="Back 2 frames">&laquo;</button>
             <button onclick="stepFrames(-1)" title="Back 1 frame">&lsaquo;</button>
             <button onclick="stepFrames(1)" title="Forward 1 frame">&rsaquo;</button>
             <button onclick="stepFrames(2)" title="Forward 2 frames">&raquo;</button>
-            <span id="time-display">0:00.000 / 0:00.000</span>
-            <button id="btn-overlay" onclick="toggleOverlay()" title="Toggle label overlays (L)">Labels: ON</button>
             <div id="speed-controls">
               <label>Speed:</label>
               <button onclick="setSpeed(0.25)">0.25x</button>
               <button onclick="setSpeed(0.5)">0.5x</button>
               <button onclick="setSpeed(1)" class="speed-active">1x</button>
               <button onclick="setSpeed(2)">2x</button>
+            </div>
+            <span id="time-display">0:00.000 / 0:00.000</span>
+            <button id="btn-overlay" onclick="toggleOverlay()" title="Toggle label overlays (L)">Labels: ON</button>
+            <div id="zoom-controls">
+              <button id="btn-zoom-out" onclick="zoomOut()" title="Zoom out (Ctrl+-)">&#8722;</button>
+              <span id="zoom-level-display">1x</span>
+              <button id="btn-zoom-in" onclick="zoomIn()" title="Zoom in (Ctrl+=)">+</button>
+              <button id="btn-zoom-fit" onclick="zoomFit()" title="Fit all (Ctrl+0)">Fit</button>
             </div>
           </div>
         </div>
