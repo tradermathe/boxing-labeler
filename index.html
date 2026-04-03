@@ -50,7 +50,13 @@
         <div id="video-overlay"></div>
         <video id="thumb-video" preload="auto" muted style="display:none"></video>
         <div id="video-controls">
+          <div id="timeline-minimap" style="display:none">
+            <div id="minimap-segments"></div>
+            <div id="minimap-viewport"></div>
+            <div id="minimap-playhead"></div>
+          </div>
           <div id="seek-bar-wrapper">
+            <div id="timeline-ticks"></div>
             <div id="seek-bar-overlay"></div>
             <input type="range" id="seek-bar" min="0" max="1000" value="0">
             <div id="seek-thumbnail">
@@ -59,6 +65,12 @@
             </div>
           </div>
           <div id="controls-row">
+            <div id="zoom-controls">
+              <button id="btn-zoom-out" onclick="zoomOut()" title="Zoom out (Ctrl+-)">&#8722;</button>
+              <span id="zoom-level-display">1x</span>
+              <button id="btn-zoom-in" onclick="zoomIn()" title="Zoom in (Ctrl+=)">+</button>
+              <button id="btn-zoom-fit" onclick="zoomFit()" title="Fit all (Ctrl+0)">Fit</button>
+            </div>
             <button id="btn-play" onclick="togglePlay()">Play</button>
             <button id="btn-mute" onclick="toggleMute()">&#128266;</button>
             <button onclick="stepFrames(-2)" title="Back 2 frames">&laquo;</button>
@@ -106,7 +118,11 @@
       Esc = Cancel punch &nbsp;|&nbsp;
       S = Round Start &nbsp;|&nbsp;
       E = Round End &nbsp;|&nbsp;
-      L = Toggle Labels
+      L = Toggle Labels &nbsp;|&nbsp;
+      Alt+Scroll = Zoom &nbsp;|&nbsp;
+      Scroll = Pan (when zoomed) &nbsp;|&nbsp;
+      Ctrl+/- = Zoom In/Out &nbsp;|&nbsp;
+      Ctrl+0 = Fit
     </div>
   </div>
 

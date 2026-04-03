@@ -71,7 +71,52 @@ let state = {
   scriptUrl: 'https://script.google.com/macros/s/AKfycbwM57VoFCXWIhw8jyechZQLtMzlmeT15bhIy0eozKpA0jHlmuZPSqVzyEcS5Vy0A5cS/exec',
   roundActive: false,
   overlayVisible: true,
+  zoomLevel: 1,      // 1 = full view, up to 32x
+  zoomCenter: 0.5,   // normalized 0-1, center of viewport
 };
+
+// ============================================================
+// Timeline Zoom Utilities
+// ============================================================
+function getViewport() {
+  const halfSpan = 0.5 / state.zoomLevel;
+  let start = state.zoomCenter - halfSpan;
+  let end = state.zoomCenter + halfSpan;
+  if (start < 0) { end -= start; start = 0; }
+  if (end > 1) { start -= (end - 1); end = 1; }
+  start = Math.max(0, start);
+  end = Math.min(1, end);
+  return { start, end };
+}
+
+function timeToViewportPct(time, duration) {
+  const norm = time / duration;
+  const vp = getViewport();
+  return (norm - vp.start) / (vp.end - vp.start) * 100;
+}
+
+function viewportPctToTime(pct, duration) {
+  const vp = getViewport();
+  const norm = vp.start + (pct / 100) * (vp.end - vp.start);
+  return norm * duration;
+}
+
+function clampZoomCenter() {
+  const halfSpan = 0.5 / state.zoomLevel;
+  state.zoomCenter = Math.max(halfSpan, Math.min(1 - halfSpan, state.zoomCenter));
+}
+
+function setZoom(newLevel, anchorNormalized) {
+  const oldVp = getViewport();
+  const oldSpan = oldVp.end - oldVp.start;
+  const anchorFrac = oldSpan > 0 ? (anchorNormalized - oldVp.start) / oldSpan : 0.5;
+
+  state.zoomLevel = Math.max(1, Math.min(32, newLevel));
+  const newHalfSpan = 0.5 / state.zoomLevel;
+  // Solve: anchorNormalized should stay at same visual fraction
+  state.zoomCenter = anchorNormalized - (anchorFrac - 0.5) * 2 * newHalfSpan;
+  clampZoomCenter();
+}
 
 // ============================================================
 // Init
@@ -81,6 +126,7 @@ window.addEventListener('DOMContentLoaded', () => {
   setupVideoLoader();
   setupKeyboardShortcuts();
   setupSeekBar();
+  setupMinimapInteraction();
   loadConfig();
   updateTimestampButton();
   updateRoundIndicator();
@@ -819,7 +865,22 @@ function updateTimeDisplay(overrideTime) {
   display.textContent = `${formatTime(t)} / ${formatTime(video.duration || 0)}`;
 
   if (video.duration) {
-    seekBar.value = (t / video.duration) * 1000;
+    const vp = getViewport();
+    const norm = t / video.duration;
+    // Map playhead to 0-1000 within the viewport
+    const vpSpan = vp.end - vp.start;
+    seekBar.value = vpSpan > 0 ? ((norm - vp.start) / vpSpan) * 1000 : 0;
+
+    // Auto-scroll during playback when playhead exits viewport
+    if (!video.paused && (norm > vp.end || norm < vp.start) && state.zoomLevel > 1) {
+      state.zoomCenter = norm;
+      clampZoomCenter();
+      onZoomChanged();
+    }
+
+    // Update minimap playhead
+    const playhead = document.getElementById('minimap-playhead');
+    if (playhead) playhead.style.left = (norm * 100) + '%';
   }
   updateVideoOverlay();
 }
@@ -830,7 +891,9 @@ function setupSeekBar() {
 
   seekBar.addEventListener('input', () => {
     if (video.duration) {
-      video.currentTime = (seekBar.value / 1000) * video.duration;
+      const vp = getViewport();
+      const norm = vp.start + (seekBar.value / 1000) * (vp.end - vp.start);
+      video.currentTime = norm * video.duration;
     }
   });
 
@@ -848,13 +911,23 @@ function setupSeekBar() {
     thumbReady = true;
   });
 
+  wrapper.addEventListener('click', (e) => {
+    if (!video.duration) return;
+    const rect = seekBar.getBoundingClientRect();
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    const pct = (x / rect.width) * 100;
+    const time = viewportPctToTime(pct, video.duration);
+    video.currentTime = Math.max(0, Math.min(video.duration, time));
+    seekBar.value = (x / rect.width) * 1000;
+  });
+
   wrapper.addEventListener('mousemove', (e) => {
     if (!video.duration) return;
 
     const rect = seekBar.getBoundingClientRect();
     const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-    const ratio = x / rect.width;
-    const hoverTime = ratio * video.duration;
+    const pct = (x / rect.width) * 100;
+    const hoverTime = viewportPctToTime(pct, video.duration);
 
     // Position the thumbnail
     const thumbW = thumbCanvas.width + 4;
@@ -874,6 +947,31 @@ function setupSeekBar() {
   wrapper.addEventListener('mouseleave', () => {
     thumb.style.display = 'none';
   });
+
+  // Mouse wheel: Alt+scroll = zoom, scroll when zoomed = pan
+  wrapper.addEventListener('wheel', (e) => {
+    if (!video.duration) return;
+
+    if (e.altKey) {
+      // Zoom at cursor
+      e.preventDefault();
+      const rect = seekBar.getBoundingClientRect();
+      const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+      const pct = x / rect.width;
+      const vp = getViewport();
+      const anchorNorm = vp.start + pct * (vp.end - vp.start);
+      const factor = e.deltaY < 0 ? 1.4 : 1 / 1.4;
+      setZoom(state.zoomLevel * factor, anchorNorm);
+      onZoomChanged();
+    } else if (state.zoomLevel > 1) {
+      // Pan when zoomed
+      e.preventDefault();
+      const panAmount = (e.deltaY > 0 ? 0.15 : -0.15) / state.zoomLevel;
+      state.zoomCenter += panAmount;
+      clampZoomCenter();
+      onZoomChanged();
+    }
+  }, { passive: false });
 }
 
 function togglePlay() {
@@ -1020,6 +1118,19 @@ function setupKeyboardShortcuts() {
       case 'KeyL':
         e.preventDefault();
         toggleOverlay();
+        break;
+
+      case 'Equal':
+      case 'NumpadAdd':
+        if (e.ctrlKey || e.metaKey) { e.preventDefault(); zoomIn(); }
+        break;
+      case 'Minus':
+      case 'NumpadSubtract':
+        if (e.ctrlKey || e.metaKey) { e.preventDefault(); zoomOut(); }
+        break;
+      case 'Digit0':
+        if (e.ctrlKey || e.metaKey) { e.preventDefault(); zoomFit(); }
+        else { selectPunch('cross_body'); }
         break;
 
       case 'KeyZ':
@@ -1173,36 +1284,49 @@ function renderTimelineOverlay() {
     let pos = 0;
     for (const r of rounds) {
       if (r.start > pos) {
-        const seg = document.createElement('div');
-        seg.className = 'seek-segment outside-round';
-        seg.style.left = (pos / duration) * 100 + '%';
-        seg.style.width = ((r.start - pos) / duration) * 100 + '%';
-        overlay.appendChild(seg);
+        const lPct = timeToViewportPct(pos, duration);
+        const rPct = timeToViewportPct(r.start, duration);
+        if (rPct > 0 && lPct < 100) {
+          const seg = document.createElement('div');
+          seg.className = 'seek-segment outside-round';
+          seg.style.left = Math.max(0, lPct) + '%';
+          seg.style.width = (Math.min(100, rPct) - Math.max(0, lPct)) + '%';
+          overlay.appendChild(seg);
+        }
       }
       pos = r.end;
     }
     // After last round
     if (pos < duration) {
-      const seg = document.createElement('div');
-      seg.className = 'seek-segment outside-round';
-      seg.style.left = (pos / duration) * 100 + '%';
-      seg.style.width = ((duration - pos) / duration) * 100 + '%';
-      overlay.appendChild(seg);
+      const lPct = timeToViewportPct(pos, duration);
+      const rPct = timeToViewportPct(duration, duration);
+      if (rPct > 0 && lPct < 100) {
+        const seg = document.createElement('div');
+        seg.className = 'seek-segment outside-round';
+        seg.style.left = Math.max(0, lPct) + '%';
+        seg.style.width = (Math.min(100, rPct) - Math.max(0, lPct)) + '%';
+        overlay.appendChild(seg);
+      }
     }
   }
 
   // Punch segments on top
   for (const label of state.labels) {
     if (label.isRoundMarker) continue;
+    const lPct = timeToViewportPct(label.start, duration);
+    const rPct = timeToViewportPct(label.end, duration);
+    if (rPct < 0 || lPct > 100) continue; // off-screen
     const seg = document.createElement('div');
     seg.className = 'seek-segment';
-    const leftPct = (label.start / duration) * 100;
-    const widthPct = ((label.end - label.start) / duration) * 100;
-    seg.style.left = leftPct + '%';
-    seg.style.width = Math.max(widthPct, 0.15) + '%';
+    seg.style.left = Math.max(0, lPct) + '%';
+    seg.style.width = Math.max(Math.min(100, rPct) - Math.max(0, lPct), 0.15) + '%';
     seg.style.backgroundColor = getPunchColor(label.punch);
     overlay.appendChild(seg);
   }
+
+  // Also update minimap and ticks
+  renderMinimap();
+  renderTimeTicks();
 }
 
 function updateVideoOverlay() {
@@ -1292,6 +1416,163 @@ function updateVideoOverlay() {
     };
     overlay.appendChild(tag);
   }
+}
+
+// ============================================================
+// Timeline Zoom Controls
+// ============================================================
+function zoomIn() {
+  setZoom(state.zoomLevel * 2, state.zoomCenter);
+  onZoomChanged();
+}
+
+function zoomOut() {
+  setZoom(state.zoomLevel / 2, state.zoomCenter);
+  onZoomChanged();
+}
+
+function zoomFit() {
+  state.zoomLevel = 1;
+  state.zoomCenter = 0.5;
+  onZoomChanged();
+}
+
+function onZoomChanged() {
+  const display = document.getElementById('zoom-level-display');
+  display.textContent = state.zoomLevel >= 1.5 ? Math.round(state.zoomLevel) + 'x' : '1x';
+
+  // Show/hide minimap
+  const minimap = document.getElementById('timeline-minimap');
+  minimap.style.display = state.zoomLevel > 1.05 ? 'block' : 'none';
+
+  renderTimelineOverlay();
+  updateTimeDisplay();
+}
+
+function renderMinimap() {
+  const video = document.getElementById('video-player');
+  const duration = video.duration;
+  const segContainer = document.getElementById('minimap-segments');
+  const vpDiv = document.getElementById('minimap-viewport');
+  segContainer.innerHTML = '';
+
+  if (!duration || duration <= 0) return;
+
+  // Draw punch segments (unzoomed)
+  for (const label of state.labels) {
+    if (label.isRoundMarker) continue;
+    const seg = document.createElement('div');
+    seg.style.position = 'absolute';
+    seg.style.top = '0';
+    seg.style.height = '100%';
+    seg.style.borderRadius = '1px';
+    const leftPct = (label.start / duration) * 100;
+    const widthPct = ((label.end - label.start) / duration) * 100;
+    seg.style.left = leftPct + '%';
+    seg.style.width = Math.max(widthPct, 0.3) + '%';
+    seg.style.backgroundColor = getPunchColor(label.punch);
+    seg.style.opacity = '0.7';
+    segContainer.appendChild(seg);
+  }
+
+  // Position viewport indicator
+  const vp = getViewport();
+  vpDiv.style.left = (vp.start * 100) + '%';
+  vpDiv.style.width = ((vp.end - vp.start) * 100) + '%';
+
+  // Update playhead position
+  const playhead = document.getElementById('minimap-playhead');
+  if (playhead && duration) {
+    playhead.style.left = (video.currentTime / duration * 100) + '%';
+  }
+}
+
+function renderTimeTicks() {
+  const ticksContainer = document.getElementById('timeline-ticks');
+  const video = document.getElementById('video-player');
+  const duration = video.duration;
+  ticksContainer.innerHTML = '';
+
+  if (!duration || duration <= 0) return;
+
+  const vp = getViewport();
+  const vpDuration = (vp.end - vp.start) * duration;
+
+  // Choose tick interval: aim for 5-20 major ticks
+  const intervals = [0.1, 0.25, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300];
+  let majorInterval = 1;
+  for (const iv of intervals) {
+    const count = vpDuration / iv;
+    if (count >= 4 && count <= 25) { majorInterval = iv; break; }
+    if (count < 4) { majorInterval = iv; break; }
+  }
+  const minorInterval = majorInterval / 4;
+
+  // Render minor ticks
+  const startTime = Math.floor((vp.start * duration) / minorInterval) * minorInterval;
+  const endTime = vp.end * duration;
+
+  for (let t = startTime; t <= endTime; t += minorInterval) {
+    if (t < 0) continue;
+    const pct = timeToViewportPct(t, duration);
+    if (pct < -1 || pct > 101) continue;
+
+    const isMajor = Math.abs(t % majorInterval) < 0.001 || Math.abs(t % majorInterval - majorInterval) < 0.001;
+
+    const tick = document.createElement('div');
+    tick.className = isMajor ? 'timeline-tick major' : 'timeline-tick';
+    tick.style.left = pct + '%';
+    ticksContainer.appendChild(tick);
+
+    if (isMajor) {
+      const label = document.createElement('span');
+      label.className = 'timeline-tick-label';
+      label.style.left = pct + '%';
+      label.textContent = formatTime(t);
+      ticksContainer.appendChild(label);
+    }
+  }
+}
+
+function setupMinimapInteraction() {
+  const minimap = document.getElementById('timeline-minimap');
+  const vpDiv = document.getElementById('minimap-viewport');
+  const video = document.getElementById('video-player');
+  let dragging = false;
+  let dragStartX = 0;
+  let dragStartCenter = 0;
+
+  // Click on minimap to jump viewport center
+  minimap.addEventListener('mousedown', (e) => {
+    if (!video.duration) return;
+    if (e.target === vpDiv) {
+      // Start dragging the viewport
+      dragging = true;
+      dragStartX = e.clientX;
+      dragStartCenter = state.zoomCenter;
+      e.preventDefault();
+      return;
+    }
+    // Click to recenter
+    const rect = minimap.getBoundingClientRect();
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    state.zoomCenter = x / rect.width;
+    clampZoomCenter();
+    onZoomChanged();
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const rect = minimap.getBoundingClientRect();
+    const dx = (e.clientX - dragStartX) / rect.width;
+    state.zoomCenter = dragStartCenter + dx;
+    clampZoomCenter();
+    onZoomChanged();
+  });
+
+  document.addEventListener('mouseup', () => {
+    dragging = false;
+  });
 }
 
 function toggleOverlay() {
