@@ -60,13 +60,19 @@ function findColumns(header) {
   return cols;
 }
 
+function normalizeDriveUrl(url) {
+  if (!url) return '';
+  return String(url).split('?')[0];
+}
+
 // Find the next available ID (max existing + 1)
 function nextId(data, cols) {
-  var count = 0;
+  var maxId = 0;
   for (var i = 1; i < data.length; i++) {
-    if (data[i][cols.id] !== '' && data[i][cols.id] != null) count++;
+    var val = parseInt(data[i][cols.id]);
+    if (!isNaN(val) && val > maxId) maxId = val;
   }
-  return count + 1;
+  return maxId + 1;
 }
 
 // Find the sheet row number (1-based) for a given ID and optional video name
@@ -74,7 +80,7 @@ function findRowById(data, cols, id, video) {
   var targetId = parseInt(id);
   for (var i = 1; i < data.length; i++) {
     if (parseInt(data[i][cols.id]) === targetId) {
-      if (video && cols.video >= 0 && data[i][cols.video] !== video) continue;
+      if (video && cols.video >= 0 && normalizeDriveUrl(data[i][cols.video]) !== normalizeDriveUrl(video)) continue;
       return i + 1; // 1-based row number
     }
   }
@@ -89,8 +95,10 @@ function doGet(e) {
   var sheetName;
   if (labeler === 'combined') {
     sheetName = 'Combined Data';
-  } else {
+  } else if (/^\d+$/.test(labeler)) {
     sheetName = 'Labeled Data Software ' + labeler;
+  } else {
+    sheetName = 'Labeled Data ' + labeler.charAt(0).toUpperCase() + labeler.slice(1).toLowerCase();
   }
 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
@@ -106,7 +114,7 @@ function doGet(e) {
     var cols = findColumns(data[0]);
     var labels = [];
     for (var i = 1; i < data.length; i++) {
-      if (data[i][cols.video] === p.video) {
+      if (normalizeDriveUrl(data[i][cols.video]) === normalizeDriveUrl(p.video)) {
         labels.push({
           id: parseInt(data[i][cols.id]) || (i + 1),
           videoName: data[i][cols.video],
@@ -130,7 +138,7 @@ function doGet(e) {
     var row = new Array(data[0].length).fill('');
     if (cols.id >= 0) row[cols.id] = newId;
     if (cols.videoName >= 0) row[cols.videoName] = '';
-    if (cols.video >= 0) row[cols.video] = p.videoName || '';
+    if (cols.video >= 0) row[cols.video] = normalizeDriveUrl(p.videoName) || '';
     if (cols.trainingType >= 0) row[cols.trainingType] = p.trainingType || '';
     if (cols.stance >= 0) row[cols.stance] = p.stance || '';
     if (cols.fighter >= 0) row[cols.fighter] = p.fighter || '';
@@ -138,7 +146,25 @@ function doGet(e) {
     if (cols.punch >= 0) row[cols.punch] = p.punchId || '';
     if (cols.start >= 0) row[cols.start] = p.startTime || '';
     if (cols.end >= 0) row[cols.end] = p.endTime || '';
-    sheet.appendRow(row);
+    // Insert in time order among rows for the same video, instead of appending
+    var newVideo = normalizeDriveUrl(p.videoName) || '';
+    var newStart = toSeconds(p.startTime);
+    var insertBeforeRow = -1;
+    if (cols.video >= 0 && cols.start >= 0) {
+      for (var i = 1; i < data.length; i++) {
+        if (normalizeDriveUrl(data[i][cols.video]) !== newVideo) continue;
+        if (toSeconds(data[i][cols.start]) > newStart) {
+          insertBeforeRow = i + 1; // 1-based sheet row
+          break;
+        }
+      }
+    }
+    if (insertBeforeRow > 0) {
+      sheet.insertRowBefore(insertBeforeRow);
+      sheet.getRange(insertBeforeRow, 1, 1, row.length).setValues([row]);
+    } else {
+      sheet.appendRow(row);
+    }
     return ContentService
       .createTextOutput(JSON.stringify({ status: 'ok', action: 'added', id: newId }))
       .setMimeType(ContentService.MimeType.JSON);

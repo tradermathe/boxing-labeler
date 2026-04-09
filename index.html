@@ -45,10 +45,12 @@
 
       <!-- Center: video player -->
       <div id="video-container">
-        <video id="video-player" preload="auto"></video>
-        <div id="video-dim-overlay"></div>
-        <div id="video-overlay"></div>
-        <video id="thumb-video" preload="auto" muted style="display:none"></video>
+        <div id="video-viewport">
+          <video id="video-player" preload="auto"></video>
+          <div id="video-dim-overlay"></div>
+          <div id="video-overlay"></div>
+          <video id="thumb-video" preload="auto" muted style="display:none"></video>
+        </div>
         <div id="video-controls">
           <div id="timeline-minimap" style="display:none">
             <div id="minimap-segments"></div>
@@ -110,7 +112,7 @@
       <strong>Shortcuts:</strong>
       Space = Play/Pause &nbsp;|&nbsp;
       &larr;/&rarr; = &plusmn;1 frame &nbsp;|&nbsp;
-      Shift+&larr;/&rarr; = &plusmn;2 frames &nbsp;|&nbsp;
+      Shift+&larr;/&rarr; = Prev/Next punch &nbsp;|&nbsp;
       1-9,0 = Offense &nbsp;|&nbsp;
       Q/W/A/D/R/F = Defense &nbsp;|&nbsp;
       Enter = Capture time &nbsp;|&nbsp;

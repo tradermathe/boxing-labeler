@@ -1,4 +1,12 @@
 // ============================================================
+// Helpers
+// ============================================================
+function normalizeDriveUrl(url) {
+  if (!url) return '';
+  return url.split('?')[0];
+}
+
+// ============================================================
 // Config
 // ============================================================
 const PUNCH_TYPES = [
@@ -133,9 +141,15 @@ window.addEventListener('DOMContentLoaded', () => {
   setupDriveLink();
   if (LABELER_ID) {
     const badge = document.getElementById('labeler-badge');
-    badge.textContent = 'Labeler ' + LABELER_ID;
+    const isName = !/^\d+$/.test(LABELER_ID);
+    const displayName = isName
+      ? LABELER_ID.charAt(0).toUpperCase() + LABELER_ID.slice(1).toLowerCase()
+      : LABELER_ID;
+    badge.textContent = isName ? displayName : 'Labeler ' + displayName;
     badge.style.display = 'inline';
-    document.title = 'Boxing Punch Labeler ' + LABELER_ID;
+    document.title = isName
+      ? 'Boxing Punch Labeler — ' + displayName
+      : 'Boxing Punch Labeler ' + displayName;
   }
 });
 
@@ -241,7 +255,7 @@ function captureTimestamp() {
       angle: '',
       start: state.pendingStart,
       end: time,
-      videoName: document.getElementById('drive-link').value.trim() || state.videoName,
+      videoName: normalizeDriveUrl(document.getElementById('drive-link').value.trim()) || state.videoName,
       timestamp: new Date().toISOString(),
     };
 
@@ -306,7 +320,7 @@ function addRoundMarker(markerType) {
     punch: markerType,
     start: time,
     end: time,
-    videoName: document.getElementById('drive-link').value.trim() || state.videoName,
+    videoName: normalizeDriveUrl(document.getElementById('drive-link').value.trim()) || state.videoName,
     isRoundMarker: true,
     timestamp: new Date().toISOString(),
   };
@@ -322,7 +336,7 @@ async function pushRoundMarkerToSheet(markerType) {
   try {
     const url = sheetUrl({
       action: 'add',
-      videoName: document.getElementById('drive-link').value.trim() || state.videoName,
+      videoName: normalizeDriveUrl(document.getElementById('drive-link').value.trim()) || state.videoName,
       trainingType: document.getElementById('training-type').value,
       stance: document.getElementById('stance-select').value,
       punchId: markerType,
@@ -367,7 +381,7 @@ function setupDriveLink() {
 
   let debounceTimer;
   input.addEventListener('input', () => {
-    localStorage.setItem(prefix + 'drive_link', input.value.trim());
+    localStorage.setItem(prefix + 'drive_link', normalizeDriveUrl(input.value.trim()));
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       if (input.value.trim()) {
@@ -388,7 +402,7 @@ function setupDriveLink() {
 // ============================================================
 async function fetchLabelsFromSheet() {
   if (_pendingDeletes > 0) return; // don't re-fetch while deletes are in-flight
-  const driveLink = document.getElementById('drive-link').value.trim();
+  const driveLink = normalizeDriveUrl(document.getElementById('drive-link').value.trim());
   if (!state.scriptUrl || !driveLink) return;
 
   try {
@@ -510,21 +524,22 @@ function renderLabels() {
   const punchCount = state.labels.filter(l => !l.isRoundMarker).length;
   count.textContent = `(${punchCount})`;
 
-  // Capture open editors before wiping the list
+  // Capture open editors before wiping the list (keyed by array index —
+  // stable within a single renderLabels call and always unique, unlike
+  // label.id which can collide after backend deletions)
   const openEditors = {};
   log.querySelectorAll('.label-entry.editing').forEach(entry => {
     const idx = parseInt(entry.dataset.labelIdx);
     const label = state.labels[idx];
     if (!label) return;
-    const key = label.id || ('idx_' + idx);
     if (label.isRoundMarker) {
       const startInput = entry.querySelector('.edit-start');
-      openEditors[key] = { isRoundMarker: true, start: startInput ? startInput.value : null };
+      openEditors[idx] = { isRoundMarker: true, start: startInput ? startInput.value : null };
     } else {
       const punchSel = entry.querySelector('.edit-punch');
       const startInput = entry.querySelector('.edit-start');
       const endInput = entry.querySelector('.edit-end');
-      openEditors[key] = {
+      openEditors[idx] = {
         isRoundMarker: false,
         punch: punchSel ? punchSel.value : null,
         start: startInput ? startInput.value : null,
@@ -574,8 +589,7 @@ function renderLabels() {
 
   // Restore open editors with their unsaved form values
   sorted.forEach(({ label, idx }) => {
-    const key = label.id || ('idx_' + idx);
-    const saved = openEditors[key];
+    const saved = openEditors[idx];
     if (!saved) return;
     if (saved.isRoundMarker) {
       openEditRoundMarker(idx);
@@ -1013,6 +1027,35 @@ function stepFrames(n) {
   }
 }
 
+// Jump to the next (dir=1) or previous (dir=-1) label's start time
+function jumpToAdjacentLabel(dir) {
+  const video = document.getElementById('video-player');
+  const now = video.currentTime;
+  const EPS = 0.05; // small tolerance so we don't land on the same label
+
+  // Collect all label start times, sorted ascending
+  const times = state.labels
+    .filter(l => !l.isRoundMarker)
+    .map(l => l.start)
+    .sort((a, b) => a - b);
+
+  if (times.length === 0) return;
+
+  let target = null;
+  if (dir > 0) {
+    target = times.find(t => t > now + EPS);
+  } else {
+    for (let i = times.length - 1; i >= 0; i--) {
+      if (times[i] < now - EPS) { target = times[i]; break; }
+    }
+  }
+
+  if (target !== null) {
+    video.currentTime = target;
+    updateTimeDisplay(target);
+  }
+}
+
 // When a seek completes, check if we need to seek again
 function _onSeeked() {
   const video = document.getElementById('video-player');
@@ -1075,14 +1118,18 @@ function setupKeyboardShortcuts() {
       case 'ArrowRight': {
         e.preventDefault();
         const dir = e.code === 'ArrowLeft' ? -1 : 1;
-        // Track hold start (ignore key repeat for initial timestamp)
-        if (_arrowHeldKey !== e.code) {
-          _arrowHeldKey = e.code;
-          _arrowHoldStart = Date.now();
+        if (e.shiftKey) {
+          jumpToAdjacentLabel(dir);
+        } else {
+          // Track hold start (ignore key repeat for initial timestamp)
+          if (_arrowHeldKey !== e.code) {
+            _arrowHeldKey = e.code;
+            _arrowHoldStart = Date.now();
+          }
+          const held = Date.now() - _arrowHoldStart;
+          const mult = held >= ACCEL_DELAY ? ACCEL_MULTIPLIER : 1;
+          stepFrames(dir * mult);
         }
-        const held = Date.now() - _arrowHoldStart;
-        const mult = held >= ACCEL_DELAY ? ACCEL_MULTIPLIER : 1;
-        stepFrames(dir * mult * (e.shiftKey ? 2 : 1));
         break;
       }
 
@@ -1162,6 +1209,7 @@ function setupKeyboardShortcuts() {
       case 'KeyD': selectPunch('rear_roll'); break;
       case 'KeyR': selectPunch('pull_back'); break;
       case 'KeyF': selectPunch('step_back'); break;
+      case 'KeyU': selectPunch('unsure'); break;
 
       default:
         // Top row number keys via e.key
