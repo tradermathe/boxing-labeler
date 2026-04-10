@@ -1167,6 +1167,21 @@ function setupKeyboardShortcuts() {
         toggleOverlay();
         break;
 
+      case 'Period':
+      case 'Comma':
+        if (e.shiftKey) {
+          e.preventDefault();
+          const speeds = [0.25, 0.5, 1, 2];
+          const video = document.getElementById('video-player');
+          const cur = speeds.indexOf(video.playbackRate);
+          const next = e.code === 'Period'
+            ? Math.min(cur + 1, speeds.length - 1)
+            : Math.max(cur - 1, 0);
+          setSpeed(speeds[next]);
+          showToast(`Speed: ${speeds[next]}x`, 'info');
+        }
+        break;
+
       case 'Equal':
       case 'NumpadAdd':
         if (e.ctrlKey || e.metaKey) { e.preventDefault(); zoomIn(); }
