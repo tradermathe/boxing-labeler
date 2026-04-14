@@ -256,9 +256,8 @@ function captureTimestamp() {
       `Start: ${formatTime(time)} -- now select the punch type`;
     updateTimestampButton();
   } else if (state.mode === 'end' && state.selectedPunch) {
-    const maxId = state.labels.reduce((max, l) => Math.max(max, l.id || 0), 0);
     const label = {
-      id: maxId + 1,
+      id: null,
       punch: state.selectedPunch,
       angle: '',
       start: state.pendingStart,
@@ -311,6 +310,8 @@ async function pushLabelToSheet(label) {
       console.error('Sheet push error:', result.message);
       showToast('Sheet save failed: ' + result.message, 'error');
     } else {
+      // Adopt the backend's authoritative ID
+      if (result.id != null) label.id = result.id;
       showToast('Saved to Google Sheet', 'info');
     }
   } catch (e) {
@@ -322,9 +323,8 @@ async function pushLabelToSheet(label) {
 function addRoundMarker(markerType) {
   const video = document.getElementById('video-player');
   const time = video.currentTime;
-  const maxId = state.labels.reduce((max, l) => Math.max(max, l.id || 0), 0);
   const label = {
-    id: maxId + 1,
+    id: null,
     punch: markerType,
     start: time,
     end: time,
@@ -334,27 +334,28 @@ function addRoundMarker(markerType) {
   };
   state.labels.push(label);
   renderLabels();
-  pushRoundMarkerToSheet(markerType);
+  pushRoundMarkerToSheet(label);
 }
 
-async function pushRoundMarkerToSheet(markerType) {
+async function pushRoundMarkerToSheet(label) {
   if (!state.scriptUrl) return;
-  const video = document.getElementById('video-player');
-  const time = formatTimeSheet(video.currentTime);
+  const time = formatTimeSheet(label.start);
   try {
     const url = sheetUrl({
       action: 'add',
-      videoName: normalizeDriveUrl(document.getElementById('drive-link').value.trim()) || state.videoName,
+      videoName: label.videoName,
       trainingType: document.getElementById('training-type').value,
       stance: document.getElementById('stance-select').value,
-      punchId: markerType,
+      punchId: label.punch,
       angle: '',
       startTime: time,
       endTime: time,
     });
     const resp = await fetch(url);
     const result = await resp.json();
-    showToast(`${markerType} saved at ${formatTime(video.currentTime)}`, 'success');
+    if (result.id != null) label.id = result.id;
+    showToast(`${label.punch} saved at ${formatTime(label.start)}`, 'success');
+    fetchLabelsFromSheet();
   } catch (e) {
     console.error('Round marker push failed:', e);
     showToast('Round marker save failed: ' + e.message, 'error');
@@ -448,9 +449,10 @@ async function fetchLabelsFromSheet() {
       // Merge: keep local labels, add sheet labels that aren't duplicates
       for (const sl of sheetLabels) {
         const isDuplicate = state.labels.some(ll =>
-          ll.punch === sl.punch &&
-          Math.abs(ll.start - sl.start) < 0.01 &&
-          Math.abs(ll.end - sl.end) < 0.01
+          ll.id === sl.id ||
+          (ll.punch === sl.punch &&
+           Math.abs(ll.start - sl.start) < 0.01 &&
+           Math.abs(ll.end - sl.end) < 0.01)
         );
         if (!isDuplicate) {
           state.labels.push(sl);
@@ -569,7 +571,7 @@ function renderLabels() {
       const text = label.punch === 'round_start' ? 'Round Start' : 'Round End';
       entry.innerHTML = `
         <span class="label-text">
-          <small style="color:#555">#${label.id || '?'}</small> ${icon} <span style="color:#888">${text}</span>
+          <small style="color:#555">#${label.id || '...'}</small> ${icon} <span style="color:#888">${text}</span>
           <small style="color:#666">${formatTime(label.start)}</small>
         </span>
         <button class="label-delete" onclick="event.stopPropagation(); deleteLabel(${idx})" title="Delete">&times;</button>
@@ -582,7 +584,7 @@ function renderLabels() {
       entry.style.borderLeftColor = getPunchColor(label.punch);
       entry.innerHTML = `
         <span class="label-text">
-          <small style="color:#555">#${label.id || '?'}</small> <strong>${punch?.label || label.punch}</strong><br>
+          <small style="color:#555">#${label.id || '...'}</small> <strong>${punch?.label || label.punch}</strong><br>
           ${formatTime(label.start)} &rarr; ${formatTime(label.end)}
         </span>
         <button class="label-delete" onclick="event.stopPropagation(); deleteLabel(${idx})" title="Delete">&times;</button>
