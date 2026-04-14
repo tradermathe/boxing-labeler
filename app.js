@@ -3,7 +3,15 @@
 // ============================================================
 function normalizeDriveUrl(url) {
   if (!url) return '';
-  return url.split('?')[0];
+  var s = String(url).trim();
+
+  // YouTube: preserve video ID
+  // Handles youtube.com/watch?v=ID and youtu.be/ID
+  var ytMatch = s.match(/(?:youtube\.com\/watch\?.*v=|youtu\.be\/)([\w-]+)/);
+  if (ytMatch) return 'https://www.youtube.com/watch?v=' + ytMatch[1];
+
+  // Everything else (Drive, etc.): strip query params as before
+  return s.split('?')[0];
 }
 
 // ============================================================
