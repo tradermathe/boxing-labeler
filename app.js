@@ -1,21 +1,17 @@
 // ============================================================
-// Helpers
+// app.js — Boxing Punch Labeler (page-specific)
+//
+// Handles punch-type catalogue, label workflow (start → pick type →
+// end), round markers, Google Sheets sync, label list rendering,
+// and the timeline overlay for punch segments + round shading.
+//
+// Shared video + seek-bar + minimap + zoom + playback + helpers
+// live in player.js (loaded first). The shared `state` is defined
+// there; this file extends it with page-specific keys.
 // ============================================================
-function normalizeDriveUrl(url) {
-  if (!url) return '';
-  var s = String(url).trim();
-
-  // YouTube: preserve video ID
-  // Handles youtube.com/watch?v=ID and youtu.be/ID
-  var ytMatch = s.match(/(?:youtube\.com\/watch\?.*v=|youtu\.be\/)([\w-]+)/);
-  if (ytMatch) return 'https://www.youtube.com/watch?v=' + ytMatch[1];
-
-  // Everything else (Drive, etc.): strip query params as before
-  return s.split('?')[0];
-}
 
 // ============================================================
-// Config
+// Punch catalogue
 // ============================================================
 const PUNCH_TYPES = [
   { id: 'jab_head',              label: 'Jab (Head)',          key: '1', group: 'offense' },
@@ -38,27 +34,26 @@ const PUNCH_TYPES = [
 ];
 
 const PUNCH_COLORS = {
-  // Offense - each punch gets a distinct, vivid color
-  jab_head:           '#ff2244',  // bright red
-  cross_head:         '#ff8800',  // orange
-  lead_hook_head:     '#ffdd00',  // yellow
-  rear_hook_head:     '#ff00aa',  // hot pink
-  lead_uppercut_head: '#cc44ff',  // purple
-  rear_uppercut_head: '#33cccc',  // teal
-  lead_bodyshot:      '#88dd00',  // lime green
-  rear_bodyshot:      '#ffaa33',  // amber
-  jab_body:           '#0088ff',  // sky blue
-  cross_body:         '#ff6699',  // pink
-  // Defense - cool/bright tones, clearly distinct from offense
-  lead_slip:  '#00ff88',  // bright green
-  rear_slip:  '#00ddff',  // cyan
-  lead_roll:  '#3388ff',  // blue
-  rear_roll:  '#00ffcc',  // turquoise
-  pull_back:  '#aa66ff',  // lavender
-  step_back:  '#ffff00',  // lime yellow
+  // Offense — each punch gets a distinct, vivid color
+  jab_head:           '#ff2244',
+  cross_head:         '#ff8800',
+  lead_hook_head:     '#ffdd00',
+  rear_hook_head:     '#ff00aa',
+  lead_uppercut_head: '#cc44ff',
+  rear_uppercut_head: '#33cccc',
+  lead_bodyshot:      '#88dd00',
+  rear_bodyshot:      '#ffaa33',
+  jab_body:           '#0088ff',
+  cross_body:         '#ff6699',
+  // Defense
+  lead_slip:  '#00ff88',
+  rear_slip:  '#00ddff',
+  lead_roll:  '#3388ff',
+  rear_roll:  '#00ffcc',
+  pull_back:  '#aa66ff',
+  step_back:  '#ffff00',
   // Other
-  unsure:      '#999999',  // gray
-  // Round markers
+  unsure:      '#999999',
   round_start: '#28a745',
   round_end:   '#666666',
 };
@@ -67,83 +62,24 @@ function getPunchColor(punchId) {
   return PUNCH_COLORS[punchId] || '#533483';
 }
 
-const FRAME_DURATION_FALLBACK = 1 / 30;
-const ACCEL_DELAY = 2000;       // ms before acceleration kicks in
-const ACCEL_MULTIPLIER = 8;     // how much faster when accelerated
-
 // ============================================================
-// State
+// Page-specific state (player.js owns the shared `state`; we extend it)
 // ============================================================
-const LABELER_ID = new URLSearchParams(window.location.search).get('labeler') || '';
-
-let state = {
+Object.assign(state, {
   selectedPunch: null,
   mode: 'start',
   pendingStart: null,
   labels: [],
-  videoName: '',
-  frameDuration: FRAME_DURATION_FALLBACK,
-  fpsDetected: false,
-  scriptUrl: 'https://script.google.com/macros/s/AKfycbwM57VoFCXWIhw8jyechZQLtMzlmeT15bhIy0eozKpA0jHlmuZPSqVzyEcS5Vy0A5cS/exec',
   roundActive: false,
-  overlayVisible: true,
-  zoomLevel: 1,      // 1 = full view, up to 32x
-  zoomCenter: 0.5,   // normalized 0-1, center of viewport
-};
-
-// ============================================================
-// Timeline Zoom Utilities
-// ============================================================
-function getViewport() {
-  const halfSpan = 0.5 / state.zoomLevel;
-  let start = state.zoomCenter - halfSpan;
-  let end = state.zoomCenter + halfSpan;
-  if (start < 0) { end -= start; start = 0; }
-  if (end > 1) { start -= (end - 1); end = 1; }
-  start = Math.max(0, start);
-  end = Math.min(1, end);
-  return { start, end };
-}
-
-function timeToViewportPct(time, duration) {
-  const norm = time / duration;
-  const vp = getViewport();
-  return (norm - vp.start) / (vp.end - vp.start) * 100;
-}
-
-function viewportPctToTime(pct, duration) {
-  const vp = getViewport();
-  const norm = vp.start + (pct / 100) * (vp.end - vp.start);
-  return norm * duration;
-}
-
-function clampZoomCenter() {
-  const halfSpan = 0.5 / state.zoomLevel;
-  state.zoomCenter = Math.max(halfSpan, Math.min(1 - halfSpan, state.zoomCenter));
-}
-
-function setZoom(newLevel, anchorNormalized) {
-  const oldVp = getViewport();
-  const oldSpan = oldVp.end - oldVp.start;
-  const anchorFrac = oldSpan > 0 ? (anchorNormalized - oldVp.start) / oldSpan : 0.5;
-
-  state.zoomLevel = Math.max(1, Math.min(32, newLevel));
-  const newHalfSpan = 0.5 / state.zoomLevel;
-  // Solve: anchorNormalized should stay at same visual fraction
-  state.zoomCenter = anchorNormalized - (anchorFrac - 0.5) * 2 * newHalfSpan;
-  clampZoomCenter();
-}
+});
 
 // ============================================================
 // Init
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
   buildPunchButtons();
-  setupVideoLoader();
+  setupPlayer();                 // video loader, seek bar, minimap — from player.js
   setupKeyboardShortcuts();
-  setupSeekBar();
-  setupMinimapInteraction();
-  loadConfig();
   updateTimestampButton();
   updateRoundIndicator();
   setupDriveLink();
@@ -160,14 +96,6 @@ window.addEventListener('DOMContentLoaded', () => {
       : 'Boxing Punch Labeler ' + displayName;
   }
 });
-
-// ============================================================
-// Config (Apps Script URL is hardcoded)
-// ============================================================
-function loadConfig() {
-  // scriptUrl is hardcoded in state default — nothing to configure
-}
-
 
 // ============================================================
 // Punch Buttons
@@ -204,7 +132,6 @@ function selectPunch(punchId) {
   const punch = PUNCH_TYPES.find(p => p.id === punchId);
   document.getElementById('selected-punch').textContent = punch.label;
 
-  // If we were waiting for punch selection, move to end mode
   if (state.mode === 'punch') {
     state.mode = 'end';
     document.getElementById('pending-label').textContent =
@@ -215,8 +142,8 @@ function selectPunch(punchId) {
 
 // ============================================================
 // Timestamp / Labeling Workflow
-// ============================================================
 // Workflow: Start time → Select punch → End time
+// ============================================================
 function updateTimestampButton() {
   const btn = document.getElementById('btn-timestamp');
 
@@ -230,7 +157,6 @@ function updateTimestampButton() {
     btn.className = '';
     btn.disabled = true;
   } else {
-    // end mode — need punch selected
     if (!state.selectedPunch) {
       btn.textContent = 'Select a punch type first';
       btn.className = '';
@@ -281,15 +207,6 @@ function captureTimestamp() {
 // ============================================================
 // Google Apps Script Push (no auth needed)
 // ============================================================
-function sheetUrl(params) {
-  const url = new URL(state.scriptUrl);
-  if (LABELER_ID) url.searchParams.set('labeler', LABELER_ID);
-  for (const [k, v] of Object.entries(params)) {
-    url.searchParams.set(k, v);
-  }
-  return url.toString();
-}
-
 async function pushLabelToSheet(label) {
   if (!state.scriptUrl) return;
   const punch = PUNCH_TYPES.find(p => p.id === label.punch);
@@ -310,7 +227,6 @@ async function pushLabelToSheet(label) {
       console.error('Sheet push error:', result.message);
       showToast('Sheet save failed: ' + result.message, 'error');
     } else {
-      // Adopt the backend's authoritative ID
       if (result.id != null) label.id = result.id;
       showToast('Saved to Google Sheet', 'info');
     }
@@ -374,13 +290,11 @@ function setupDriveLink() {
   const saved = localStorage.getItem(prefix + 'drive_link');
   if (saved) input.value = saved;
 
-  // Restore training type and stance
   const savedType = localStorage.getItem(prefix + 'training_type');
   const savedStance = localStorage.getItem(prefix + 'stance');
   if (savedType) trainingType.value = savedType;
   if (savedStance) stance.value = savedStance;
 
-  // Persist training type and stance on change
   trainingType.addEventListener('change', () => {
     localStorage.setItem(prefix + 'training_type', trainingType.value);
   });
@@ -400,7 +314,6 @@ function setupDriveLink() {
     }, 500);
   });
 
-  // Auto-fetch on load if link already set
   if (saved && saved.trim()) {
     fetchLabelsFromSheet();
   }
@@ -410,7 +323,7 @@ function setupDriveLink() {
 // Fetch existing labels from Google Sheet
 // ============================================================
 async function fetchLabelsFromSheet() {
-  if (_pendingDeletes > 0) return; // don't re-fetch while deletes are in-flight
+  if (_pendingDeletes > 0) return;
   const driveLink = normalizeDriveUrl(document.getElementById('drive-link').value.trim());
   if (!state.scriptUrl || !driveLink) return;
 
@@ -425,11 +338,9 @@ async function fetchLabelsFromSheet() {
       return;
     }
 
-    // Clear old local labels before loading from sheet
     state.labels = state.labels.filter(l => !l.fromSheet);
 
     if (result.labels && result.labels.length > 0) {
-      // Convert sheet labels to local label format
       const sheetLabels = result.labels.map(l => {
         const punch = mapPunchType(l.punch);
         const isRound = punch === 'round_start' || punch === 'round_end';
@@ -446,7 +357,6 @@ async function fetchLabelsFromSheet() {
         };
       });
 
-      // Merge: keep local labels, add sheet labels that aren't duplicates
       for (const sl of sheetLabels) {
         const isDuplicate = state.labels.some(ll =>
           ll.id === sl.id ||
@@ -473,19 +383,15 @@ async function fetchLabelsFromSheet() {
   }
 }
 
-// Map sheet punch types (e.g. lead_hook_head) to our IDs (e.g. lead_hook)
+// Map sheet punch types to our IDs
 function mapPunchType(sheetPunch) {
   if (!sheetPunch) return 'jab_head';
   const p = String(sheetPunch).toLowerCase().trim();
-  // Round markers (not in PUNCH_TYPES but valid)
   if (p === 'round_start' || p === 'round start') return 'round_start';
   if (p === 'round_end' || p === 'round end') return 'round_end';
-  // Direct match on ID (e.g. "jab_head")
   if (PUNCH_TYPES.find(t => t.id === p)) return p;
-  // Match on display label (e.g. "Jab (Head)", "Lead Hook", etc.)
   const byLabel = PUNCH_TYPES.find(t => t.label.toLowerCase() === p);
   if (byLabel) return byLabel.id;
-  // Partial / fuzzy matching for common sheet formats
   const MAP = {
     'jab': 'jab_head', 'jab head': 'jab_head', 'jab (head)': 'jab_head',
     'jab body': 'jab_body', 'jab (body)': 'jab_body',
@@ -504,7 +410,6 @@ function mapPunchType(sheetPunch) {
     'unsure': 'unsure', '?': 'unsure',
   };
   if (MAP[p]) return MAP[p];
-  // Try replacing spaces with underscores
   const underscored = p.replace(/\s+/g, '_');
   if (PUNCH_TYPES.find(t => t.id === underscored)) return underscored;
   console.warn('Unknown punch type from sheet:', sheetPunch, '→ defaulting to jab_head');
@@ -514,7 +419,6 @@ function mapPunchType(sheetPunch) {
 function parseSheetTime(timeStr) {
   if (typeof timeStr === 'number') return timeStr;
   if (!timeStr) return 0;
-  // Normalize comma decimals to dots (e.g. 0:0,63 → 0:0.63)
   let s = String(timeStr).replace(',', '.');
   const parts = s.split(':');
   if (parts.length === 3) {
@@ -534,9 +438,8 @@ function renderLabels() {
   const punchCount = state.labels.filter(l => !l.isRoundMarker).length;
   count.textContent = `(${punchCount})`;
 
-  // Capture open editors before wiping the list (keyed by array index —
-  // stable within a single renderLabels call and always unique, unlike
-  // label.id which can collide after backend deletions)
+  // Capture open editors before wiping (keyed by array index —
+  // unique within a render call, unlike label.id which can collide)
   const openEditors = {};
   log.querySelectorAll('.label-entry.editing').forEach(entry => {
     const idx = parseInt(entry.dataset.labelIdx);
@@ -559,7 +462,6 @@ function renderLabels() {
   });
 
   log.innerHTML = '';
-  // Sort by start time descending (latest clip on top)
   const sorted = state.labels.map((label, idx) => ({ label, idx }));
   sorted.sort((a, b) => b.label.start - a.label.start);
   sorted.forEach(({ label, idx }) => {
@@ -597,7 +499,7 @@ function renderLabels() {
     log.appendChild(entry);
   });
 
-  // Restore open editors with their unsaved form values
+  // Restore open editors with their unsaved values
   sorted.forEach(({ label, idx }) => {
     const saved = openEditors[idx];
     if (!saved) return;
@@ -630,7 +532,6 @@ function openEditLabel(idx) {
 
   entry.classList.add('editing');
 
-  // Build punch options
   const punchOpts = PUNCH_TYPES.map(p =>
     `<option value="${p.id}" ${p.id === label.punch ? 'selected' : ''}>${p.label}</option>`
   ).join('');
@@ -804,246 +705,21 @@ async function deleteLabelFromSheet(label) {
     showToast('Sheet delete failed: ' + e.message, 'error');
   } finally {
     _pendingDeletes--;
-    // Re-fetch after delete completes so local state matches the sheet
     if (_pendingDeletes === 0) fetchLabelsFromSheet();
   }
 }
 
 // ============================================================
-// Video Player
+// Jump to adjacent label (Shift+Arrow nav)
 // ============================================================
-function setupVideoLoader() {
-  const input = document.getElementById('video-file');
-  const video = document.getElementById('video-player');
+let _arrowHoldStart = null;
+let _arrowHeldKey = null;
 
-  input.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    state.videoName = file.name;
-    document.getElementById('video-name').textContent = file.name;
-
-    const url = URL.createObjectURL(file);
-    video.src = url;
-    video.load();
-
-    const thumbVideo = document.getElementById('thumb-video');
-    thumbVideo.src = url;
-    thumbVideo.load();
-  });
-
-  video.addEventListener('loadedmetadata', () => {
-    state.frameDuration = FRAME_DURATION_FALLBACK;
-    state.fpsDetected = false;
-    detectFrameRate(video);
-    updateTimeDisplay();
-    renderTimelineOverlay();
-  });
-
-  video.addEventListener('timeupdate', () => updateTimeDisplay());
-  video.addEventListener('seeked', _onSeeked);
-}
-
-function detectFrameRate(video) {
-  if (!('requestVideoFrameCallback' in HTMLVideoElement.prototype)) {
-    console.warn('requestVideoFrameCallback not supported, using fallback FPS:', Math.round(1 / FRAME_DURATION_FALLBACK));
-    return;
-  }
-
-  const frameTimes = [];
-  const SAMPLES_NEEDED = 6;
-
-  function onFrame(now, metadata) {
-    frameTimes.push(metadata.mediaTime);
-
-    if (frameTimes.length >= SAMPLES_NEEDED) {
-      const intervals = [];
-      for (let i = 1; i < frameTimes.length; i++) {
-        intervals.push(frameTimes[i] - frameTimes[i - 1]);
-      }
-      intervals.sort((a, b) => a - b);
-      const median = intervals[Math.floor(intervals.length / 2)];
-
-      if (median > 0.001 && median < 0.5) {
-        state.frameDuration = median;
-        state.fpsDetected = true;
-        const fps = Math.round(1 / median);
-        console.log(`Detected video FPS: ${fps} (frame duration: ${median.toFixed(5)}s)`);
-        showToast(`Detected ${fps} FPS`, 'info');
-      }
-      return;
-    }
-
-    video.requestVideoFrameCallback(onFrame);
-  }
-
-  video.requestVideoFrameCallback(onFrame);
-}
-
-function updateTimeDisplay(overrideTime) {
-  const video = document.getElementById('video-player');
-  const display = document.getElementById('time-display');
-  const seekBar = document.getElementById('seek-bar');
-  const t = overrideTime !== undefined ? overrideTime : video.currentTime;
-
-  display.textContent = `${formatTime(t)} / ${formatTime(video.duration || 0)}`;
-
-  if (video.duration) {
-    const vp = getViewport();
-    const norm = t / video.duration;
-    // Map playhead to 0-1000 within the viewport
-    const vpSpan = vp.end - vp.start;
-    seekBar.value = vpSpan > 0 ? ((norm - vp.start) / vpSpan) * 1000 : 0;
-
-    // Auto-scroll during playback when playhead exits viewport
-    if (!video.paused && (norm > vp.end || norm < vp.start) && state.zoomLevel > 1) {
-      state.zoomCenter = norm;
-      clampZoomCenter();
-      onZoomChanged();
-    }
-
-    // Update minimap playhead
-    const playhead = document.getElementById('minimap-playhead');
-    if (playhead) playhead.style.left = (norm * 100) + '%';
-  }
-  updateVideoOverlay();
-}
-
-function setupSeekBar() {
-  const seekBar = document.getElementById('seek-bar');
-  const video = document.getElementById('video-player');
-
-  seekBar.addEventListener('input', () => {
-    if (video.duration) {
-      const vp = getViewport();
-      const norm = vp.start + (seekBar.value / 1000) * (vp.end - vp.start);
-      video.currentTime = norm * video.duration;
-    }
-  });
-
-  // Thumbnail preview on hover
-  const wrapper = document.getElementById('seek-bar-wrapper');
-  const thumb = document.getElementById('seek-thumbnail');
-  const thumbVideo = document.getElementById('thumb-video');
-  const thumbCanvas = document.getElementById('thumb-canvas');
-  const thumbCtx = thumbCanvas.getContext('2d');
-  const thumbTime = document.getElementById('thumb-time');
-
-  let thumbReady = false;
-  thumbVideo.addEventListener('seeked', () => {
-    thumbCtx.drawImage(thumbVideo, 0, 0, thumbCanvas.width, thumbCanvas.height);
-    thumbReady = true;
-  });
-
-  wrapper.addEventListener('click', (e) => {
-    if (!video.duration) return;
-    const rect = seekBar.getBoundingClientRect();
-    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-    const pct = (x / rect.width) * 100;
-    const time = viewportPctToTime(pct, video.duration);
-    video.currentTime = Math.max(0, Math.min(video.duration, time));
-    seekBar.value = (x / rect.width) * 1000;
-  });
-
-  wrapper.addEventListener('mousemove', (e) => {
-    if (!video.duration) return;
-
-    const rect = seekBar.getBoundingClientRect();
-    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-    const pct = (x / rect.width) * 100;
-    const hoverTime = viewportPctToTime(pct, video.duration);
-
-    // Position the thumbnail
-    const thumbW = thumbCanvas.width + 4;
-    let left = x - thumbW / 2;
-    left = Math.max(0, Math.min(rect.width - thumbW, left));
-    thumb.style.left = left + 'px';
-    thumb.style.display = 'block';
-    thumbTime.textContent = formatTime(hoverTime);
-
-    // Seek the preview video
-    if (thumbReady || !thumbVideo.seeking) {
-      thumbReady = false;
-      thumbVideo.currentTime = hoverTime;
-    }
-  });
-
-  wrapper.addEventListener('mouseleave', () => {
-    thumb.style.display = 'none';
-  });
-
-  // Mouse wheel: Alt+scroll = zoom, scroll when zoomed = pan
-  wrapper.addEventListener('wheel', (e) => {
-    if (!video.duration) return;
-
-    if (e.altKey) {
-      // Zoom at cursor
-      e.preventDefault();
-      const rect = seekBar.getBoundingClientRect();
-      const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-      const pct = x / rect.width;
-      const vp = getViewport();
-      const anchorNorm = vp.start + pct * (vp.end - vp.start);
-      const factor = e.deltaY < 0 ? 1.4 : 1 / 1.4;
-      setZoom(state.zoomLevel * factor, anchorNorm);
-      onZoomChanged();
-    } else if (state.zoomLevel > 1) {
-      // Pan when zoomed
-      e.preventDefault();
-      const panAmount = (e.deltaY > 0 ? 0.15 : -0.15) / state.zoomLevel;
-      state.zoomCenter += panAmount;
-      clampZoomCenter();
-      onZoomChanged();
-    }
-  }, { passive: false });
-}
-
-function togglePlay() {
-  const video = document.getElementById('video-player');
-  const btn = document.getElementById('btn-play');
-  if (video.paused) {
-    video.play();
-    btn.textContent = 'Pause';
-  } else {
-    video.pause();
-    btn.textContent = 'Play';
-  }
-}
-
-let _targetTime = null;
-let _seeking = false;
-let _arrowHoldStart = null;  // timestamp when arrow key was first pressed
-let _arrowHeldKey = null;    // which arrow key is held
-
-function stepFrames(n) {
-  const video = document.getElementById('video-player');
-  if (!video.paused) {
-    video.pause();
-    document.getElementById('btn-play').textContent = 'Play';
-  }
-
-  // Accumulate the target time from key repeats
-  if (_targetTime === null) {
-    // Snap to nearest frame boundary so all users land on the same grid
-    _targetTime = Math.round(video.currentTime / state.frameDuration) * state.frameDuration;
-  }
-  _targetTime = Math.max(0, Math.min(video.duration || 0, _targetTime + n * state.frameDuration));
-  updateTimeDisplay(_targetTime);
-
-  // Only issue a seek if the video isn't already seeking
-  if (!_seeking) {
-    _seeking = true;
-    video.currentTime = _targetTime;
-  }
-}
-
-// Jump to the next (dir=1) or previous (dir=-1) label's start time
 function jumpToAdjacentLabel(dir) {
   const video = document.getElementById('video-player');
   const now = video.currentTime;
-  const EPS = 0.05; // small tolerance so we don't land on the same label
+  const EPS = 0.05;
 
-  // Collect all label start times, sorted ascending
   const times = state.labels
     .filter(l => !l.isRoundMarker)
     .map(l => l.start)
@@ -1066,41 +742,12 @@ function jumpToAdjacentLabel(dir) {
   }
 }
 
-// When a seek completes, check if we need to seek again
-function _onSeeked() {
-  const video = document.getElementById('video-player');
-  if (_targetTime !== null && Math.abs(video.currentTime - _targetTime) > 0.001) {
-    video.currentTime = _targetTime;
-  } else {
-    _seeking = false;
-    _targetTime = null;
-  }
-}
-
-
-function toggleMute() {
-  const video = document.getElementById('video-player');
-  const btn = document.getElementById('btn-mute');
-  video.muted = !video.muted;
-  btn.innerHTML = video.muted ? '&#128263;' : '&#128266;';
-}
-
-function setSpeed(rate) {
-  const video = document.getElementById('video-player');
-  video.playbackRate = rate;
-
-  document.querySelectorAll('#speed-controls button').forEach(btn => {
-    btn.classList.toggle('speed-active', btn.textContent === rate + 'x');
-  });
-}
-
 // ============================================================
 // Keyboard Shortcuts
 // ============================================================
 function setupKeyboardShortcuts() {
   document.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    // Blur focused buttons/selects so they don't consume keys
     if (e.target.tagName === 'BUTTON' || e.target.tagName === 'SELECT') {
       e.target.blur();
     }
@@ -1131,7 +778,6 @@ function setupKeyboardShortcuts() {
         if (e.shiftKey) {
           jumpToAdjacentLabel(dir);
         } else {
-          // Track hold start (ignore key repeat for initial timestamp)
           if (_arrowHeldKey !== e.code) {
             _arrowHeldKey = e.code;
             _arrowHoldStart = Date.now();
@@ -1215,7 +861,7 @@ function setupKeyboardShortcuts() {
         }
         break;
 
-      // Numpad keys (works regardless of NumLock)
+      // Numpad keys
       case 'Numpad1': selectPunch('jab_head'); break;
       case 'Numpad2': selectPunch('cross_head'); break;
       case 'Numpad3': selectPunch('lead_hook_head'); break;
@@ -1263,35 +909,11 @@ function setupKeyboardShortcuts() {
 }
 
 // ============================================================
-// Helpers
+// Round tracking
 // ============================================================
-function formatTime(seconds) {
-  if (isNaN(seconds)) return '0:00.000';
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}:${secs < 10 ? '0' : ''}${secs.toFixed(3)}`;
-}
-
-function parseTime(str) {
-  str = str.trim();
-  const parts = str.split(':');
-  if (parts.length === 2) {
-    return parseFloat(parts[0]) * 60 + parseFloat(parts[1]);
-  }
-  return parseFloat(str);
-}
-
-function formatTimeSheet(seconds) {
-  if (isNaN(seconds)) return '00:00.000';
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${String(mins).padStart(2,'0')}:${secs < 10 ? '0' : ''}${secs.toFixed(3)}`;
-}
-
 function syncRoundActiveFromLabels() {
   const starts = state.labels.filter(l => l.punch === 'round_start').map(l => l.start).sort((a, b) => a - b);
   const ends = state.labels.filter(l => l.punch === 'round_end').map(l => l.start).sort((a, b) => a - b);
-  // A round is active if there's a round_start with no subsequent round_end
   let active = false;
   for (const s of starts) {
     if (!ends.some(e => e > s)) { active = true; break; }
@@ -1324,7 +946,8 @@ function updateRoundIndicator() {
 }
 
 // ============================================================
-// Overlay Rendering
+// Timeline overlay — punch segments + round shading on seek bar,
+// colored segments on minimap. Hook called by player.js.
 // ============================================================
 function renderTimelineOverlay() {
   const overlay = document.getElementById('seek-bar-overlay');
@@ -1333,7 +956,6 @@ function renderTimelineOverlay() {
   overlay.innerHTML = '';
   if (!duration || duration <= 0) return;
 
-  // Build round intervals from round_start/round_end markers
   const roundStarts = state.labels
     .filter(l => l.punch === 'round_start' || (l.isRoundMarker && l.punch?.includes?.('start')))
     .map(l => l.start)
@@ -1343,16 +965,14 @@ function renderTimelineOverlay() {
     .map(l => l.start)
     .sort((a, b) => a - b);
 
-  // Pair starts with ends to get round intervals
   const rounds = [];
   for (let i = 0; i < roundStarts.length; i++) {
     const rStart = roundStarts[i];
-    // Find the first end that comes after this start
     const rEnd = roundEnds.find(e => e > rStart);
     rounds.push({ start: rStart, end: rEnd !== undefined ? rEnd : duration });
   }
 
-  // Shade areas outside rounds (only if there are rounds)
+  // Shade areas outside rounds
   if (rounds.length > 0) {
     let pos = 0;
     for (const r of rounds) {
@@ -1369,7 +989,6 @@ function renderTimelineOverlay() {
       }
       pos = r.end;
     }
-    // After last round
     if (pos < duration) {
       const lPct = timeToViewportPct(pos, duration);
       const rPct = timeToViewportPct(duration, duration);
@@ -1383,12 +1002,12 @@ function renderTimelineOverlay() {
     }
   }
 
-  // Punch segments on top
+  // Punch segments
   for (const label of state.labels) {
     if (label.isRoundMarker) continue;
     const lPct = timeToViewportPct(label.start, duration);
     const rPct = timeToViewportPct(label.end, duration);
-    if (rPct < 0 || lPct > 100) continue; // off-screen
+    if (rPct < 0 || lPct > 100) continue;
     const seg = document.createElement('div');
     seg.className = 'seek-segment';
     seg.style.left = Math.max(0, lPct) + '%';
@@ -1397,9 +1016,34 @@ function renderTimelineOverlay() {
     overlay.appendChild(seg);
   }
 
-  // Also update minimap and ticks
   renderMinimap();
+  updateMinimapChrome();
   renderTimeTicks();
+}
+
+function renderMinimap() {
+  const video = document.getElementById('video-player');
+  const duration = video.duration;
+  const segContainer = document.getElementById('minimap-segments');
+  segContainer.innerHTML = '';
+
+  if (!duration || duration <= 0) return;
+
+  for (const label of state.labels) {
+    if (label.isRoundMarker) continue;
+    const seg = document.createElement('div');
+    seg.style.position = 'absolute';
+    seg.style.top = '0';
+    seg.style.height = '100%';
+    seg.style.borderRadius = '1px';
+    const leftPct = (label.start / duration) * 100;
+    const widthPct = ((label.end - label.start) / duration) * 100;
+    seg.style.left = leftPct + '%';
+    seg.style.width = Math.max(widthPct, 0.3) + '%';
+    seg.style.backgroundColor = getPunchColor(label.punch);
+    seg.style.opacity = '0.7';
+    segContainer.appendChild(seg);
+  }
 }
 
 function updateVideoOverlay() {
@@ -1407,7 +1051,6 @@ function updateVideoOverlay() {
   const video = document.getElementById('video-player');
   const t = video.currentTime;
 
-  // Determine current round
   const roundStarts = state.labels
     .filter(l => l.punch === 'round_start' || (l.isRoundMarker && l.punch?.includes?.('start')))
     .map(l => l.start)
@@ -1417,7 +1060,6 @@ function updateVideoOverlay() {
     .map(l => l.start)
     .sort((a, b) => a - b);
 
-  // Build round intervals
   const rounds = [];
   for (let i = 0; i < roundStarts.length; i++) {
     const rStart = roundStarts[i];
@@ -1447,7 +1089,6 @@ function updateVideoOverlay() {
 
   overlay.innerHTML = '';
 
-  // Dim overlay when outside round
   const dimOverlay = document.getElementById('video-dim-overlay');
   if (roundStarts.length > 0 && !insideRound) {
     if (!dimOverlay.classList.contains('active')) {
@@ -1459,7 +1100,6 @@ function updateVideoOverlay() {
     dimOverlay.innerHTML = '';
   }
 
-  // Show round indicator (always, if any round markers exist)
   if (roundStarts.length > 0) {
     const tag = document.createElement('div');
     tag.className = 'video-overlay-tag';
@@ -1489,184 +1129,4 @@ function updateVideoOverlay() {
     };
     overlay.appendChild(tag);
   }
-}
-
-// ============================================================
-// Timeline Zoom Controls
-// ============================================================
-function zoomIn() {
-  setZoom(state.zoomLevel * 2, state.zoomCenter);
-  onZoomChanged();
-}
-
-function zoomOut() {
-  setZoom(state.zoomLevel / 2, state.zoomCenter);
-  onZoomChanged();
-}
-
-function zoomFit() {
-  state.zoomLevel = 1;
-  state.zoomCenter = 0.5;
-  onZoomChanged();
-}
-
-function onZoomChanged() {
-  const display = document.getElementById('zoom-level-display');
-  display.textContent = state.zoomLevel >= 1.5 ? Math.round(state.zoomLevel) + 'x' : '1x';
-
-  // Show/hide minimap
-  const minimap = document.getElementById('timeline-minimap');
-  minimap.style.display = state.zoomLevel > 1.05 ? 'block' : 'none';
-
-  renderTimelineOverlay();
-  updateTimeDisplay();
-}
-
-function renderMinimap() {
-  const video = document.getElementById('video-player');
-  const duration = video.duration;
-  const segContainer = document.getElementById('minimap-segments');
-  const vpDiv = document.getElementById('minimap-viewport');
-  segContainer.innerHTML = '';
-
-  if (!duration || duration <= 0) return;
-
-  // Draw punch segments (unzoomed)
-  for (const label of state.labels) {
-    if (label.isRoundMarker) continue;
-    const seg = document.createElement('div');
-    seg.style.position = 'absolute';
-    seg.style.top = '0';
-    seg.style.height = '100%';
-    seg.style.borderRadius = '1px';
-    const leftPct = (label.start / duration) * 100;
-    const widthPct = ((label.end - label.start) / duration) * 100;
-    seg.style.left = leftPct + '%';
-    seg.style.width = Math.max(widthPct, 0.3) + '%';
-    seg.style.backgroundColor = getPunchColor(label.punch);
-    seg.style.opacity = '0.7';
-    segContainer.appendChild(seg);
-  }
-
-  // Position viewport indicator
-  const vp = getViewport();
-  vpDiv.style.left = (vp.start * 100) + '%';
-  vpDiv.style.width = ((vp.end - vp.start) * 100) + '%';
-
-  // Update playhead position
-  const playhead = document.getElementById('minimap-playhead');
-  if (playhead && duration) {
-    playhead.style.left = (video.currentTime / duration * 100) + '%';
-  }
-}
-
-function renderTimeTicks() {
-  const ticksContainer = document.getElementById('timeline-ticks');
-  const video = document.getElementById('video-player');
-  const duration = video.duration;
-  ticksContainer.innerHTML = '';
-
-  if (!duration || duration <= 0) return;
-
-  const vp = getViewport();
-  const vpDuration = (vp.end - vp.start) * duration;
-
-  // Choose tick interval: aim for 5-20 major ticks
-  const intervals = [0.1, 0.25, 0.5, 1, 2, 5, 10, 15, 30, 60, 120, 300];
-  let majorInterval = 1;
-  for (const iv of intervals) {
-    const count = vpDuration / iv;
-    if (count >= 4 && count <= 25) { majorInterval = iv; break; }
-    if (count < 4) { majorInterval = iv; break; }
-  }
-  const minorInterval = majorInterval / 4;
-
-  // Render minor ticks
-  const startTime = Math.floor((vp.start * duration) / minorInterval) * minorInterval;
-  const endTime = vp.end * duration;
-
-  for (let t = startTime; t <= endTime; t += minorInterval) {
-    if (t < 0) continue;
-    const pct = timeToViewportPct(t, duration);
-    if (pct < -1 || pct > 101) continue;
-
-    const isMajor = Math.abs(t % majorInterval) < 0.001 || Math.abs(t % majorInterval - majorInterval) < 0.001;
-
-    const tick = document.createElement('div');
-    tick.className = isMajor ? 'timeline-tick major' : 'timeline-tick';
-    tick.style.left = pct + '%';
-    ticksContainer.appendChild(tick);
-
-    if (isMajor) {
-      const label = document.createElement('span');
-      label.className = 'timeline-tick-label';
-      label.style.left = pct + '%';
-      label.textContent = formatTime(t);
-      ticksContainer.appendChild(label);
-    }
-  }
-}
-
-function setupMinimapInteraction() {
-  const minimap = document.getElementById('timeline-minimap');
-  const vpDiv = document.getElementById('minimap-viewport');
-  const video = document.getElementById('video-player');
-  let dragging = false;
-  let dragStartX = 0;
-  let dragStartCenter = 0;
-
-  // Click on minimap to jump viewport center
-  minimap.addEventListener('mousedown', (e) => {
-    if (!video.duration) return;
-    if (e.target === vpDiv) {
-      // Start dragging the viewport
-      dragging = true;
-      dragStartX = e.clientX;
-      dragStartCenter = state.zoomCenter;
-      e.preventDefault();
-      return;
-    }
-    // Click to recenter
-    const rect = minimap.getBoundingClientRect();
-    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-    state.zoomCenter = x / rect.width;
-    clampZoomCenter();
-    onZoomChanged();
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!dragging) return;
-    const rect = minimap.getBoundingClientRect();
-    const dx = (e.clientX - dragStartX) / rect.width;
-    state.zoomCenter = dragStartCenter + dx;
-    clampZoomCenter();
-    onZoomChanged();
-  });
-
-  document.addEventListener('mouseup', () => {
-    dragging = false;
-  });
-}
-
-function toggleOverlay() {
-  state.overlayVisible = !state.overlayVisible;
-  const btn = document.getElementById('btn-overlay');
-  const app = document.getElementById('app');
-  if (state.overlayVisible) {
-    btn.textContent = 'Labels: ON';
-    btn.classList.remove('overlay-off');
-    app.classList.remove('overlays-hidden');
-  } else {
-    btn.textContent = 'Labels: OFF';
-    btn.classList.add('overlay-off');
-    app.classList.add('overlays-hidden');
-  }
-}
-
-function showToast(message, type = 'info') {
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3200);
 }

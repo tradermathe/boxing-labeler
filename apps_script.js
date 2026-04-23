@@ -95,10 +95,62 @@ function findRowById(data, cols, id, video) {
   return -1;
 }
 
+// ============================================================
+// Form Rules support — separate sheet ("Form Labels {N}") holds
+// per-labeler answers to the form rules. Wide schema: one row per
+// (video_file, punch_id), one column per rule.
+// ============================================================
+var RULE_IDS = ['rule_hand_path', 'rule_hip_rotation', 'rule_resting_hand', 'rule_extension', 'rule_punch_height'];
+
+function rulesSheetName(labeler) {
+  if (/^\d+$/.test(labeler)) return 'Form Labels ' + labeler;
+  return 'Form Labels ' + labeler.charAt(0).toUpperCase() + labeler.slice(1).toLowerCase();
+}
+
+// Create or fetch the Form Labels sheet for this labeler, ensuring
+// the expected headers exist. Idempotent.
+function getOrCreateRulesSheet(labeler) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var name = rulesSheetName(labeler);
+  var sheet = ss.getSheetByName(name);
+  var headers = ['id', 'video_file', 'punch_id', 'punch_type', 'hand', 'stance',
+                 'start_sec', 'end_sec'].concat(RULE_IDS).concat(['labeled_at']);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sheet.setFrozenRows(1);
+    return { sheet: sheet, headers: headers };
+  }
+  // Ensure any missing columns are appended (so an older sheet gets new rule cols)
+  var existing = sheet.getRange(1, 1, 1, sheet.getLastColumn() || 1).getValues()[0];
+  var existingLower = existing.map(function (h) { return String(h).toLowerCase(); });
+  var toAppend = [];
+  headers.forEach(function (h) {
+    if (existingLower.indexOf(String(h).toLowerCase()) < 0) toAppend.push(h);
+  });
+  if (toAppend.length > 0) {
+    sheet.getRange(1, (sheet.getLastColumn() || 0) + 1, 1, toAppend.length)
+         .setValues([toAppend]);
+  }
+  return { sheet: sheet, headers: sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0] };
+}
+
+function rulesColIndex(headers, name) {
+  for (var i = 0; i < headers.length; i++) {
+    if (String(headers[i]).toLowerCase() === name.toLowerCase()) return i;
+  }
+  return -1;
+}
+
 function doGet(e) {
   var p = e ? e.parameter : {};
   var action = p.action || 'list';
   var labeler = p.labeler || '1';
+
+  // Rules-labeler actions use their own sheet, not the punch sheet.
+  if (action === 'listRules' || action === 'saveRule') {
+    return doGetRules(p, labeler, action);
+  }
 
   var sheetName;
   if (labeler === 'combined') {
@@ -220,5 +272,91 @@ function doGet(e) {
   // === Default: status check ===
   return ContentService
     .createTextOutput(JSON.stringify({ status: 'ok', message: 'Label receiver is running' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ============================================================
+// Rules-labeler endpoints
+// ============================================================
+function doGetRules(p, labeler, action) {
+  var info = getOrCreateRulesSheet(labeler);
+  var sheet = info.sheet;
+  var headers = info.headers;
+
+  // === LIST all rule answers for a video ===
+  if (action === 'listRules') {
+    if (!p.video) {
+      return jsonOut({ status: 'error', message: 'video parameter required' });
+    }
+    var videoCol = rulesColIndex(headers, 'video_file');
+    var data = sheet.getDataRange().getValues();
+    var out = [];
+    var target = normalizeDriveUrl(p.video);
+    for (var i = 1; i < data.length; i++) {
+      if (videoCol >= 0 && normalizeDriveUrl(data[i][videoCol]) !== target) continue;
+      var row = {};
+      for (var c = 0; c < headers.length; c++) row[String(headers[c])] = data[i][c];
+      out.push(row);
+    }
+    return jsonOut({ status: 'ok', rules: out });
+  }
+
+  // === SAVE (upsert) a single rule answer on the (video, punch_id) row ===
+  if (action === 'saveRule') {
+    if (!p.video || p.punch_id == null || !p.rule || !p.answer) {
+      return jsonOut({ status: 'error', message: 'video, punch_id, rule, answer required' });
+    }
+    var videoCol = rulesColIndex(headers, 'video_file');
+    var punchIdCol = rulesColIndex(headers, 'punch_id');
+    var data = sheet.getDataRange().getValues();
+    var targetVideo = normalizeDriveUrl(p.video);
+    var targetPunchId = String(p.punch_id);
+    var foundRow = -1;
+    for (var i = 1; i < data.length; i++) {
+      if (videoCol >= 0 && normalizeDriveUrl(data[i][videoCol]) !== targetVideo) continue;
+      if (punchIdCol >= 0 && String(data[i][punchIdCol]) !== targetPunchId) continue;
+      foundRow = i + 1; // 1-based sheet row
+      break;
+    }
+    var ruleCol = rulesColIndex(headers, p.rule);
+    if (ruleCol < 0) {
+      return jsonOut({ status: 'error', message: 'unknown rule: ' + p.rule });
+    }
+    var labeledAtCol = rulesColIndex(headers, 'labeled_at');
+    var now = new Date().toISOString();
+
+    if (foundRow < 0) {
+      // Append new row with core fields + this rule answer
+      var row = new Array(headers.length).fill('');
+      setIf(row, headers, 'id', sheet.getLastRow());
+      setIf(row, headers, 'video_file', normalizeDriveUrl(p.video));
+      setIf(row, headers, 'punch_id', p.punch_id);
+      setIf(row, headers, 'punch_type', p.punch_type || '');
+      setIf(row, headers, 'hand', p.hand || '');
+      setIf(row, headers, 'stance', p.stance || '');
+      setIf(row, headers, 'start_sec', p.start_sec || '');
+      setIf(row, headers, 'end_sec', p.end_sec || '');
+      row[ruleCol] = p.answer;
+      if (labeledAtCol >= 0) row[labeledAtCol] = now;
+      sheet.appendRow(row);
+      return jsonOut({ status: 'ok', action: 'added', punch_id: p.punch_id, rule: p.rule });
+    }
+
+    sheet.getRange(foundRow, ruleCol + 1).setValue(p.answer);
+    if (labeledAtCol >= 0) sheet.getRange(foundRow, labeledAtCol + 1).setValue(now);
+    return jsonOut({ status: 'ok', action: 'updated', row: foundRow, rule: p.rule });
+  }
+
+  return jsonOut({ status: 'error', message: 'Unknown rules action: ' + action });
+}
+
+function setIf(row, headers, name, value) {
+  var i = rulesColIndex(headers, name);
+  if (i >= 0) row[i] = value;
+}
+
+function jsonOut(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
 }

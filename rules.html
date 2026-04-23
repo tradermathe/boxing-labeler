@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Boxing Punch Labeler</title>
+  <title>Boxing Form Rules Labeler</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="app">
-    <!-- Top bar: compact single row -->
+    <!-- Top bar -->
     <div id="top-bar">
       <div id="video-loader">
         <button id="btn-pick-file" onclick="document.getElementById('video-file').click()">Open Video File</button>
@@ -16,34 +16,29 @@
         <span id="video-name">No video loaded</span>
         <span id="labeler-badge" style="background:#0f3460; color:#e94560; padding:2px 10px; border-radius:10px; font-size:13px; font-weight:bold; display:none;"></span>
       </div>
+      <div style="font-size:12px; color:#666; margin-right:12px">
+        <a href="index.html" style="color:#0f3460; text-decoration:none; padding:4px 10px; border:1px solid #0f3460; border-radius:4px">&larr; Punch labeler</a>
       </div>
-      <!-- Hidden input to keep loadConfig working -->
-      <input type="hidden" id="script-url">
+    </div>
+    <input type="hidden" id="script-url">
+
+    <!-- Drive link bar — simpler than punch labeler: no training/stance,
+         those are already carried on the punches fetched from the sheet. -->
     <div id="drive-link-bar" style="padding:4px 16px; background:#121a30; border-bottom:1px solid #0f3460; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
       <label for="drive-link" style="font-size:13px; color:#aaa; white-space:nowrap;">Drive Link:</label>
-      <input type="text" id="drive-link" placeholder="Paste Google Drive video link here" style="flex:1; min-width:200px; background:#1a1a2e; border:1px solid #0f3460; color:#e0e0e0; padding:6px 10px; border-radius:4px; font-size:13px;">
-      <label for="training-type" style="font-size:13px; color:#aaa; white-space:nowrap;">Type:</label>
-      <select id="training-type" style="background:#1a1a2e; border:1px solid #0f3460; color:#e0e0e0; padding:6px 8px; border-radius:4px; font-size:13px;">
-        <option value="shadowboxing">Shadowboxing</option>
-        <option value="sparring">Sparring</option>
-        <option value="bagwork">Bagwork</option>
-      </select>
-      <label for="stance-select" style="font-size:13px; color:#aaa; white-space:nowrap;">Stance:</label>
-      <select id="stance-select" style="background:#1a1a2e; border:1px solid #0f3460; color:#e0e0e0; padding:6px 8px; border-radius:4px; font-size:13px;">
-        <option value="Orthodox">Orthodox</option>
-        <option value="Southpaw">Southpaw</option>
-      </select>
+      <input type="text" id="drive-link" placeholder="Paste same Drive / YouTube link used when punches were labeled" style="flex:1; min-width:200px; background:#1a1a2e; border:1px solid #0f3460; color:#e0e0e0; padding:6px 10px; border-radius:4px; font-size:13px;">
+      <span id="punch-load-status" style="font-size:12px; color:#666; min-width:120px"></span>
     </div>
 
     <!-- Main layout -->
     <div id="main-layout">
-      <!-- Left sidebar: punch types -->
-      <div id="punch-panel">
-        <h3>Move Type</h3>
-        <div id="punch-buttons"></div>
+      <!-- Left: punch list -->
+      <div id="punch-list-panel">
+        <h3>Punches <span id="punch-list-count" style="color:#666; font-weight:normal; font-size:12px">(0)</span></h3>
+        <div id="punch-list"></div>
       </div>
 
-      <!-- Center: video player -->
+      <!-- Center: video player (same IDs as index.html so player.js works) -->
       <div id="video-container">
         <div id="video-viewport">
           <video id="video-player" preload="auto"></video>
@@ -92,44 +87,31 @@
         </div>
       </div>
 
-      <!-- Right sidebar: labeling workflow + log -->
-      <div id="label-panel">
-        <div id="round-indicator" class="round-idle" onclick="">Press S to start round</div>
-        <h3>Label Punch</h3>
-        <div id="selected-punch">Select a punch type first</div>
-        <button id="btn-timestamp" onclick="captureTimestamp()" disabled>
-          Select a punch type first
-        </button>
-        <div id="pending-label"></div>
-
-        <h3>Labels <span id="label-count">(0)</span></h3>
-        <div id="label-log"></div>
+      <!-- Right: rule checklist for the currently-selected punch -->
+      <div id="rules-panel">
+        <div id="current-punch-card">
+          <div id="current-punch-empty">Pick a punch to start labeling</div>
+        </div>
+        <div id="rule-checklist"></div>
+        <div id="rule-progress" style="font-size:11px; color:#666; text-align:center; padding:4px"></div>
       </div>
     </div>
 
-    <!-- Keyboard shortcuts help -->
+    <!-- Shortcuts bar -->
     <div id="shortcuts-bar">
       <strong>Shortcuts:</strong>
       Space = Play/Pause &nbsp;|&nbsp;
       &larr;/&rarr; = &plusmn;1 frame &nbsp;|&nbsp;
       Shift+&larr;/&rarr; = Prev/Next punch &nbsp;|&nbsp;
-      1-9,0 = Offense &nbsp;|&nbsp;
-      Q/W/A/D/R/F = Defense &nbsp;|&nbsp;
-      Enter = Capture time &nbsp;|&nbsp;
-      Z = Undo last label &nbsp;|&nbsp;
-      Esc = Cancel punch &nbsp;|&nbsp;
-      S = Round Start &nbsp;|&nbsp;
-      E = Round End &nbsp;|&nbsp;
+      1-5 = Select rule row &nbsp;|&nbsp;
+      Y = Pass, N = Fail, U = Unclear &nbsp;|&nbsp;
       L = Toggle Labels &nbsp;|&nbsp;
       Shift+&lt;/&gt; = Speed &minus;/+ &nbsp;|&nbsp;
-      Alt+Scroll = Zoom &nbsp;|&nbsp;
-      Scroll = Pan (when zoomed) &nbsp;|&nbsp;
-      Ctrl+/- = Zoom In/Out &nbsp;|&nbsp;
-      Ctrl+0 = Fit
+      Alt+Scroll = Zoom
     </div>
   </div>
 
   <script src="player.js"></script>
-  <script src="app.js"></script>
+  <script src="rules.js"></script>
 </body>
 </html>
