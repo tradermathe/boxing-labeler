@@ -184,6 +184,10 @@ function captureTimestamp() {
   } else if (state.mode === 'end' && state.selectedPunch) {
     const label = {
       id: null,
+      // Stable identifier the punch keeps across edits. Used as the join
+      // key by the rules labeler (Form Labels sheet) so form annotations
+      // survive row/id reshuffles.
+      punch_uuid: crypto.randomUUID(),
       punch: state.selectedPunch,
       angle: '',
       start: state.pendingStart,
@@ -217,6 +221,7 @@ async function pushLabelToSheet(label) {
       trainingType: document.getElementById('training-type').value,
       stance: document.getElementById('stance-select').value,
       punchId: punch.id,
+      punchUuid: label.punch_uuid || '',
       angle: label.angle || '',
       startTime: formatTimeSheet(label.start),
       endTime: formatTimeSheet(label.end),
@@ -228,6 +233,9 @@ async function pushLabelToSheet(label) {
       showToast('Sheet save failed: ' + result.message, 'error');
     } else {
       if (result.id != null) label.id = result.id;
+      // Server may have stamped its own UUID if our client-generated one was
+      // missing (older builds). Adopt whatever the server persisted.
+      if (result.punch_uuid) label.punch_uuid = result.punch_uuid;
       showToast('Saved to Google Sheet', 'info');
     }
   } catch (e) {
@@ -241,6 +249,9 @@ function addRoundMarker(markerType) {
   const time = video.currentTime;
   const label = {
     id: null,
+    // Round markers get UUIDs too so every row in the sheet has one —
+    // simpler backend schema than conditionally stamping.
+    punch_uuid: crypto.randomUUID(),
     punch: markerType,
     start: time,
     end: time,
@@ -263,6 +274,7 @@ async function pushRoundMarkerToSheet(label) {
       trainingType: document.getElementById('training-type').value,
       stance: document.getElementById('stance-select').value,
       punchId: label.punch,
+      punchUuid: label.punch_uuid || '',
       angle: '',
       startTime: time,
       endTime: time,
@@ -270,6 +282,7 @@ async function pushRoundMarkerToSheet(label) {
     const resp = await fetch(url);
     const result = await resp.json();
     if (result.id != null) label.id = result.id;
+    if (result.punch_uuid) label.punch_uuid = result.punch_uuid;
     showToast(`${label.punch} saved at ${formatTime(label.start)}`, 'success');
     fetchLabelsFromSheet();
   } catch (e) {
@@ -346,6 +359,7 @@ async function fetchLabelsFromSheet() {
         const isRound = punch === 'round_start' || punch === 'round_end';
         return {
           id: l.id,
+          punch_uuid: l.punch_uuid || '',
           punch: punch,
           angle: l.angle || '',
           start: typeof l.startTime === 'number' ? l.startTime : parseSheetTime(l.startTime),

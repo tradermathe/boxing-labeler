@@ -53,7 +53,7 @@ Object.assign(state, {
   punches: [],            // sorted by start_sec
   currentIdx: -1,         // index into state.punches
   activeRuleIdx: 0,       // which rule row is selected (0..RULES.length-1)
-  answers: {},            // { punch_id: { rule_id: 'pass'|'fail'|'unclear' } }
+  answers: {},            // { punch_uuid: { rule_id: 'pass'|'fail'|'unclear' } }
 });
 
 // ============================================================
@@ -131,6 +131,9 @@ async function loadPunchesAndAnswers() {
       })
       .map(l => ({
         id:         l.id,
+        // Stable cross-sheet identity — the backend backfills this
+        // on any row missing one, so it should always be present.
+        punch_uuid: l.punch_uuid || '',
         videoName:  l.videoName,
         punch:      l.punch,
         start_sec:  typeof l.startTime === 'number' ? l.startTime : parseFloat(l.startTime) || 0,
@@ -171,19 +174,15 @@ async function fetchExistingAnswers(driveLink) {
   const resp = await fetch(url);
   const result = await resp.json();
   if (result.status !== 'ok' || !result.rules) return {};
-  // rules: [{ punch_id, rule_id, answer }, ...] or a wide-row format
+  // rules: [{ punch_uuid, rule_*, ... }, ...] — wide row, one row per punch,
+  // one column per rule. Key every answer by punch_uuid.
   const answers = {};
   for (const r of result.rules) {
-    if (r.punch_id == null) continue;
-    const key = String(r.punch_id);
+    if (r.punch_uuid == null || r.punch_uuid === '') continue;
+    const key = String(r.punch_uuid);
     if (!answers[key]) answers[key] = {};
-    // Wide row: keys matching rule_* are each a separate answer
-    if (r.rule_id && r.answer) {
-      answers[key][r.rule_id] = r.answer;
-    } else {
-      for (const rule of RULES) {
-        if (r[rule.id]) answers[key][rule.id] = r[rule.id];
-      }
+    for (const rule of RULES) {
+      if (r[rule.id]) answers[key][rule.id] = r[rule.id];
     }
   }
   return answers;
@@ -214,7 +213,7 @@ function renderPunchList() {
     entry.dataset.idx = idx;
     if (idx === state.currentIdx) entry.classList.add('current');
 
-    const a = state.answers[p.id] || {};
+    const a = state.answers[p.punch_uuid] || {};
     const applicable = RULES.filter(r => ruleAppliesTo(r.id, p));
     const answeredCount = applicable.filter(r => a[r.id]).length;
     const totalCount = applicable.length;
@@ -287,7 +286,7 @@ function renderCurrentPunch() {
     <div class="cp-row"><span class="cp-label">#</span><span class="cp-value">${state.currentIdx + 1} of ${state.punches.length}</span></div>
   `;
 
-  const a = state.answers[p.id] || {};
+  const a = state.answers[p.punch_uuid] || {};
   checklist.innerHTML = '';
   RULES.forEach((rule, i) => {
     const applicable = ruleAppliesTo(rule.id, p);
@@ -329,9 +328,13 @@ function answerRule(ruleIdx, answer) {
   const p = state.punches[state.currentIdx];
   const rule = RULES[ruleIdx];
   if (!p || !rule || !ruleAppliesTo(rule.id, p)) return;
+  if (!p.punch_uuid) {
+    showToast('Punch has no uuid — skipping save. Re-run punch labeler to backfill.', 'error');
+    return;
+  }
 
-  if (!state.answers[p.id]) state.answers[p.id] = {};
-  state.answers[p.id][rule.id] = answer;
+  if (!state.answers[p.punch_uuid]) state.answers[p.punch_uuid] = {};
+  state.answers[p.punch_uuid][rule.id] = answer;
 
   // Advance active row to next applicable rule (wraps to next punch if done)
   let next = ruleIdx + 1;
@@ -339,7 +342,7 @@ function answerRule(ruleIdx, answer) {
   if (next >= RULES.length) {
     // All applicable rules answered for this punch
     const applicable = RULES.filter(r => ruleAppliesTo(r.id, p));
-    const done = applicable.every(r => state.answers[p.id][r.id]);
+    const done = applicable.every(r => state.answers[p.punch_uuid][r.id]);
     if (done && state.currentIdx + 1 < state.punches.length) {
       saveAnswerToSheet(p, rule, answer).finally(() => {
         nextPunch();
@@ -356,23 +359,23 @@ function answerRule(ruleIdx, answer) {
 }
 
 // ============================================================
-// Sheet sync — one row per (video, punch_id), columns per rule.
-// Backend upserts on (video, punch_id).
+// Sheet sync — one row per punch (keyed on punch_uuid), one column
+// per rule. Backend upserts on punch_uuid.
 // ============================================================
 async function saveAnswerToSheet(punch, rule, answer) {
   if (!state.scriptUrl) return;
   try {
     const url = sheetUrl({
-      action:    'saveRule',
-      video:     punch.videoName,
-      punch_id:  punch.id,
+      action:     'saveRule',
+      video:      punch.videoName,
+      punch_uuid: punch.punch_uuid,
       punch_type: punch.punch,
-      hand:      punch.hand || '',
-      stance:    punch.stance || '',
-      start_sec: String(punch.start_sec),
-      end_sec:   String(punch.end_sec),
-      rule:      rule.id,
-      answer:    answer,
+      hand:       punch.hand || '',
+      stance:     punch.stance || '',
+      start_sec:  String(punch.start_sec),
+      end_sec:    String(punch.end_sec),
+      rule:       rule.id,
+      answer:     answer,
     });
     const resp = await fetch(url);
     const result = await resp.json();
@@ -507,7 +510,7 @@ function renderMinimapSegments() {
 // Color a punch segment by its labeling status (green=complete,
 // yellow=partial, gray=pending) so the timeline shows progress.
 function punchSegmentColor(p) {
-  const a = state.answers[p.id] || {};
+  const a = state.answers[p.punch_uuid] || {};
   const applicable = RULES.filter(r => ruleAppliesTo(r.id, p));
   const answered = applicable.filter(r => a[r.id]).length;
   if (answered === 0) return '#555';

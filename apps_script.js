@@ -43,10 +43,11 @@ function toSeconds(val) {
 }
 
 function findColumns(header) {
-  var cols = { id: -1, videoName: -1, video: -1, trainingType: -1, stance: -1, fighter: -1, angle: -1, punch: -1, start: -1, end: -1 };
+  var cols = { id: -1, uuid: -1, videoName: -1, video: -1, trainingType: -1, stance: -1, fighter: -1, angle: -1, punch: -1, start: -1, end: -1 };
   for (var c = 0; c < header.length; c++) {
     var h = String(header[c]).toLowerCase().trim();
     if (h === 'id') cols.id = c;
+    else if (h === 'punch_uuid') cols.uuid = c;
     else if (h === 'video_name') cols.videoName = c;
     else if (h === 'video_file') cols.video = c;
     else if (h === 'training_type') cols.trainingType = c;
@@ -58,6 +59,42 @@ function findColumns(header) {
     else if (h === 'end_sec') cols.end = c;
   }
   return cols;
+}
+
+// Ensure the sheet has a `punch_uuid` column and every data row has a UUID.
+// Appends the header if missing, stamps UUIDs on any empty cell. Returns the
+// possibly-updated (data, cols) tuple so callers can use the fresh UUIDs.
+// Idempotent and safe to call on every list request — only writes when
+// something is actually missing.
+function ensureUuidColumn(sheet, data, cols) {
+  if (!data || data.length === 0) return { data: data, cols: cols };
+
+  // Add header column if absent
+  if (cols.uuid < 0) {
+    var newCol = (data[0] ? data[0].length : 0) + 1;
+    sheet.getRange(1, newCol).setValue('punch_uuid');
+    cols.uuid = newCol - 1;
+    // Reflect the new header in our local data copy
+    for (var r = 0; r < data.length; r++) data[r][cols.uuid] = (r === 0 ? 'punch_uuid' : '');
+  }
+
+  // Collect rows needing a UUID so we can batch-write (Sheets API rate limits
+  // punish lots of single-cell setValue calls on large sheets)
+  var missing = [];
+  for (var i = 1; i < data.length; i++) {
+    var v = data[i][cols.uuid];
+    if (v === '' || v == null) missing.push(i);
+  }
+  if (missing.length === 0) return { data: data, cols: cols };
+
+  // Stamp them. Utilities.getUuid() returns a standard v4 UUID.
+  for (var j = 0; j < missing.length; j++) {
+    var rowIdx = missing[j];
+    var uuid = Utilities.getUuid();
+    data[rowIdx][cols.uuid] = uuid;
+    sheet.getRange(rowIdx + 1, cols.uuid + 1).setValue(uuid);
+  }
+  return { data: data, cols: cols };
 }
 
 function normalizeDriveUrl(url) {
@@ -98,7 +135,7 @@ function findRowById(data, cols, id, video) {
 // ============================================================
 // Form Rules support — separate sheet ("Form Labels {N}") holds
 // per-labeler answers to the form rules. Wide schema: one row per
-// (video_file, punch_id), one column per rule.
+// punch (keyed on the stable punch_uuid), one column per rule.
 // ============================================================
 var RULE_IDS = ['rule_hand_path', 'rule_hip_rotation', 'rule_resting_hand', 'rule_extension', 'rule_punch_height'];
 
@@ -113,7 +150,7 @@ function getOrCreateRulesSheet(labeler) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var name = rulesSheetName(labeler);
   var sheet = ss.getSheetByName(name);
-  var headers = ['id', 'video_file', 'punch_id', 'punch_type', 'hand', 'stance',
+  var headers = ['id', 'punch_uuid', 'video_file', 'punch_type', 'hand', 'stance',
                  'start_sec', 'end_sec'].concat(RULE_IDS).concat(['labeled_at']);
   if (!sheet) {
     sheet = ss.insertSheet(name);
@@ -172,13 +209,20 @@ function doGet(e) {
   if (action === 'list' && p.video) {
     var data = sheet.getDataRange().getValues();
     var cols = findColumns(data[0]);
+    // Ensure every row has a stable punch_uuid before returning anything —
+    // backfills on the fly so downstream consumers (rules labeler) always
+    // see a uuid to join on.
+    var ensured = ensureUuidColumn(sheet, data, cols);
+    data = ensured.data; cols = ensured.cols;
     var labels = [];
     for (var i = 1; i < data.length; i++) {
       if (normalizeDriveUrl(data[i][cols.video]) === normalizeDriveUrl(p.video)) {
         labels.push({
           id: parseInt(data[i][cols.id]) || (i + 1),
+          punch_uuid: cols.uuid >= 0 ? String(data[i][cols.uuid] || '') : '',
           videoName: data[i][cols.video],
           angle: cols.angle >= 0 ? data[i][cols.angle] : '',
+          stance: cols.stance >= 0 ? data[i][cols.stance] : '',
           punch: data[i][cols.punch],
           startTime: cols.start >= 0 ? toSeconds(data[i][cols.start]) : 0,
           endTime: cols.end >= 0 ? toSeconds(data[i][cols.end]) : 0,
@@ -194,9 +238,16 @@ function doGet(e) {
   if (action === 'add') {
     var data = sheet.getDataRange().getValues();
     var cols = findColumns(data[0]);
+    // Make sure the punch_uuid header exists before we assign row[cols.uuid]
+    var ensured = ensureUuidColumn(sheet, data, cols);
+    data = ensured.data; cols = ensured.cols;
     var newId = nextId(data, cols);
     var row = new Array(data[0].length).fill('');
     if (cols.id >= 0) row[cols.id] = newId;
+    // Client-generated UUID preferred (lets the client cache it before the
+    // backend responds). Fall back to server-generated if absent — some
+    // older clients don't send one.
+    if (cols.uuid >= 0) row[cols.uuid] = p.punchUuid || Utilities.getUuid();
     if (cols.videoName >= 0) row[cols.videoName] = '';
     if (cols.video >= 0) row[cols.video] = normalizeDriveUrl(p.videoName) || '';
     if (cols.trainingType >= 0) row[cols.trainingType] = p.trainingType || '';
@@ -226,7 +277,10 @@ function doGet(e) {
       sheet.appendRow(row);
     }
     return ContentService
-      .createTextOutput(JSON.stringify({ status: 'ok', action: 'added', id: newId }))
+      .createTextOutput(JSON.stringify({
+        status: 'ok', action: 'added', id: newId,
+        punch_uuid: cols.uuid >= 0 ? row[cols.uuid] : ''
+      }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
@@ -301,22 +355,18 @@ function doGetRules(p, labeler, action) {
     return jsonOut({ status: 'ok', rules: out });
   }
 
-  // === SAVE (upsert) a single rule answer on the (video, punch_id) row ===
+  // === SAVE (upsert) a single rule answer, keyed on punch_uuid ===
   if (action === 'saveRule') {
-    if (!p.video || p.punch_id == null || !p.rule || !p.answer) {
-      return jsonOut({ status: 'error', message: 'video, punch_id, rule, answer required' });
+    if (p.punch_uuid == null || p.punch_uuid === '' || !p.rule || !p.answer) {
+      return jsonOut({ status: 'error', message: 'punch_uuid, rule, answer required' });
     }
-    var videoCol = rulesColIndex(headers, 'video_file');
-    var punchIdCol = rulesColIndex(headers, 'punch_id');
+    var uuidCol = rulesColIndex(headers, 'punch_uuid');
+    if (uuidCol < 0) return jsonOut({ status: 'error', message: 'form labels sheet missing punch_uuid column' });
     var data = sheet.getDataRange().getValues();
-    var targetVideo = normalizeDriveUrl(p.video);
-    var targetPunchId = String(p.punch_id);
+    var targetUuid = String(p.punch_uuid);
     var foundRow = -1;
     for (var i = 1; i < data.length; i++) {
-      if (videoCol >= 0 && normalizeDriveUrl(data[i][videoCol]) !== targetVideo) continue;
-      if (punchIdCol >= 0 && String(data[i][punchIdCol]) !== targetPunchId) continue;
-      foundRow = i + 1; // 1-based sheet row
-      break;
+      if (String(data[i][uuidCol]) === targetUuid) { foundRow = i + 1; break; }
     }
     var ruleCol = rulesColIndex(headers, p.rule);
     if (ruleCol < 0) {
@@ -326,11 +376,10 @@ function doGetRules(p, labeler, action) {
     var now = new Date().toISOString();
 
     if (foundRow < 0) {
-      // Append new row with core fields + this rule answer
       var row = new Array(headers.length).fill('');
       setIf(row, headers, 'id', sheet.getLastRow());
-      setIf(row, headers, 'video_file', normalizeDriveUrl(p.video));
-      setIf(row, headers, 'punch_id', p.punch_id);
+      setIf(row, headers, 'punch_uuid', targetUuid);
+      setIf(row, headers, 'video_file', p.video ? normalizeDriveUrl(p.video) : '');
       setIf(row, headers, 'punch_type', p.punch_type || '');
       setIf(row, headers, 'hand', p.hand || '');
       setIf(row, headers, 'stance', p.stance || '');
@@ -339,7 +388,7 @@ function doGetRules(p, labeler, action) {
       row[ruleCol] = p.answer;
       if (labeledAtCol >= 0) row[labeledAtCol] = now;
       sheet.appendRow(row);
-      return jsonOut({ status: 'ok', action: 'added', punch_id: p.punch_id, rule: p.rule });
+      return jsonOut({ status: 'ok', action: 'added', punch_uuid: targetUuid, rule: p.rule });
     }
 
     sheet.getRange(foundRow, ruleCol + 1).setValue(p.answer);
