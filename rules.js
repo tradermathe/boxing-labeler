@@ -257,7 +257,7 @@ function seekToPunch(idx) {
   const video = document.getElementById('video-player');
   const p = state.punches[idx];
   if (!p || !video.duration) return;
-  video.currentTime = Math.max(0, p.start_sec - 0.2);
+  video.currentTime = p.start_sec;
 }
 
 function nextPunch() { selectPunch(Math.min(state.punches.length - 1, state.currentIdx + 1)); }
