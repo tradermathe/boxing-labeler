@@ -523,7 +523,11 @@ function updateVideoOverlay() {
   const video = document.getElementById('video-player');
   const t = video.currentTime;
 
-  const active = state.punches.find(p => t >= p.start_sec && t <= p.end_sec);
+  // Video seeks snap to the nearest decoded frame, so asking for exactly
+  // start_sec can land one frame earlier. A frame-duration tolerance on
+  // each end keeps the overlay visible when you click-to-seek a punch.
+  const tol = Math.max(state.frameDuration || 0, 1 / 30);
+  const active = state.punches.find(p => t >= p.start_sec - tol && t <= p.end_sec + tol);
   const key = active ? 'p' + active.id : 'none';
   if (overlay.dataset.activeKey === key) return;
   overlay.dataset.activeKey = key;
