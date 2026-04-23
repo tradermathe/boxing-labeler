@@ -322,6 +322,18 @@ function renderCurrentPunch() {
   const applicable = RULES.filter(r => ruleAppliesTo(r.id, p));
   const answered = applicable.filter(r => a[r.id]).length;
   progress.textContent = `${answered} of ${applicable.length} rules answered`;
+
+  // Next-punch button: enabled only when every applicable rule on this punch
+  // has an answer, and there's another punch after this one. Acts as the
+  // primary "move on" affordance — the Shift+→ shortcut still works as an
+  // escape hatch for skipping ahead without completing.
+  const nextBtn = document.getElementById('rule-next-btn');
+  if (nextBtn) {
+    const allAnswered = applicable.length > 0 && answered === applicable.length;
+    const hasNext = state.currentIdx + 1 < state.punches.length;
+    nextBtn.disabled = !(allAnswered && hasNext);
+    nextBtn.textContent = hasNext ? 'Next punch →' : 'All punches done';
+  }
 }
 
 function answerRule(ruleIdx, answer) {
@@ -336,22 +348,14 @@ function answerRule(ruleIdx, answer) {
   if (!state.answers[p.punch_uuid]) state.answers[p.punch_uuid] = {};
   state.answers[p.punch_uuid][rule.id] = answer;
 
-  // Advance active row to next applicable rule (wraps to next punch if done)
+  // Advance the active row to the next applicable rule for fast keyboard
+  // labeling, but stop at the last rule — the user clicks the Next button
+  // (or Shift+→) when they're ready to move on. We no longer auto-advance
+  // to the next punch because that forced the 5th save to race with the
+  // previous 4 and produced duplicate Form Labels rows.
   let next = ruleIdx + 1;
   while (next < RULES.length && !ruleAppliesTo(RULES[next].id, p)) next++;
-  if (next >= RULES.length) {
-    // All applicable rules answered for this punch
-    const applicable = RULES.filter(r => ruleAppliesTo(r.id, p));
-    const done = applicable.every(r => state.answers[p.punch_uuid][r.id]);
-    if (done && state.currentIdx + 1 < state.punches.length) {
-      saveAnswerToSheet(p, rule, answer).finally(() => {
-        nextPunch();
-      });
-      return;
-    }
-  } else {
-    state.activeRuleIdx = next;
-  }
+  if (next < RULES.length) state.activeRuleIdx = next;
 
   renderCurrentPunch();
   renderPunchList();

@@ -360,40 +360,90 @@ function doGetRules(p, labeler, action) {
     if (p.punch_uuid == null || p.punch_uuid === '' || !p.rule || !p.answer) {
       return jsonOut({ status: 'error', message: 'punch_uuid, rule, answer required' });
     }
-    var uuidCol = rulesColIndex(headers, 'punch_uuid');
-    if (uuidCol < 0) return jsonOut({ status: 'error', message: 'form labels sheet missing punch_uuid column' });
-    var data = sheet.getDataRange().getValues();
-    var targetUuid = String(p.punch_uuid);
-    var foundRow = -1;
-    for (var i = 1; i < data.length; i++) {
-      if (String(data[i][uuidCol]) === targetUuid) { foundRow = i + 1; break; }
+    // Serialize concurrent saveRule calls. Without this, rapid click sequences
+    // on the 5 rule rows fire overlapping fetches that each read the sheet
+    // before the others have committed, decide "no row yet", and each
+    // append a fresh row with their single answer — producing one duplicate
+    // per parallel call. The lock forces strict ordering so the first call
+    // appends the row and the rest see+update it.
+    var lock = LockService.getScriptLock();
+    if (!lock.tryLock(10000)) {
+      return jsonOut({ status: 'error', message: 'Could not acquire lock; try again' });
     }
-    var ruleCol = rulesColIndex(headers, p.rule);
-    if (ruleCol < 0) {
-      return jsonOut({ status: 'error', message: 'unknown rule: ' + p.rule });
-    }
-    var labeledAtCol = rulesColIndex(headers, 'labeled_at');
-    var now = new Date().toISOString();
+    try {
+      var uuidCol = rulesColIndex(headers, 'punch_uuid');
+      if (uuidCol < 0) return jsonOut({ status: 'error', message: 'form labels sheet missing punch_uuid column' });
+      var data = sheet.getDataRange().getValues();
+      var targetUuid = String(p.punch_uuid);
+      // Collect every row with this uuid. Under the new lock there should
+      // never be more than one, but pre-lock duplicates from earlier
+      // labeling can exist — merge them into the first match.
+      var matches = [];
+      for (var i = 1; i < data.length; i++) {
+        if (String(data[i][uuidCol]) === targetUuid) matches.push(i);
+      }
+      var ruleCol = rulesColIndex(headers, p.rule);
+      if (ruleCol < 0) {
+        return jsonOut({ status: 'error', message: 'unknown rule: ' + p.rule });
+      }
+      var labeledAtCol = rulesColIndex(headers, 'labeled_at');
+      var now = new Date().toISOString();
+      var ruleColIdxs = RULE_IDS.map(function (r) { return rulesColIndex(headers, r); });
 
-    if (foundRow < 0) {
-      var row = new Array(headers.length).fill('');
-      setIf(row, headers, 'id', sheet.getLastRow());
-      setIf(row, headers, 'punch_uuid', targetUuid);
-      setIf(row, headers, 'video_file', p.video ? normalizeDriveUrl(p.video) : '');
-      setIf(row, headers, 'punch_type', p.punch_type || '');
-      setIf(row, headers, 'hand', p.hand || '');
-      setIf(row, headers, 'stance', p.stance || '');
-      setIf(row, headers, 'start_sec', p.start_sec || '');
-      setIf(row, headers, 'end_sec', p.end_sec || '');
-      row[ruleCol] = p.answer;
-      if (labeledAtCol >= 0) row[labeledAtCol] = now;
-      sheet.appendRow(row);
-      return jsonOut({ status: 'ok', action: 'added', punch_uuid: targetUuid, rule: p.rule });
-    }
+      if (matches.length === 0) {
+        var row = new Array(headers.length).fill('');
+        setIf(row, headers, 'id', sheet.getLastRow());
+        setIf(row, headers, 'punch_uuid', targetUuid);
+        setIf(row, headers, 'video_file', p.video ? normalizeDriveUrl(p.video) : '');
+        setIf(row, headers, 'punch_type', p.punch_type || '');
+        setIf(row, headers, 'hand', p.hand || '');
+        setIf(row, headers, 'stance', p.stance || '');
+        setIf(row, headers, 'start_sec', p.start_sec || '');
+        setIf(row, headers, 'end_sec', p.end_sec || '');
+        row[ruleCol] = p.answer;
+        if (labeledAtCol >= 0) row[labeledAtCol] = now;
+        sheet.appendRow(row);
+        return jsonOut({ status: 'ok', action: 'added', punch_uuid: targetUuid, rule: p.rule });
+      }
 
-    sheet.getRange(foundRow, ruleCol + 1).setValue(p.answer);
-    if (labeledAtCol >= 0) sheet.getRange(foundRow, labeledAtCol + 1).setValue(now);
-    return jsonOut({ status: 'ok', action: 'updated', row: foundRow, rule: p.rule });
+      var primary = matches[0];
+      // Heal pre-existing duplicates: pull any filled rule cells from
+      // extras into the primary row, then delete the extras. Non-rule
+      // identity cells (video_file, punch_type, etc.) are already the
+      // same across duplicates so we don't need to copy them.
+      if (matches.length > 1) {
+        ruleColIdxs.forEach(function (ci) {
+          if (ci < 0) return;
+          if (data[primary][ci]) return;
+          for (var m = 1; m < matches.length; m++) {
+            var v = data[matches[m]][ci];
+            if (v) { data[primary][ci] = v; break; }
+          }
+        });
+        // Write the merged rule cells back to the primary row
+        var startCol = Math.min.apply(null, ruleColIdxs.filter(function (c) { return c >= 0; }));
+        if (isFinite(startCol)) {
+          var endCol = Math.max.apply(null, ruleColIdxs);
+          var slice = data[primary].slice(startCol, endCol + 1);
+          sheet.getRange(primary + 1, startCol + 1, 1, slice.length).setValues([slice]);
+        }
+        // Delete duplicate rows in descending order so indices stay valid
+        for (var m = matches.length - 1; m >= 1; m--) {
+          sheet.deleteRow(matches[m] + 1);
+        }
+      }
+
+      var foundRow = primary + 1;
+      sheet.getRange(foundRow, ruleCol + 1).setValue(p.answer);
+      if (labeledAtCol >= 0) sheet.getRange(foundRow, labeledAtCol + 1).setValue(now);
+      return jsonOut({
+        status: 'ok', action: matches.length > 1 ? 'merged+updated' : 'updated',
+        row: foundRow, rule: p.rule,
+        merged: matches.length > 1 ? matches.length : undefined
+      });
+    } finally {
+      lock.releaseLock();
+    }
   }
 
   return jsonOut({ status: 'error', message: 'Unknown rules action: ' + action });

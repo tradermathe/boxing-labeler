@@ -868,6 +868,29 @@ body {
   padding: 12px 0;
 }
 
+#rule-next-btn {
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 2px solid #28a745;
+  background: #1a2e1a;
+  color: #5aff7a;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.5px;
+}
+#rule-next-btn:hover:not(:disabled) {
+  background: #1e3a1e;
+  box-shadow: 0 0 10px rgba(40, 167, 69, 0.35);
+}
+#rule-next-btn:disabled {
+  border-color: #2a3550;
+  background: #16213e;
+  color: #555;
+  cursor: not-allowed;
+}
+
 #current-punch-card .cp-row {
   display: flex;
   justify-content: space-between;
