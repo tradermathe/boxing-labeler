@@ -14,11 +14,13 @@
 // examples live in Notion (Coaching > Rule Explanations).
 // ============================================================
 const RULES = [
-  { id: 'rule_hand_path',     label: 'Hand back to guard',   cue: 'Returns along the same path, no drop/loop' },
-  { id: 'rule_hip_rotation',  label: 'Hip rotation',          cue: 'Hips drive the punch (jabs excluded)' },
-  { id: 'rule_resting_hand',  label: 'Resting hand at guard', cue: 'Non-punching hand stays up' },
-  { id: 'rule_extension',     label: 'Fully extended',        cue: 'Arm reaches near-full extension at peak' },
-  { id: 'rule_punch_height',  label: 'At head height',        cue: 'Head-labeled punch lands high (skip for body)' },
+  { id: 'rule_hand_extended', label: 'Hand stays out too long', cue: 'Hand lingers extended after the punch ends' },
+  { id: 'rule_hand_low',      label: 'Hand returns too low',    cue: 'Comes back below the cheekbone/guard height' },
+  { id: 'rule_hand_ushape',   label: 'Hand loops on return',    cue: 'Drops and curves back instead of a straight line' },
+  { id: 'rule_hip_rotation',  label: 'Hip rotation',            cue: 'Hips drive the punch (jabs excluded)' },
+  { id: 'rule_resting_hand',  label: 'Resting hand at guard',   cue: 'Non-punching hand stays up' },
+  { id: 'rule_extension',     label: 'Fully extended',          cue: 'Arm reaches near-full extension at peak' },
+  { id: 'rule_punch_height',  label: 'At head height',          cue: 'Head-labeled punch lands high (skip for body)' },
 ];
 
 const ANSWERS = ['pass', 'fail', 'unclear'];
@@ -429,6 +431,8 @@ function setupKeyboardShortcuts() {
       case 'Digit3': case 'Numpad3': selectRuleRow(2); break;
       case 'Digit4': case 'Numpad4': selectRuleRow(3); break;
       case 'Digit5': case 'Numpad5': selectRuleRow(4); break;
+      case 'Digit6': case 'Numpad6': selectRuleRow(5); break;
+      case 'Digit7': case 'Numpad7': selectRuleRow(6); break;
 
       case 'Period': case 'Comma':
         if (e.shiftKey) {
