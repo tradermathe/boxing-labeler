@@ -14,9 +14,9 @@
 // examples live in Notion (Coaching > Rule Explanations).
 // ============================================================
 const RULES = [
-  { id: 'rule_hand_extended', label: 'Hand stays out too long', cue: 'Hand lingers extended after the punch ends' },
-  { id: 'rule_hand_low',      label: 'Hand returns too low',    cue: 'Comes back below the cheekbone/guard height' },
-  { id: 'rule_hand_ushape',   label: 'Hand loops on return',    cue: 'Drops and curves back instead of a straight line' },
+  { id: 'rule_hand_extended', label: 'Hand snaps back',         cue: 'Retracts quickly after impact' },
+  { id: 'rule_hand_low',      label: 'Hand returns to guard',   cue: 'Comes back at cheekbone height' },
+  { id: 'rule_hand_ushape',   label: 'Hand returns straight',   cue: 'Travels back in a straight line, no looping' },
   { id: 'rule_hip_rotation',  label: 'Hip rotation',            cue: 'Hips drive the punch (jabs excluded)' },
   { id: 'rule_resting_hand',  label: 'Resting hand at guard',   cue: 'Non-punching hand stays up' },
   { id: 'rule_extension',     label: 'Fully extended',          cue: 'Arm reaches near-full extension at peak' },
