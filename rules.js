@@ -540,17 +540,17 @@ function updateVideoOverlay() {
   // start_sec can land one frame earlier. A frame-duration tolerance on
   // each end keeps the overlay visible when you click-to-seek a punch.
   const tol = Math.max(state.frameDuration || 0, 1 / 30);
-  const active = state.punches.find(p => t >= p.start_sec - tol && t <= p.end_sec + tol);
-  const key = active ? 'p' + active.id : 'none';
+  const active = state.punches.filter(p => t >= p.start_sec - tol && t <= p.end_sec + tol);
+  const key = active.length ? active.map(p => p.id).join(',') : 'none';
   if (overlay.dataset.activeKey === key) return;
   overlay.dataset.activeKey = key;
 
   overlay.innerHTML = '';
-  if (active) {
+  for (const p of active) {
     const tag = document.createElement('div');
     tag.className = 'video-overlay-tag';
-    tag.style.borderLeftColor = punchSegmentColor(active);
-    tag.textContent = prettyPunch(active.punch);
+    tag.style.borderLeftColor = punchSegmentColor(p);
+    tag.textContent = prettyPunch(p.punch);
     overlay.appendChild(tag);
   }
 }
