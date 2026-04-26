@@ -18,6 +18,7 @@ const RULES = [
   { id: 'rule_hand_low',      label: 'Hand returns to guard',   cue: 'Comes back at cheekbone height' },
   { id: 'rule_hand_ushape',   label: 'Hand returns straight',   cue: 'Travels back in a straight line, no looping' },
   { id: 'rule_hip_rotation',  label: 'Hip rotation',            cue: 'Hips drive the punch (jabs excluded)' },
+  { id: 'rule_rear_heel_lift',label: 'Rear heel lifts',         cue: 'Heel comes off the floor on cross / rear hook' },
   { id: 'rule_resting_hand',  label: 'Resting hand at guard',   cue: 'Non-punching hand stays up' },
   { id: 'rule_extension',     label: 'Fully extended',          cue: 'Arm reaches near-full extension at peak' },
   { id: 'rule_punch_height',  label: 'At head height',          cue: 'Head-labeled punch lands high (skip for body)' },
@@ -36,6 +37,10 @@ function ruleAppliesTo(ruleId, punch) {
   if (ruleId === 'rule_hip_rotation') {
     // Jabs excluded from hip rotation check
     return !(type.startsWith('jab') || hand === 'lead' && type.includes('straight') && type.includes('lead'));
+  }
+  if (ruleId === 'rule_rear_heel_lift') {
+    // Only applies to rear hand power punches (cross + rear hook)
+    return type.startsWith('cross') || (hand === 'rear' && type.includes('hook'));
   }
   if (ruleId === 'rule_punch_height') {
     // Only applies to head-labeled punches

@@ -137,7 +137,7 @@ function findRowById(data, cols, id, video) {
 // per-labeler answers to the form rules. Wide schema: one row per
 // punch (keyed on the stable punch_uuid), one column per rule.
 // ============================================================
-var RULE_IDS = ['rule_hand_extended', 'rule_hand_low', 'rule_hand_ushape', 'rule_hip_rotation', 'rule_resting_hand', 'rule_extension', 'rule_punch_height'];
+var RULE_IDS = ['rule_hand_extended', 'rule_hand_low', 'rule_hand_ushape', 'rule_hip_rotation', 'rule_rear_heel_lift', 'rule_resting_hand', 'rule_extension', 'rule_punch_height'];
 
 function rulesSheetName(labeler) {
   if (/^\d+$/.test(labeler)) return 'Form Labels ' + labeler;
