@@ -42,6 +42,10 @@ function ruleAppliesTo(ruleId, punch) {
     // Only applies to rear hand power punches (cross + rear hook)
     return type.startsWith('cross') || (hand === 'rear' && type.includes('hook'));
   }
+  if (ruleId === 'rule_hand_ushape') {
+    // "Returns straight" only applies to head punches
+    return type.endsWith('_head') || type.includes('head');
+  }
   if (ruleId === 'rule_punch_height') {
     // Only applies to head-labeled punches
     return type.endsWith('_head') || type.includes('head');
