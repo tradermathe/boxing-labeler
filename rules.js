@@ -15,7 +15,7 @@
 // ============================================================
 const RULES = [
   { id: 'rule_hand_extended', label: 'Hand snaps back',         cue: 'Retracts quickly after impact' },
-  { id: 'rule_hand_low',      label: 'Hand returns to guard',   cue: 'Comes back at cheekbone height' },
+  { id: 'rule_hand_low',      label: 'Hand returns to guard',   cue: 'Comes back at chin height' },
   { id: 'rule_hand_ushape',   label: 'Hand returns straight',   cue: 'Travels back in a straight line, no looping' },
   { id: 'rule_hip_rotation',  label: 'Hip rotation',            cue: 'Hips drive the punch (jabs excluded)' },
   { id: 'rule_rear_heel_lift',label: 'Rear heel lifts',         cue: 'Heel comes off the floor on cross / rear hook' },
