@@ -71,6 +71,7 @@ Object.assign(state, {
   pendingStart: null,
   labels: [],
   roundActive: false,
+  unsureFilter: false,
 });
 
 // ============================================================
@@ -95,7 +96,41 @@ window.addEventListener('DOMContentLoaded', () => {
       ? 'Boxing Punch Labeler — ' + displayName
       : 'Boxing Punch Labeler ' + displayName;
   }
+  if (LABELER_ID === 'review') {
+    const btn = document.getElementById('btn-unsure-filter');
+    if (btn) btn.style.display = 'inline-block';
+    if (localStorage.getItem('unsureFilter') === 'true') {
+      state.unsureFilter = true;
+    }
+    updateUnsureFilterButton();
+  }
 });
+
+function toggleUnsureFilter() {
+  state.unsureFilter = !state.unsureFilter;
+  localStorage.setItem('unsureFilter', String(state.unsureFilter));
+  updateUnsureFilterButton();
+  renderLabels();
+  updateVideoOverlay();
+}
+
+function updateUnsureFilterButton() {
+  const btn = document.getElementById('btn-unsure-filter');
+  if (!btn) return;
+  if (state.unsureFilter) {
+    btn.textContent = 'Unsure only: ON';
+    btn.style.background = '#533483';
+  } else {
+    btn.textContent = 'Unsure only: OFF';
+    btn.style.background = '#0f3460';
+  }
+}
+
+function shouldHideByFilter(label) {
+  if (!state.unsureFilter) return false;
+  if (label.isRoundMarker) return false;
+  return label.punch !== 'unsure';
+}
 
 // ============================================================
 // Punch Buttons
@@ -449,7 +484,7 @@ function parseSheetTime(timeStr) {
 function renderLabels() {
   const log = document.getElementById('label-log');
   const count = document.getElementById('label-count');
-  const punchCount = state.labels.filter(l => !l.isRoundMarker).length;
+  const punchCount = state.labels.filter(l => !l.isRoundMarker && !shouldHideByFilter(l)).length;
   count.textContent = `(${punchCount})`;
 
   // Capture open editors before wiping (keyed by array index —
@@ -479,6 +514,7 @@ function renderLabels() {
   const sorted = state.labels.map((label, idx) => ({ label, idx }));
   sorted.sort((a, b) => b.label.start - a.label.start);
   sorted.forEach(({ label, idx }) => {
+    if (shouldHideByFilter(label)) return;
     const entry = document.createElement('div');
 
     if (label.isRoundMarker) {
@@ -735,7 +771,7 @@ function jumpToAdjacentLabel(dir) {
   const EPS = 0.05;
 
   const times = state.labels
-    .filter(l => !l.isRoundMarker)
+    .filter(l => !l.isRoundMarker && !shouldHideByFilter(l))
     .map(l => l.start)
     .sort((a, b) => a - b);
 
@@ -1019,6 +1055,7 @@ function renderTimelineOverlay() {
   // Punch segments
   for (const label of state.labels) {
     if (label.isRoundMarker) continue;
+    if (shouldHideByFilter(label)) continue;
     const lPct = timeToViewportPct(label.start, duration);
     const rPct = timeToViewportPct(label.end, duration);
     if (rPct < 0 || lPct > 100) continue;
@@ -1045,6 +1082,7 @@ function renderMinimap() {
 
   for (const label of state.labels) {
     if (label.isRoundMarker) continue;
+    if (shouldHideByFilter(label)) continue;
     const seg = document.createElement('div');
     seg.style.position = 'absolute';
     seg.style.top = '0';
@@ -1093,11 +1131,11 @@ function updateVideoOverlay() {
   }
 
   const activeLabels = state.labels.filter(l =>
-    !l.isRoundMarker && t >= l.start && t <= l.end
+    !l.isRoundMarker && t >= l.start && t <= l.end && !shouldHideByFilter(l)
   );
 
   const roundKey = currentRound ? 'R' + currentRound : 'out';
-  const key = roundKey + '|' + activeLabels.map(l => l.id).join(',');
+  const key = roundKey + '|' + activeLabels.map(l => l.id).join(',') + '|' + state.unsureFilter;
   if (overlay.dataset.activeKey === key) return;
   overlay.dataset.activeKey = key;
 
