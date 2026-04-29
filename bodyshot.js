@@ -342,7 +342,14 @@ async function reclassify(newType) {
       return;
     }
     const labelerHits = (result.labeler_hits || []).length;
-    showToast(`Saved (${labelerHits} sheet row${labelerHits === 1 ? '' : 's'} updated)`, 'info');
+    const archiveHit = result.archive_hit ? 1 : 0;
+    const combinedHit = result.combined_hit ? 1 : 0;
+    const total = labelerHits + archiveHit + combinedHit;
+    const parts = [];
+    if (labelerHits) parts.push(`${labelerHits} labeler`);
+    if (archiveHit) parts.push('archive');
+    if (combinedHit) parts.push('combined');
+    showToast(total ? `Saved → ${parts.join(' + ')}` : 'No matching row found', total ? 'info' : 'error');
   } catch (e) {
     console.error('reclassify failed', e);
     showToast('Save failed: ' + e.message + ' (Apps Script redeployed?)', 'error');
