@@ -189,6 +189,11 @@ function doGet(e) {
     return doGetRules(p, labeler, action);
   }
 
+  // Bodyshot review actions: cross-video sweep over Combined Data.
+  if (action === 'listBodyshots' || action === 'reclassify') {
+    return doGetBodyshots(p, action);
+  }
+
   var sheetName;
   if (labeler === 'combined') {
     sheetName = 'Combined Data';
@@ -458,4 +463,384 @@ function jsonOut(obj) {
   return ContentService
     .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ============================================================
+// Bodyshot review — temporary tool that lists all
+// `lead_bodyshot` / `rear_bodyshot` rows from Combined Data and
+// lets a reviewer reclassify each one as a hook/uppercut variant.
+// Writes back to BOTH the originating labeler sheet (canonical) and
+// Combined Data (so the next sweep filters out already-handled rows
+// without waiting for a manual rebuild).
+// ============================================================
+var BODYSHOT_TYPES = ['lead_bodyshot', 'rear_bodyshot'];
+var BODYSHOT_RECLASSIFY_TARGETS = [
+  'lead_hook_body', 'rear_hook_body',
+  'lead_uppercut_body', 'rear_uppercut_body',
+  'jab_body', 'cross_body',
+  'lead_bodyshot', 'rear_bodyshot'
+];
+
+function doGetBodyshots(p, action) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var combined = ss.getSheetByName(COMBINED_NAME);
+  if (!combined) return jsonOut({ status: 'error', message: 'Combined Data sheet not found' });
+
+  if (action === 'listBodyshots') {
+    var data = combined.getDataRange().getValues();
+    if (data.length < 2) return jsonOut({ status: 'ok', shots: [] });
+    var idx = headerIndex(data[0]);
+    var shots = [];
+    for (var i = 1; i < data.length; i++) {
+      var punch = String(pickFromRow(data[i], idx, 'label') || pickFromRow(data[i], idx, 'punch_type') || '').toLowerCase().trim();
+      if (BODYSHOT_TYPES.indexOf(punch) < 0) continue;
+      shots.push({
+        id:         pickFromRow(data[i], idx, 'id'),
+        punch_uuid: String(pickFromRow(data[i], idx, 'punch_uuid') || ''),
+        video_file: pickFromRow(data[i], idx, 'video_file'),
+        video_name: pickFromRow(data[i], idx, 'video_name'),
+        punch:      punch,
+        start_sec:  toSeconds(pickFromRow(data[i], idx, 'start_sec')),
+        end_sec:    toSeconds(pickFromRow(data[i], idx, 'end_sec')),
+        stance:     pickFromRow(data[i], idx, 'stance'),
+        labeler:    pickFromRow(data[i], idx, 'labeler')
+      });
+    }
+    return jsonOut({ status: 'ok', shots: shots });
+  }
+
+  if (action === 'reclassify') {
+    if (!p.punch_uuid || !p.new_punch_type) {
+      return jsonOut({ status: 'error', message: 'punch_uuid and new_punch_type required' });
+    }
+    if (BODYSHOT_RECLASSIFY_TARGETS.indexOf(p.new_punch_type) < 0) {
+      return jsonOut({ status: 'error', message: 'unknown new_punch_type: ' + p.new_punch_type });
+    }
+    var targetUuid = String(p.punch_uuid);
+    var newType = p.new_punch_type;
+    var labelerHits = [];
+    var combinedHit = null;
+
+    // 1) Labeler sheets — search every "Labeled Data ..." sheet for the uuid.
+    //    Only update the punch_type column. Fingerprint identity (start/end)
+    //    stays the same.
+    var sheets = ss.getSheets();
+    for (var s = 0; s < sheets.length; s++) {
+      var sheet = sheets[s];
+      var name = sheet.getName();
+      if (name.indexOf(LABELER_PREFIX) !== 0) continue;
+      if (name === COMBINED_NAME || name === COMBINED_BACKUP_NAME ||
+          name === COMBINED_ARCHIVE_NAME) continue;
+      if (sheet.getLastRow() < 2) continue;
+      var sd = sheet.getDataRange().getValues();
+      var sCols = findColumns(sd[0]);
+      if (sCols.uuid < 0 || sCols.punch < 0) continue;
+      for (var r = 1; r < sd.length; r++) {
+        if (String(sd[r][sCols.uuid]) === targetUuid) {
+          sheet.getRange(r + 1, sCols.punch + 1).setValue(newType);
+          labelerHits.push({ sheet: name, row: r + 1 });
+        }
+      }
+    }
+
+    // 2) Combined Data — also update so the bodyshot tool's next listBodyshots
+    //    call no longer surfaces this row. (Will be regenerated cleanly on the
+    //    next "Rebuild Combined Data" run anyway.)
+    var cdata = combined.getDataRange().getValues();
+    var cIdx = headerIndex(cdata[0]);
+    var labelCol = cIdx['label'] != null ? cIdx['label'] : cIdx['punch_type'];
+    var uuidCol = cIdx['punch_uuid'];
+    if (labelCol != null && uuidCol != null) {
+      for (var ci = 1; ci < cdata.length; ci++) {
+        if (String(cdata[ci][uuidCol]) === targetUuid) {
+          combined.getRange(ci + 1, labelCol + 1).setValue(newType);
+          combinedHit = { row: ci + 1 };
+          break;
+        }
+      }
+    }
+
+    return jsonOut({
+      status: 'ok',
+      action: 'reclassified',
+      punch_uuid: targetUuid,
+      new_punch_type: newType,
+      labeler_hits: labelerHits,
+      combined_hit: combinedHit
+    });
+  }
+
+  return jsonOut({ status: 'error', message: 'Unknown bodyshot action: ' + action });
+}
+
+// Build a lowercase header→index map. Reused by bodyshot actions.
+function headerIndex(headerRow) {
+  var idx = {};
+  for (var c = 0; c < headerRow.length; c++) {
+    var h = String(headerRow[c]).toLowerCase().trim();
+    if (h) idx[h] = c;
+  }
+  return idx;
+}
+
+// ============================================================
+// AUTO-MERGE: Labeler sheets → Combined Data
+//
+// Workflow:
+//   1. Labelers label punches in their own "Labeled Data ..." sheet.
+//   2. Mathe reviews each row, sets `reviewed = "yes"` on that sheet.
+//   3. Mathe runs MyCorner > Rebuild Combined Data (custom menu).
+//   4. Combined Data is rebuilt from all reviewed=yes rows. The previous
+//      Combined Data is snapshotted to "Combined Data Backup" first.
+//
+// Why: rows used to be copy-pasted into Combined Data, which dropped
+// `punch_uuid` and let `ensureUuidColumn` mint a fresh one — so the same
+// punch ended up with different UUIDs in different sheets. Auto-merge
+// keeps the labeler sheet as the single source of truth; UUIDs flow
+// through verbatim and never diverge.
+// ============================================================
+
+var LABELER_PREFIX = 'Labeled Data';
+var COMBINED_NAME = 'Combined Data';
+var COMBINED_BACKUP_NAME = 'Combined Data Backup';
+// Frozen historical rows from before the auto-merge workflow. Their source
+// labeler sheets have been deleted, so we treat the archive as already-
+// reviewed canonical data and merge it in verbatim on every rebuild.
+var COMBINED_ARCHIVE_NAME = 'Combined Data Archive';
+
+// Column order written to Combined Data. Matches the spec in CLAUDE.md:
+// downstream notebooks read `video_name` (filename) and `label` (punch type),
+// so the rebuild translates the labeler-side schema (`video_file` URL +
+// `punch_type`) into that shape. URL→filename comes from buildVideoNameLookup.
+var COMBINED_HEADERS = [
+  'id', 'video_name', 'video_file', 'training_type', 'stance',
+  'fighter', 'angle', 'label', 'start_sec', 'end_sec',
+  'labeler', 'reviewed', 'punch_uuid'
+];
+
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('MyCorner')
+    .addItem('Rebuild Combined Data', 'rebuildCombinedData')
+    .addItem('Unify Duplicate UUIDs', 'unifyDuplicateUuids') // ONE-TIME: remove this line after running
+    .addToUi();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ONE-TIME MIGRATION — delete this whole block after running once
+// ═══════════════════════════════════════════════════════════════
+// Same logical event (file_id, label, start_sec, end_sec) currently has
+// different UUIDs across Archive vs labeler sheets. After this runs, every
+// row representing the same event shares a UUID, and rebuild dedup-by-UUID
+// becomes correct.
+function unifyDuplicateUuids() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sources = [ss.getSheetByName(COMBINED_ARCHIVE_NAME)].concat(
+    ss.getSheets().filter(function(s) { return s.getName().indexOf(LABELER_PREFIX) === 0; })
+  );
+
+  var canonical = {};   // key -> first non-empty UUID seen (Archive iterates first → Archive wins)
+  var records = [];     // {sheet, row1Based, uuidCol, key, currentUuid}
+
+  for (var s = 0; s < sources.length; s++) {
+    var sheet = sources[s];
+    if (!sheet || sheet.getLastRow() < 2) continue;
+    var data = sheet.getDataRange().getValues();
+    var idx = {};
+    for (var c = 0; c < data[0].length; c++) {
+      var h = String(data[0][c]).toLowerCase().trim();
+      if (h) idx[h] = c;
+    }
+    var ciF = idx['video_file'];
+    var ciL = idx['punch_type'] != null ? idx['punch_type'] : idx['label'];
+    var ciS = idx['start_sec'], ciE = idx['end_sec'], ciU = idx['punch_uuid'];
+    if (ciF == null || ciL == null || ciS == null || ciE == null || ciU == null) continue;
+
+    for (var r = 1; r < data.length; r++) {
+      var fid = extractFileId(String(data[r][ciF]));
+      if (!fid) continue;
+      var key = fid + '|' + String(data[r][ciL]).toLowerCase().trim()
+                + '|' + String(data[r][ciS]) + '|' + String(data[r][ciE]);
+      var cur = data[r][ciU];
+      if (cur && !(key in canonical)) canonical[key] = cur;
+      records.push({sheet: sheet, row: r + 1, ciU: ciU, key: key, cur: cur});
+    }
+  }
+
+  // Fill keys that had no UUID anywhere with a fresh one, then write back.
+  var updated = 0;
+  for (var i = 0; i < records.length; i++) {
+    var rec = records[i];
+    if (!(rec.key in canonical)) canonical[rec.key] = Utilities.getUuid();
+    var target = canonical[rec.key];
+    if (rec.cur !== target) {
+      rec.sheet.getRange(rec.row, rec.ciU + 1).setValue(target);
+      updated++;
+    }
+  }
+
+  SpreadsheetApp.getUi().alert(
+    'Unify Duplicate UUIDs',
+    'Scanned ' + records.length + ' rows across ' + sources.filter(function(x){return x;}).length + ' sheets.\n'
+    + Object.keys(canonical).length + ' distinct events.\n'
+    + updated + ' UUIDs rewritten.',
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+// ═══════════════════════════════════════════════════════════════
+// END ONE-TIME MIGRATION
+// ═══════════════════════════════════════════════════════════════
+
+function pickFromRow(rowVals, idx, header) {
+  return idx[header] != null ? rowVals[idx[header]] : '';
+}
+
+// Extract the Drive file_id from a share URL. Handles all common variants
+// (?usp=sharing, ?usp=drive_link, /view, no query string).
+function extractFileId(url) {
+  if (!url) return null;
+  var m = String(url).match(/\/d\/([a-zA-Z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+
+function rebuildCombinedData() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  // Snapshot old Combined Data → Combined Data Backup. One step back is
+  // enough: the labeler sheets are the real source of truth, so piling
+  // up generations of backups isn't worth the clutter.
+  var combined = ss.getSheetByName(COMBINED_NAME);
+  if (combined) {
+    var prev = ss.getSheetByName(COMBINED_BACKUP_NAME);
+    if (prev) ss.deleteSheet(prev);
+    combined.copyTo(ss).setName(COMBINED_BACKUP_NAME);
+    combined.clear();
+  } else {
+    combined = ss.insertSheet(COMBINED_NAME);
+  }
+  combined.getRange(1, 1, 1, COMBINED_HEADERS.length).setValues([COMBINED_HEADERS]);
+  combined.setFrozenRows(1);
+
+  var rows = [];
+  var skipped = [];
+  var archiveCount = 0;
+
+  // video_name comes from whatever the source row already has populated:
+  // Archive rows have it; labeler-sheet rows don't (labeler tool only stores
+  // URLs). Empty values are filled in by the notebooks via Drive API at
+  // load time, so Apps Script doesn't need to touch Drive.
+
+  // Archive — frozen historical rows. No `reviewed` filter; everything is
+  // canonical. Stamp UUIDs in place on any row missing one so the archive
+  // remains a complete record.
+  var archive = ss.getSheetByName(COMBINED_ARCHIVE_NAME);
+  if (archive && archive.getLastRow() >= 2) {
+    var aData = archive.getDataRange().getValues();
+    var aCols = findColumns(aData[0]);
+    var aEnsured = ensureUuidColumn(archive, aData, aCols);
+    aData = aEnsured.data;
+    var aIdx = {};
+    for (var ac = 0; ac < aData[0].length; ac++) {
+      var ah = String(aData[0][ac]).toLowerCase().trim();
+      if (ah) aIdx[ah] = ac;
+    }
+    for (var ar = 1; ar < aData.length; ar++) {
+      var aRow = aData[ar];
+      // Skip empty rows (trailing blanks in the archive)
+      var aVideoFile = pickFromRow(aRow, aIdx, 'video_file');
+      if (!aVideoFile) continue;
+      var aVideoName = String(pickFromRow(aRow, aIdx, 'video_name') || '').trim();
+      rows.push([
+        pickFromRow(aRow, aIdx, 'id'),
+        aVideoName,
+        aVideoFile,
+        pickFromRow(aRow, aIdx, 'training_type'),
+        pickFromRow(aRow, aIdx, 'stance'),
+        pickFromRow(aRow, aIdx, 'fighter'),
+        pickFromRow(aRow, aIdx, 'angle'),
+        pickFromRow(aRow, aIdx, 'punch_type') || pickFromRow(aRow, aIdx, 'label'),
+        pickFromRow(aRow, aIdx, 'start_sec'),
+        pickFromRow(aRow, aIdx, 'end_sec'),
+        pickFromRow(aRow, aIdx, 'labeler'),
+        'yes',
+        pickFromRow(aRow, aIdx, 'punch_uuid')
+      ]);
+      archiveCount++;
+    }
+  }
+
+  var sheets = ss.getSheets();
+  for (var s = 0; s < sheets.length; s++) {
+    var sheet = sheets[s];
+    var name = sheet.getName();
+    if (name.indexOf(LABELER_PREFIX) !== 0) continue;
+    if (name === COMBINED_NAME || name === COMBINED_BACKUP_NAME ||
+        name === COMBINED_ARCHIVE_NAME) continue;
+    if (sheet.getLastRow() < 2) continue;
+
+    // Make sure the labeler sheet has a punch_uuid column with every row
+    // populated — guarantees we never carry an empty UUID into Combined.
+    var data = sheet.getDataRange().getValues();
+    var cols = findColumns(data[0]);
+    var ensured = ensureUuidColumn(sheet, data, cols);
+    data = ensured.data; cols = ensured.cols;
+
+    // Header lookup, case-insensitive (handles 'Angle' vs 'angle' etc.)
+    var idx = {};
+    for (var c = 0; c < data[0].length; c++) {
+      var h = String(data[0][c]).toLowerCase().trim();
+      if (h) idx[h] = c;
+    }
+    if (idx['reviewed'] == null) {
+      skipped.push(name + ' (no `reviewed` column)');
+      continue;
+    }
+
+    var labelerName = name.substring(LABELER_PREFIX.length).trim();
+
+    for (var r = 1; r < data.length; r++) {
+      var rowVals = data[r];
+      var flag = String(rowVals[idx['reviewed']] || '').toLowerCase().trim();
+      if (flag !== 'yes') continue;
+
+      var lVideoFile = pickFromRow(rowVals, idx, 'video_file');
+      var lVideoName = String(pickFromRow(rowVals, idx, 'video_name') || '').trim();
+      rows.push([
+        pickFromRow(rowVals, idx, 'id'),
+        lVideoName,
+        lVideoFile,
+        pickFromRow(rowVals, idx, 'training_type'),
+        pickFromRow(rowVals, idx, 'stance'),
+        pickFromRow(rowVals, idx, 'fighter'),
+        pickFromRow(rowVals, idx, 'angle'),
+        pickFromRow(rowVals, idx, 'punch_type') || pickFromRow(rowVals, idx, 'label'),
+        pickFromRow(rowVals, idx, 'start_sec'),
+        pickFromRow(rowVals, idx, 'end_sec'),
+        labelerName,
+        'yes',
+        pickFromRow(rowVals, idx, 'punch_uuid')
+      ]);
+    }
+  }
+
+  // Dedup by punch_uuid. Run "Unify Duplicate UUIDs" once first so the same
+  // logical event has the same UUID across Archive and labeler sheets.
+  var seenU = {}, deduped = [], dupesDropped = 0;
+  for (var di = 0; di < rows.length; di++) {
+    var u = rows[di][12]; // punch_uuid (last column in COMBINED_HEADERS)
+    if (u && seenU[u]) { dupesDropped++; continue; }
+    if (u) seenU[u] = true;
+    deduped.push(rows[di]);
+  }
+  rows = deduped;
+
+  if (rows.length > 0) {
+    combined.getRange(2, 1, rows.length, COMBINED_HEADERS.length).setValues(rows);
+  }
+
+  var msg = 'Wrote ' + rows.length + ' rows ('
+            + dupesDropped + ' duplicates dropped).\n'
+            + 'Backup → ' + COMBINED_BACKUP_NAME + '.';
+  if (skipped.length > 0) msg += '\n\nSkipped:\n  ' + skipped.join('\n  ');
+  SpreadsheetApp.getUi().alert('Rebuild Combined Data', msg, SpreadsheetApp.getUi().ButtonSet.OK);
 }

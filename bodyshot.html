@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bodyshot Reclassifier</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Page-specific tweaks. The global stylesheet already covers the
+       three-column shell + seek bar + toasts; we only restyle the bits
+       unique to this page. */
+    #shot-list-panel { width: 320px; min-width: 280px; overflow-y: auto; padding: 12px; background: #16213e; border-right: 1px solid #0f3460; }
+    #shot-list-panel h3 { margin: 0 0 8px; }
+    .shot-row {
+      display: grid;
+      grid-template-columns: 28px 1fr 70px 18px;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      margin-bottom: 4px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      background: #1a1a2e;
+      border-left: 3px solid #555;
+    }
+    .shot-row:hover { background: #1f2842; }
+    .shot-row.current { background: #2b3a5e; outline: 1px solid #533483; }
+    .shot-row.status-done { border-left-color: #28a745; opacity: 0.65; }
+    .shot-row.status-skip { border-left-color: #888; opacity: 0.55; }
+    .shot-row.missing-video { color: #777; }
+    .sr-idx { color: #666; text-align: right; }
+    .sr-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sr-time { color: #888; font-size: 11px; text-align: right; }
+    .sr-flag { color: #28a745; font-weight: bold; text-align: center; }
+
+    #reclassify-panel { width: 280px; padding: 14px; background: #16213e; border-left: 1px solid #0f3460; display: flex; flex-direction: column; gap: 10px; }
+    #current-shot-card { background: #1a1a2e; border-radius: 4px; padding: 10px; font-size: 13px; }
+    #current-shot-card .cs-row { display: flex; justify-content: space-between; padding: 2px 0; }
+    #current-shot-card .cs-label { color: #888; }
+    #current-shot-card .cs-value { color: #e0e0e0; }
+    .reclassify-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .reclassify-btn {
+      padding: 14px 10px;
+      border-radius: 6px;
+      border: 2px solid #533483;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .reclassify-btn:hover { background: #2b3a5e; border-color: #e94560; }
+    .reclassify-btn .rb-key { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 3px; background: #0f3460; color: #aaa; font-size: 11px; font-weight: normal; }
+    .meta-btn { padding: 8px 10px; border-radius: 4px; border: 1px solid #444; background: #1a1a2e; color: #ccc; font-size: 12px; cursor: pointer; }
+    .meta-btn:hover { background: #2b3a5e; }
+
+    #load-status { font-size: 12px; color: #888; margin-left: 12px; }
+    #shot-progress { font-size: 12px; color: #888; padding: 4px 0; text-align: center; }
+
+    .rb-loop-info { font-size: 11px; color: #666; text-align: center; padding: 4px; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Top bar -->
+    <div id="top-bar">
+      <div id="video-loader">
+        <button id="btn-pick-files" onclick="document.getElementById('video-files').click()">Load video folder/files</button>
+        <input type="file" id="video-files" accept="video/*" multiple style="display:none">
+        <span id="video-name">No videos loaded</span>
+        <span id="load-status"></span>
+      </div>
+      <div style="font-size:12px; color:#666; margin-right:12px">
+        <a href="index.html" style="color:#0f3460; text-decoration:none; padding:4px 10px; border:1px solid #0f3460; border-radius:4px">&larr; Punch labeler</a>
+      </div>
+    </div>
+    <input type="hidden" id="script-url">
+
+    <!-- Main layout: left = list, center = video, right = reclassify buttons -->
+    <div id="main-layout">
+      <div id="shot-list-panel">
+        <h3>Bodyshots <span id="shot-list-count" style="color:#666; font-weight:normal; font-size:12px">(0)</span></h3>
+        <div id="shot-progress"></div>
+        <div id="shot-list"></div>
+      </div>
+
+      <div id="video-container">
+        <div id="video-viewport">
+          <video id="video-player" preload="auto"></video>
+          <div id="video-dim-overlay"></div>
+          <div id="video-overlay"></div>
+          <video id="thumb-video" preload="auto" muted style="display:none"></video>
+        </div>
+        <div id="video-controls">
+          <div id="timeline-minimap" style="display:none">
+            <div id="minimap-segments"></div>
+            <div id="minimap-viewport"></div>
+            <div id="minimap-playhead"></div>
+          </div>
+          <div id="seek-bar-wrapper">
+            <div id="timeline-ticks"></div>
+            <div id="seek-bar-overlay"></div>
+            <input type="range" id="seek-bar" min="0" max="1000" value="0">
+            <div id="seek-thumbnail">
+              <canvas id="thumb-canvas" width="192" height="108"></canvas>
+              <span id="thumb-time"></span>
+            </div>
+          </div>
+          <div id="controls-row">
+            <button id="btn-play" onclick="togglePlay()">Play</button>
+            <button id="btn-mute" onclick="toggleMute()">&#128266;</button>
+            <button onclick="stepFrames(-2)" title="Back 2 frames">&laquo;</button>
+            <button onclick="stepFrames(-1)" title="Back 1 frame">&lsaquo;</button>
+            <button onclick="stepFrames(1)" title="Forward 1 frame">&rsaquo;</button>
+            <button onclick="stepFrames(2)" title="Forward 2 frames">&raquo;</button>
+            <div id="speed-controls">
+              <label>Speed:</label>
+              <button onclick="setSpeed(0.25)">0.25x</button>
+              <button onclick="setSpeed(0.5)">0.5x</button>
+              <button onclick="setSpeed(1)" class="speed-active">1x</button>
+              <button onclick="setSpeed(2)">2x</button>
+            </div>
+            <span id="time-display">0:00.000 / 0:00.000</span>
+            <button id="btn-overlay" onclick="toggleOverlay()" title="Toggle label overlays (L)">Labels: ON</button>
+            <button id="btn-loop" onclick="toggleLoop()" title="Toggle clip loop (Space replays from start)">Loop: ON</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="reclassify-panel">
+        <div id="current-shot-card">
+          <div id="current-shot-empty" style="color:#888; text-align:center; padding:8px">Pick a shot from the list</div>
+        </div>
+
+        <div class="reclassify-grid">
+          <button class="reclassify-btn" onclick="reclassify('lead_hook_body')">Lead Hook<span class="rb-key">1</span></button>
+          <button class="reclassify-btn" onclick="reclassify('rear_hook_body')">Rear Hook<span class="rb-key">2</span></button>
+          <button class="reclassify-btn" onclick="reclassify('lead_uppercut_body')">Lead Uppercut<span class="rb-key">3</span></button>
+          <button class="reclassify-btn" onclick="reclassify('rear_uppercut_body')">Rear Uppercut<span class="rb-key">4</span></button>
+          <button class="reclassify-btn" onclick="reclassify('jab_body')" style="border-color:#0088ff">Jab (body)<span class="rb-key">5</span></button>
+          <button class="reclassify-btn" onclick="reclassify('cross_body')" style="border-color:#ff6699">Cross (body)<span class="rb-key">6</span></button>
+        </div>
+
+        <div style="display:flex; gap:6px">
+          <button class="meta-btn" style="flex:1" onclick="skipShot()">Skip <span style="color:#666; font-size:11px">(S)</span></button>
+          <button class="meta-btn" style="flex:1" onclick="prevShot()">&larr; Prev</button>
+          <button class="meta-btn" style="flex:1" onclick="nextShot()">Next &rarr;</button>
+        </div>
+
+        <div class="rb-loop-info">Clip loops start &rarr; end. Press a number to reclassify.</div>
+      </div>
+    </div>
+
+    <div id="shortcuts-bar">
+      <strong>Shortcuts:</strong>
+      Space = Play/Pause &nbsp;|&nbsp;
+      &larr;/&rarr; = &plusmn;1 frame &nbsp;|&nbsp;
+      Shift+&larr;/&rarr; = Prev/Next shot &nbsp;|&nbsp;
+      1 = Lead Hook &nbsp;|&nbsp; 2 = Rear Hook &nbsp;|&nbsp;
+      3 = Lead Uppercut &nbsp;|&nbsp; 4 = Rear Uppercut &nbsp;|&nbsp;
+      5 = Jab (body) &nbsp;|&nbsp; 6 = Cross (body) &nbsp;|&nbsp;
+      S = Skip &nbsp;|&nbsp;
+      L = Toggle Labels
+    </div>
+  </div>
+
+  <script src="player.js"></script>
+  <script src="bodyshot.js"></script>
+</body>
+</html>
