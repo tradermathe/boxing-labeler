@@ -340,8 +340,6 @@ function setupKeyboardShortcuts() {
       case 'Digit2': case 'Numpad2': e.preventDefault(); reclassify('rear_hook_body'); break;
       case 'Digit3': case 'Numpad3': e.preventDefault(); reclassify('lead_uppercut_body'); break;
       case 'Digit4': case 'Numpad4': e.preventDefault(); reclassify('rear_uppercut_body'); break;
-      case 'Digit5': case 'Numpad5': e.preventDefault(); reclassify('jab_body'); break;
-      case 'Digit6': case 'Numpad6': e.preventDefault(); reclassify('cross_body'); break;
 
       case 'Period': case 'Comma':
         if (e.shiftKey) {
