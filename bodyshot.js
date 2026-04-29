@@ -207,6 +207,22 @@ function selectShot(idx) {
 
   const entry = document.querySelectorAll('.shot-row')[idx];
   if (entry) entry.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+  prefetchUpcoming(idx);
+}
+
+// Warm the HTTP cache for the next few clips so swap-on-advance feels
+// instant. Plain fetch() with default cache policy is enough — GitHub
+// Pages serves clips with cacheable headers, so the second request from
+// the <video> element is served from memory cache.
+const _prefetched = new Set();
+function prefetchUpcoming(idx, count = 4) {
+  for (let i = idx + 1; i <= idx + count && i < state.shots.length; i++) {
+    const url = state.shots[i] && state.shots[i].clip;
+    if (!url || _prefetched.has(url)) continue;
+    _prefetched.add(url);
+    fetch(url).catch(() => {});
+  }
 }
 
 function nextShot() {
