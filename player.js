@@ -157,6 +157,7 @@ function setupVideoLoader() {
     state.fpsDetected = false;
     detectFrameRate(video);
     updateTimeDisplay();
+    if (state.playbackRate) video.playbackRate = state.playbackRate;
     if (typeof renderTimelineOverlay === 'function') renderTimelineOverlay();
   });
 
@@ -370,6 +371,10 @@ function setSpeed(rate) {
   const video = document.getElementById('video-player');
   if (!video) return;
   video.playbackRate = rate;
+  // Persist so loadedmetadata can re-apply after a src swap. Without this
+  // the UI button stays highlighted but the browser resets playbackRate
+  // to 1.0 on every new video load.
+  state.playbackRate = rate;
   document.querySelectorAll('#speed-controls button').forEach(btn => {
     btn.classList.toggle('speed-active', btn.textContent === rate + 'x');
   });

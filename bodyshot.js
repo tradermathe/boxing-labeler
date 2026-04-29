@@ -52,6 +52,7 @@ function attachVideoListeners() {
     state.fpsDetected = false;
     if (typeof detectFrameRate === 'function') detectFrameRate(video);
     if (typeof updateTimeDisplay === 'function') updateTimeDisplay();
+    if (state.playbackRate) video.playbackRate = state.playbackRate;
     if (typeof renderTimelineOverlay === 'function') renderTimelineOverlay();
   });
   video.addEventListener('timeupdate', () => {
