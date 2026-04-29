@@ -28,6 +28,12 @@ const ANSWERS = ['pass', 'fail', 'unclear'];
 const ANSWER_COLORS  = { pass: '#28a745', fail: '#e94560', unclear: '#888' };
 const ANSWER_SYMBOLS = { pass: '\u2713',  fail: '\u2717',  unclear: '?' };
 
+// Defensive moves from the punch labeler catalogue (app.js group: 'defense').
+// Form rules only apply to offensive punches, so we skip these here.
+const DEFENSIVE_MOVES = new Set([
+  'lead_slip', 'rear_slip', 'lead_roll', 'rear_roll', 'pull_back', 'step_back',
+]);
+
 // Which rule IDs are skipped for which punch types. Only runs on
 // specific punch types — for others the rule is marked N/A.
 function ruleAppliesTo(ruleId, punch) {
@@ -39,8 +45,8 @@ function ruleAppliesTo(ruleId, punch) {
     return !(type.startsWith('jab') || hand === 'lead' && type.includes('straight') && type.includes('lead'));
   }
   if (ruleId === 'rule_rear_heel_lift') {
-    // Only applies to rear hand power punches (cross + rear hook)
-    return type.startsWith('cross') || (hand === 'rear' && type.includes('hook'));
+    // Only applies to rear hand power punches (cross + rear hook + rear uppercut)
+    return type.startsWith('cross') || (hand === 'rear' && (type.includes('hook') || type.includes('uppercut')));
   }
   if (ruleId === 'rule_hand_ushape') {
     // "Returns straight" only applies to head punches
@@ -136,9 +142,10 @@ async function loadPunchesAndAnswers() {
     }
     punchList = (result.labels || [])
       .filter(l => {
-        // Exclude round markers
         const p = String(l.punch || '').toLowerCase();
-        return p !== 'round_start' && p !== 'round_end' && !p.includes('round');
+        if (p === 'round_start' || p === 'round_end' || p.includes('round')) return false;
+        if (DEFENSIVE_MOVES.has(p)) return false;
+        return true;
       })
       .map(l => ({
         id:         l.id,
