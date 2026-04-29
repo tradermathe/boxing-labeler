@@ -257,13 +257,7 @@ function prefetchUpcoming(idx, count = 4) {
 }
 
 function nextShot() {
-  // Prefer the next shot still pending; if everything's resolved, just
-  // step linearly so the user can revisit.
-  const start = state.currentIdx;
-  for (let i = start + 1; i < state.shots.length; i++) {
-    if (state.shots[i].status === 'pending') return selectShot(i);
-  }
-  selectShot(Math.min(state.shots.length - 1, start + 1));
+  selectShot(Math.min(state.shots.length - 1, state.currentIdx + 1));
 }
 
 function prevShot() { selectShot(Math.max(0, state.currentIdx - 1)); }
