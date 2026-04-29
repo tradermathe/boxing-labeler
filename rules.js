@@ -28,10 +28,13 @@ const ANSWERS = ['pass', 'fail', 'unclear'];
 const ANSWER_COLORS  = { pass: '#28a745', fail: '#e94560', unclear: '#888' };
 const ANSWER_SYMBOLS = { pass: '\u2713',  fail: '\u2717',  unclear: '?' };
 
-// Defensive moves from the punch labeler catalogue (app.js group: 'defense').
-// Form rules only apply to offensive punches, so we skip these here.
-const DEFENSIVE_MOVES = new Set([
+// Labels from the punch labeler catalogue that aren't ratable punches —
+// form rules don't apply, so we skip them in the punch list.
+const NON_PUNCH_TYPES = new Set([
+  // Defensive moves (app.js group: 'defense')
   'lead_slip', 'rear_slip', 'lead_roll', 'rear_roll', 'pull_back', 'step_back',
+  // Other (app.js group: 'other')
+  'unsure',
 ]);
 
 // Which rule IDs are skipped for which punch types. Only runs on
@@ -144,7 +147,7 @@ async function loadPunchesAndAnswers() {
       .filter(l => {
         const p = String(l.punch || '').toLowerCase();
         if (p === 'round_start' || p === 'round_end' || p.includes('round')) return false;
-        if (DEFENSIVE_MOVES.has(p)) return false;
+        if (NON_PUNCH_TYPES.has(p)) return false;
         return true;
       })
       .map(l => ({
