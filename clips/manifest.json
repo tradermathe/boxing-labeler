@@ -1,16 +1,6 @@
 {
   "shots": [
     {
-      "punch_uuid": "ac80049e-6bbe-4d2a-b5b3-76996a7c159f",
-      "clip": "clips/ac80049e-6bbe-4d2a-b5b3-76996a7c159f.mp4",
-      "video_name": "10 Combos Every Fighter Must Know.mp4",
-      "video_file": "https://drive.google.com/file/d/1qu4n0P3793j-sv1GfluAezZBDO-ggefc/view?usp=drive_link",
-      "punch": "lead_bodyshot",
-      "start_sec": 10.03,
-      "end_sec": 10.7,
-      "stance": "Orthodox"
-    },
-    {
       "punch_uuid": "c51e787b-8c28-4192-a80d-1101c2aa6173",
       "clip": "clips/c51e787b-8c28-4192-a80d-1101c2aa6173.mp4",
       "video_name": "10 Combos Every Fighter Must Know.mp4",
@@ -18,7 +8,239 @@
       "punch": "lead_bodyshot",
       "start_sec": 11.63,
       "end_sec": 12.3,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
+    },
+    {
+      "punch_uuid": "d0876d59-03e9-4ecd-b9a4-b9bda7748697",
+      "clip": "clips/d0876d59-03e9-4ecd-b9a4-b9bda7748697.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 333.837,
+      "end_sec": 334.504,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "5b0e51ed-f71f-4260-8f6d-d51c96ad25aa",
+      "clip": "clips/5b0e51ed-f71f-4260-8f6d-d51c96ad25aa.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 338.308,
+      "end_sec": 338.675,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "f0aff496-398b-437b-a1d4-f4d36128549c",
+      "clip": "clips/f0aff496-398b-437b-a1d4-f4d36128549c.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 343.647,
+      "end_sec": 344.014,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "e8423498-6b8a-4775-bf3d-863965b8a2c0",
+      "clip": "clips/e8423498-6b8a-4775-bf3d-863965b8a2c0.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 348.752,
+      "end_sec": 349.152,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "88a2d7de-910d-40a0-b510-b6323b5d7f21",
+      "clip": "clips/88a2d7de-910d-40a0-b510-b6323b5d7f21.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 354.124,
+      "end_sec": 354.491,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "bfc75623-f7f4-4d84-a7ac-048782bea795",
+      "clip": "clips/bfc75623-f7f4-4d84-a7ac-048782bea795.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 359.63,
+      "end_sec": 359.997,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "eb3a8888-e911-46e1-bd7f-cb01536dbf5d",
+      "clip": "clips/eb3a8888-e911-46e1-bd7f-cb01536dbf5d.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 365.903,
+      "end_sec": 366.303,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "65f6ba1c-3750-42a2-8bdf-0f02bafb9d99",
+      "clip": "clips/65f6ba1c-3750-42a2-8bdf-0f02bafb9d99.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 371.241,
+      "end_sec": 371.608,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "21a99419-1df5-4aa9-a6a5-120ae80a3700",
+      "clip": "clips/21a99419-1df5-4aa9-a6a5-120ae80a3700.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 377.181,
+      "end_sec": 377.548,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "e9133857-6c83-4778-a9a3-f3bbea4f2f9a",
+      "clip": "clips/e9133857-6c83-4778-a9a3-f3bbea4f2f9a.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 380.617,
+      "end_sec": 380.918,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "4a334d36-6356-4315-87f7-073f3987815f",
+      "clip": "clips/4a334d36-6356-4315-87f7-073f3987815f.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 388.492,
+      "end_sec": 389.36,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "f446e618-009a-4d65-9235-18044b006887",
+      "clip": "clips/f446e618-009a-4d65-9235-18044b006887.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 394.531,
+      "end_sec": 395.299,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "bddce8d9-eb24-443a-b5a3-33101ce0e031",
+      "clip": "clips/bddce8d9-eb24-443a-b5a3-33101ce0e031.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 400.471,
+      "end_sec": 401.071,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "0954b769-bec3-4cc8-ba1f-d53b09f808dc",
+      "clip": "clips/0954b769-bec3-4cc8-ba1f-d53b09f808dc.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 406.01,
+      "end_sec": 406.61,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "f7646068-8049-4530-84c9-c6e04b8d3455",
+      "clip": "clips/f7646068-8049-4530-84c9-c6e04b8d3455.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 411.615,
+      "end_sec": 412.416,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "269192ff-8700-45f8-92b7-7842fa265081",
+      "clip": "clips/269192ff-8700-45f8-92b7-7842fa265081.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 416.12,
+      "end_sec": 416.821,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "16e3bfae-e8fc-47be-bd6f-fc0cf9cbb718",
+      "clip": "clips/16e3bfae-e8fc-47be-bd6f-fc0cf9cbb718.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 421.525,
+      "end_sec": 422.193,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "b43ceb5e-2b6e-4e89-ae09-833008036155",
+      "clip": "clips/b43ceb5e-2b6e-4e89-ae09-833008036155.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 426.03,
+      "end_sec": 426.854,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "c6d73125-dbb2-4046-b006-d127b9f371b4",
+      "clip": "clips/c6d73125-dbb2-4046-b006-d127b9f371b4.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 431.26800000000003,
+      "end_sec": 431.936,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "b3e1780f-34b4-4685-843c-e0709c54a93c",
+      "clip": "clips/b3e1780f-34b4-4685-843c-e0709c54a93c.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 435.506,
+      "end_sec": 436.207,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "8a1874a4-6515-44f8-9b5a-ce24838633e7",
+      "clip": "clips/8a1874a4-6515-44f8-9b5a-ce24838633e7.mp4",
+      "video_name": "10 Combos in 10 Minutes \uff5c Boxing Workout.mp4",
+      "video_file": "https://drive.google.com/file/d/1R2TmSWCqllOVdF7qul2XJdDBD3lkf37L/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 438.943,
+      "end_sec": 439.61,
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "be9c43a1-d0a5-424b-9908-920bdff99c91",
@@ -28,7 +250,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 60.23,
       "end_sec": 60.8,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "b0360c4e-c29b-4d94-a6ad-059f3a84ceee",
@@ -38,7 +261,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 65.37,
       "end_sec": 65.9,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "95af7256-3b28-46e2-a80a-efbba0623d56",
@@ -48,7 +272,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 70.93,
       "end_sec": 71.5,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "a0f69c97-100a-43bc-9987-acb4056b61be",
@@ -58,7 +283,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 84.2,
       "end_sec": 84.8,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "636da72d-e260-4ae9-bdd7-325fd2d64de5",
@@ -68,7 +294,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 107.9,
       "end_sec": 108.53,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "f7c62b67-b664-4d8a-9c56-d24876f32a5b",
@@ -78,7 +305,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 140.73,
       "end_sec": 141.13,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "0333ef7e-1502-4064-997b-e9079f46ba45",
@@ -88,7 +316,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 148.86,
       "end_sec": 149.5,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "448ff38a-461a-409e-8475-28fca6d2c5f7",
@@ -98,717 +327,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 156.63,
       "end_sec": 157.5,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "cb4960ca-e0a6-4b02-878d-1904784a2eda",
-      "clip": "clips/cb4960ca-e0a6-4b02-878d-1904784a2eda.mp4",
-      "video_name": "13 Shadowboxing Body Shots.mp4",
-      "video_file": "https://drive.google.com/file/d/1CQcd0Blvh2COKveqXbNO8WbA7KY843rr/view",
-      "punch": "rear_bodyshot",
-      "start_sec": 174.117,
-      "end_sec": 174.8,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "97f2a529-9022-4196-a49b-da3e9233bb0a",
-      "clip": "clips/97f2a529-9022-4196-a49b-da3e9233bb0a.mp4",
-      "video_name": "13 Shadowboxing Body Shots.mp4",
-      "video_file": "https://drive.google.com/file/d/1CQcd0Blvh2COKveqXbNO8WbA7KY843rr/view",
-      "punch": "lead_bodyshot",
-      "start_sec": 174.484,
-      "end_sec": 174.951,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "c0da01ed-133a-4a8a-8e81-ac0e30ef6145",
-      "clip": "clips/c0da01ed-133a-4a8a-8e81-ac0e30ef6145.mp4",
-      "video_name": "13 Shadowboxing Body Shots.mp4",
-      "video_file": "https://drive.google.com/file/d/1CQcd0Blvh2COKveqXbNO8WbA7KY843rr/view",
-      "punch": "lead_bodyshot",
-      "start_sec": 178.784,
-      "end_sec": 179.517,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "070501c9-a2d3-43de-8a52-66b02d29c614",
-      "clip": "clips/070501c9-a2d3-43de-8a52-66b02d29c614.mp4",
-      "video_name": "13 Shadowboxing Body Shots.mp4",
-      "video_file": "https://drive.google.com/file/d/1CQcd0Blvh2COKveqXbNO8WbA7KY843rr/view",
-      "punch": "lead_bodyshot",
-      "start_sec": 187.83,
-      "end_sec": 188.26,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "fa016a27-fbd9-46dc-8e3e-dcf55a7a4906",
-      "clip": "clips/fa016a27-fbd9-46dc-8e3e-dcf55a7a4906.mp4",
-      "video_name": "15 MIN SHADOWBOXING WORKOUT SLIPPING PUNCHES.mp4",
-      "video_file": "https://drive.google.com/file/d/1H0k0Rb2RkftDrFwBnRjk5LURmHJpaquN/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 125.316,
-      "end_sec": 126.282,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "07e045f9-1d56-40c1-a1c4-2e22ead9f2ee",
-      "clip": "clips/07e045f9-1d56-40c1-a1c4-2e22ead9f2ee.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 503.89,
-      "end_sec": 504.5,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "34520320-c6a8-4830-986e-ed189afde171",
-      "clip": "clips/34520320-c6a8-4830-986e-ed189afde171.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 505.59,
-      "end_sec": 506.6,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "49e55768-ee2a-4aad-a6d5-bbeedeaadf6a",
-      "clip": "clips/49e55768-ee2a-4aad-a6d5-bbeedeaadf6a.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 507.79,
-      "end_sec": 508.456,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "45852abf-0c83-4ff8-8d5a-4b47aee827d9",
-      "clip": "clips/45852abf-0c83-4ff8-8d5a-4b47aee827d9.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 511.956,
-      "end_sec": 512.6,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "c41e88c7-5279-471d-9882-96f64c33f01d",
-      "clip": "clips/c41e88c7-5279-471d-9882-96f64c33f01d.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 512.59,
-      "end_sec": 513.467,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "ea38cf77-74ed-4114-944c-660db50b3a38",
-      "clip": "clips/ea38cf77-74ed-4114-944c-660db50b3a38.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 516.09,
-      "end_sec": 516.823,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "26063277-7016-44aa-9772-2b13172ec24e",
-      "clip": "clips/26063277-7016-44aa-9772-2b13172ec24e.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 517.89,
-      "end_sec": 518.89,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "e679223c-50c4-4a9a-ab3b-56d09426bacc",
-      "clip": "clips/e679223c-50c4-4a9a-ab3b-56d09426bacc.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 520.456,
-      "end_sec": 521.19,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "598ae565-764c-4155-977f-49879a394bde",
-      "clip": "clips/598ae565-764c-4155-977f-49879a394bde.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 521.256,
-      "end_sec": 522.023,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "b87693ea-4cc5-4d45-a3df-04b6dc4d248a",
-      "clip": "clips/b87693ea-4cc5-4d45-a3df-04b6dc4d248a.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 524.723,
-      "end_sec": 525.456,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "71ffb730-a466-4178-b3d7-21f6d5fd6abb",
-      "clip": "clips/71ffb730-a466-4178-b3d7-21f6d5fd6abb.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 526.5889999999999,
-      "end_sec": 527.656,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "3778f212-d330-4722-8b77-77fa23ab84c9",
-      "clip": "clips/3778f212-d330-4722-8b77-77fa23ab84c9.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 529.123,
-      "end_sec": 529.789,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "8aa48a04-54d2-406c-9f98-a0081c1a911e",
-      "clip": "clips/8aa48a04-54d2-406c-9f98-a0081c1a911e.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 530.923,
-      "end_sec": 532.056,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "75784cb3-40c6-4db2-bb78-8ae74852dc49",
-      "clip": "clips/75784cb3-40c6-4db2-bb78-8ae74852dc49.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 533.456,
-      "end_sec": 534.2,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "a4dafc6f-0f78-466e-8523-9d0e886f3141",
-      "clip": "clips/a4dafc6f-0f78-466e-8523-9d0e886f3141.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 535.289,
-      "end_sec": 536.356,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "4b5ead8c-4f0b-4cee-b9e9-5cb3024a117f",
-      "clip": "clips/4b5ead8c-4f0b-4cee-b9e9-5cb3024a117f.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 537.889,
-      "end_sec": 538.733,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "f4ad99f6-8259-4ae7-82bc-037c2297ca38",
-      "clip": "clips/f4ad99f6-8259-4ae7-82bc-037c2297ca38.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 539.856,
-      "end_sec": 540.999,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "497eec90-752f-4960-91e3-a768d3b431eb",
-      "clip": "clips/497eec90-752f-4960-91e3-a768d3b431eb.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 542.723,
-      "end_sec": 543.389,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "ca4cb440-a4db-4bc6-9d56-4d4586309a0c",
-      "clip": "clips/ca4cb440-a4db-4bc6-9d56-4d4586309a0c.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 544.589,
-      "end_sec": 545.523,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "7e8d8c0e-3fb7-436b-8cd4-b5ca0da022ce",
-      "clip": "clips/7e8d8c0e-3fb7-436b-8cd4-b5ca0da022ce.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 547.156,
-      "end_sec": 547.823,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "8aa22b67-a2ea-4bd4-a8dc-05600ee3a599",
-      "clip": "clips/8aa22b67-a2ea-4bd4-a8dc-05600ee3a599.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 548.923,
-      "end_sec": 549.989,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "76919ce6-9f5f-44fc-8dd0-4fbbb98c3601",
-      "clip": "clips/76919ce6-9f5f-44fc-8dd0-4fbbb98c3601.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 551.589,
-      "end_sec": 552.323,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "4a93fdcf-b79a-4b9f-84cd-1fbf112a6957",
-      "clip": "clips/4a93fdcf-b79a-4b9f-84cd-1fbf112a6957.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 553.456,
-      "end_sec": 554.389,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "254fda30-b29b-462d-a432-0207b1070fa4",
-      "clip": "clips/254fda30-b29b-462d-a432-0207b1070fa4.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 556.156,
-      "end_sec": 556.889,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "776ae601-4cd8-4ccf-9dda-8586cc94938a",
-      "clip": "clips/776ae601-4cd8-4ccf-9dda-8586cc94938a.mp4",
-      "video_name": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along).mp4",
-      "video_file": "https://drive.google.com/file/d/1w20k_GuShMUi-0n1CV5Ubx3JM8ASDxxl/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 558.289,
-      "end_sec": 559.356,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "39256e1b-94f4-4746-8200-bfeff8bff4d0",
-      "clip": "clips/39256e1b-94f4-4746-8200-bfeff8bff4d0.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 517.908,
-      "end_sec": 518.2,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "69e9ac07-70a5-438c-bb4a-152da04f86b9",
-      "clip": "clips/69e9ac07-70a5-438c-bb4a-152da04f86b9.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 518.242,
-      "end_sec": 518.659,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "b56a157e-fb2b-47a7-8ebf-147fd2382377",
-      "clip": "clips/b56a157e-fb2b-47a7-8ebf-147fd2382377.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 520.953,
-      "end_sec": 521.328,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "64ae5692-9503-498f-9d18-9badebe2b4d7",
-      "clip": "clips/64ae5692-9503-498f-9d18-9badebe2b4d7.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 521.287,
-      "end_sec": 521.704,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "0df7527b-8176-4df3-99d1-9edf13d0b9dd",
-      "clip": "clips/0df7527b-8176-4df3-99d1-9edf13d0b9dd.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 523.914,
-      "end_sec": 524.29,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "9c92e4db-78f5-4f66-86de-cf0b82207e4f",
-      "clip": "clips/9c92e4db-78f5-4f66-86de-cf0b82207e4f.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 526.9590000000001,
-      "end_sec": 527.2090000000001,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "ee615c3b-abbf-4c67-b520-ed12197ebb36",
-      "clip": "clips/ee615c3b-abbf-4c67-b520-ed12197ebb36.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 529.92,
-      "end_sec": 530.295,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "778b29d4-0f2f-438c-a76e-388b7509756e",
-      "clip": "clips/778b29d4-0f2f-438c-a76e-388b7509756e.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 533.34,
-      "end_sec": 533.966,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "1f8e2926-bba6-4c03-8400-04252a86545e",
-      "clip": "clips/1f8e2926-bba6-4c03-8400-04252a86545e.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 535.968,
-      "end_sec": 536.343,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "8370e743-b3e5-490d-9025-6dae8b4b649f",
-      "clip": "clips/8370e743-b3e5-490d-9025-6dae8b4b649f.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 536.301,
-      "end_sec": 536.802,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "d3d9b348-7bbc-4ad6-a3ce-68bbdfe08a60",
-      "clip": "clips/d3d9b348-7bbc-4ad6-a3ce-68bbdfe08a60.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 539.012,
-      "end_sec": 539.388,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "b5c1dfc4-27ea-4089-abba-a6c31798c653",
-      "clip": "clips/b5c1dfc4-27ea-4089-abba-a6c31798c653.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 541.89,
-      "end_sec": 542.265,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "13309111-75fb-4de8-8b5d-657870acb143",
-      "clip": "clips/13309111-75fb-4de8-8b5d-657870acb143.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 544.893,
-      "end_sec": 545.31,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "5ee5e680-b85e-4dd8-afbf-368af4f828ff",
-      "clip": "clips/5ee5e680-b85e-4dd8-afbf-368af4f828ff.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 547.896,
-      "end_sec": 548.23,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "b91d7ce4-c8fd-4d9a-8d3e-ee67042baa82",
-      "clip": "clips/b91d7ce4-c8fd-4d9a-8d3e-ee67042baa82.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 550.899,
-      "end_sec": 551.233,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "53608925-a73a-4cff-872d-77da3d875600",
-      "clip": "clips/53608925-a73a-4cff-872d-77da3d875600.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 553.86,
-      "end_sec": 554.277,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "bd38a719-6de9-41cb-be1a-bd416cf74c6d",
-      "clip": "clips/bd38a719-6de9-41cb-be1a-bd416cf74c6d.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 554.194,
-      "end_sec": 554.653,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "7ff0c9cc-7b41-4615-9902-e002686133d8",
-      "clip": "clips/7ff0c9cc-7b41-4615-9902-e002686133d8.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 556.863,
-      "end_sec": 557.197,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "6228d366-ee87-4258-91ee-3347568931bd",
-      "clip": "clips/6228d366-ee87-4258-91ee-3347568931bd.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 560.367,
-      "end_sec": 560.742,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "32c46f11-ef86-4172-badf-88185143c4b3",
-      "clip": "clips/32c46f11-ef86-4172-badf-88185143c4b3.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 563.327,
-      "end_sec": 563.745,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "31c94b3d-b318-46e1-b900-01deac2ce2d7",
-      "clip": "clips/31c94b3d-b318-46e1-b900-01deac2ce2d7.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 596.569,
-      "end_sec": 596,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "9fb22243-30b2-4716-8ed1-30623e6031a0",
-      "clip": "clips/9fb22243-30b2-4716-8ed1-30623e6031a0.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 601.991,
-      "end_sec": 602.367,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "c1885a74-2337-4206-9d6f-775579b8c965",
-      "clip": "clips/c1885a74-2337-4206-9d6f-775579b8c965.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 604.827,
-      "end_sec": 605.203,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "6bf2b745-a88e-4175-98a9-6cce675f80ff",
-      "clip": "clips/6bf2b745-a88e-4175-98a9-6cce675f80ff.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 607.789,
-      "end_sec": 608.164,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "72e61ef7-fc46-4871-a42f-00117b0d5d51",
-      "clip": "clips/72e61ef7-fc46-4871-a42f-00117b0d5d51.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 610.583,
-      "end_sec": 611,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "814ea727-3717-4fba-8800-d38434ac6c01",
-      "clip": "clips/814ea727-3717-4fba-8800-d38434ac6c01.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 613.586,
-      "end_sec": 613.961,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "7557cae1-d1f4-4910-80f5-74570f4a55ac",
-      "clip": "clips/7557cae1-d1f4-4910-80f5-74570f4a55ac.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 616.5889999999999,
-      "end_sec": 616.9639999999999,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "79066c9a-dbd0-4027-83bf-3a4f995af7df",
-      "clip": "clips/79066c9a-dbd0-4027-83bf-3a4f995af7df.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 619.592,
-      "end_sec": 620,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "e8ff42dc-ca94-48ba-8b1a-8e5abfb9718a",
-      "clip": "clips/e8ff42dc-ca94-48ba-8b1a-8e5abfb9718a.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 619.884,
-      "end_sec": 620.384,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "af54cd3f-3871-4252-be3c-1573f0a5c069",
-      "clip": "clips/af54cd3f-3871-4252-be3c-1573f0a5c069.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 622.553,
-      "end_sec": 622.97,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "7f116a20-e976-48ea-9a40-1707baf9c8ba",
-      "clip": "clips/7f116a20-e976-48ea-9a40-1707baf9c8ba.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "rear_bodyshot",
-      "start_sec": 622.845,
-      "end_sec": 623.387,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "7dbe0bd3-ce56-4063-a7f7-c7b0589d8337",
-      "clip": "clips/7dbe0bd3-ce56-4063-a7f7-c7b0589d8337.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 625.431,
-      "end_sec": 625.765,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "b69e6d38-bcc7-4c9d-b7d5-bfd9a8e28ea3",
-      "clip": "clips/b69e6d38-bcc7-4c9d-b7d5-bfd9a8e28ea3.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 628.392,
-      "end_sec": 628.809,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "0caa9475-2b3b-4af7-bee1-2598b82c0727",
-      "clip": "clips/0caa9475-2b3b-4af7-bee1-2598b82c0727.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 631.353,
-      "end_sec": 631.729,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "501f7135-be21-449e-9257-632be1db30d7",
-      "clip": "clips/501f7135-be21-449e-9257-632be1db30d7.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 634.398,
-      "end_sec": 634.773,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "fdd40a07-452d-4f11-ac41-f080937369cd",
-      "clip": "clips/fdd40a07-452d-4f11-ac41-f080937369cd.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 637.234,
-      "end_sec": 637.61,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "a7eba2e7-7b16-486b-a0c8-f11f44e80f2d",
-      "clip": "clips/a7eba2e7-7b16-486b-a0c8-f11f44e80f2d.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 640.112,
-      "end_sec": 640.529,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "4c93555e-620e-4f24-ad8c-316d1a38c91c",
-      "clip": "clips/4c93555e-620e-4f24-ad8c-316d1a38c91c.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 642.032,
-      "end_sec": 643.407,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "43f55157-b707-411e-8c21-dd3db4aecbeb",
-      "clip": "clips/43f55157-b707-411e-8c21-dd3db4aecbeb.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 645.784,
-      "end_sec": 646.16,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "ebba9df6-6edc-4e40-92e8-1d91f58b9e2b",
-      "clip": "clips/ebba9df6-6edc-4e40-92e8-1d91f58b9e2b.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 648.787,
-      "end_sec": 649.121,
-      "stance": "Orthodox"
-    },
-    {
-      "punch_uuid": "ae5f676a-62db-4811-9352-331dcf7dc8f3",
-      "clip": "clips/ae5f676a-62db-4811-9352-331dcf7dc8f3.mp4",
-      "video_name": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along.mp4",
-      "video_file": "https://drive.google.com/file/d/1naRSVzfDLDfD6rs3LNgYyHaAIl_K06YM/view?usp=sharing",
-      "punch": "lead_bodyshot",
-      "start_sec": 651.707,
-      "end_sec": 652.082,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "120793c1-27e9-4ebd-8bd0-f50f0e81b167",
@@ -818,7 +338,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 789,
       "end_sec": 790,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "3698a74b-87ee-4bc7-bf92-c4fb81f78dfc",
@@ -828,7 +349,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 859.704,
       "end_sec": 859.954,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "ea4f2d39-4f18-460e-be6d-bf89946be887",
@@ -838,7 +360,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 65.867,
       "end_sec": 66.467,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "39f36705-7c69-4017-b336-6c4f484aa405",
@@ -848,7 +371,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 70.188,
       "end_sec": 70.655,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "9e658e86-3015-4fb1-8c0a-d330d309dfd8",
@@ -858,7 +382,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 522.449,
       "end_sec": 522.882,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "623e5252-06bb-4cb5-bc68-d38bf9da2c8e",
@@ -868,7 +393,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 526.9159999999999,
       "end_sec": 527.316,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "bcc8b979-7958-4c60-8492-d7c8b7d40925",
@@ -878,7 +404,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 431,
       "end_sec": 431.38,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "209452a7-8141-4fd1-bfc1-33b3ea8ff77f",
@@ -888,7 +415,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 431.29,
       "end_sec": 431.83,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "c6350fe1-5875-4973-814e-34d5d5ff1972",
@@ -898,7 +426,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 432.33,
       "end_sec": 432.75,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "e2e5fa3d-2e88-4d6e-b979-a2c7e684f56b",
@@ -908,7 +437,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 432.62,
       "end_sec": 433,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "aa87bfeb-0453-44b4-ace3-0475a03bbf65",
@@ -918,7 +448,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 433.58,
       "end_sec": 433.96,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "ab7ff2c4-8c98-413a-a2ea-b37c707c177a",
@@ -928,7 +459,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 433.88,
       "end_sec": 434.25,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "1c4781f2-c651-48be-b9c2-1d5ef6938aeb",
@@ -938,7 +470,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 434.79,
       "end_sec": 435.12,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "63152223-02d5-439f-974a-703cced324ad",
@@ -948,7 +481,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 435.04,
       "end_sec": 435.42,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "6511790d-f788-4c27-bca5-b2fab9e7c3e3",
@@ -958,7 +492,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 436,
       "end_sec": 436.33,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "0b27dd34-49c7-4c0b-86a9-d85d24e1bb9c",
@@ -968,7 +503,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 436.25,
       "end_sec": 436.58,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "8200888a-9001-48b9-8640-9191eb2ce0f9",
@@ -978,7 +514,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 437.25,
       "end_sec": 437.58,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "f533abff-38c3-4ac7-bfdd-9ea6ccd11d12",
@@ -988,7 +525,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 437.46,
       "end_sec": 437.83,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "5eb6375d-8e36-45e3-b3be-879d711aa0da",
@@ -998,7 +536,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 438.38,
       "end_sec": 438.75,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "7cf89a59-5ba7-46ee-8a20-4a231fa31fb8",
@@ -1008,7 +547,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 438.62,
       "end_sec": 439.08,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "122436a9-dc62-4d5a-80a8-eda8f1b15841",
@@ -1018,7 +558,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 439.62,
       "end_sec": 440,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "f427a9fe-3d0b-42b9-b074-c84b017200b5",
@@ -1028,7 +569,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 439.88,
       "end_sec": 440.25,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "d2b5afa3-b737-489e-af43-df6d47f7f137",
@@ -1038,7 +580,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 440.83,
       "end_sec": 441.21,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "3843f5ec-5da8-43ac-bcaa-bb74fd193237",
@@ -1048,7 +591,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 441.04,
       "end_sec": 441.58,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "de5d0b52-ea3e-4519-8ef2-2e6034b94c0c",
@@ -1058,7 +602,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 442.08,
       "end_sec": 442.46,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "de661048-49a3-49b3-b16f-515dbeb5a62d",
@@ -1068,7 +613,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 442.33,
       "end_sec": 442.75,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "51c94377-fc55-455e-ad76-893f65f382e5",
@@ -1078,7 +624,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 443.25,
       "end_sec": 443.67,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "fd8191c0-f9c8-4dfe-81f7-7fb35401cd0d",
@@ -1088,7 +635,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 443.54,
       "end_sec": 443.96,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "36cf32f8-0291-4788-9e62-e23903ec65fa",
@@ -1098,7 +646,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 444.5,
       "end_sec": 444.88,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "a7740400-90f3-484b-8ab1-8c98b9ee1236",
@@ -1108,7 +657,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 444.75,
       "end_sec": 445.21,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "fa59b0ca-15a8-4e9a-8511-04deaa449130",
@@ -1118,7 +668,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 445.75,
       "end_sec": 446.12,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "2e90edea-5eb4-4e1c-8baa-0c44a89bd90b",
@@ -1128,17 +679,19 @@
       "punch": "rear_bodyshot",
       "start_sec": 445.96,
       "end_sec": 446.38,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "fe26b634-2d5f-4e71-a908-86fdd526ec78",
       "clip": "clips/fe26b634-2d5f-4e71-a908-86fdd526ec78.mp4",
       "video_name": "30 Minute Boxing HIIT Workout with a Heavy Bag [Round 2] 2022_h264.mp4",
-      "video_file": "https://drive.google.com/file/d/15cFWWLXor7dCrq0ZCCsh-ypW-UA45Mu0/view?usp=drive_link",
+      "video_file": "https://drive.google.com/file/d/15cFWWLXor7dCrq0ZCCsh-ypW-UA45Mu0/view",
       "punch": "lead_bodyshot",
       "start_sec": 446.879,
       "end_sec": 447.462,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "faae9800-5b47-4731-b448-0d6ada82d412",
@@ -1148,7 +701,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 447.17,
       "end_sec": 447.587,
-      "stance": "Southpaw"
+      "stance": "Southpaw",
+      "labeler": ""
     },
     {
       "punch_uuid": "bf8b167d-c523-429a-a9ac-e7527a382a5b",
@@ -1158,7 +712,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 447.212,
       "end_sec": 447.212,
-      "stance": "Southpaw"
+      "stance": "Southpaw",
+      "labeler": ""
     },
     {
       "punch_uuid": "1f597f46-7566-4020-9069-c4554dbc9430",
@@ -1168,7 +723,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 448.33,
       "end_sec": 448.58,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "df2fa77e-99bb-4211-a2ac-5f3197273de2",
@@ -1178,7 +734,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 448.46,
       "end_sec": 448.96,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "59dd9379-02ea-416e-bf24-0c1024e693d9",
@@ -1188,7 +745,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 449.54,
       "end_sec": 449.83,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "65196d46-0a75-48ff-9ab5-5a9f81853e61",
@@ -1198,7 +756,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 449.67,
       "end_sec": 450.08,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "013a0287-e0d9-43f5-ac1d-40d0529c901d",
@@ -1208,7 +767,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 450.75,
       "end_sec": 451.04,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "57b41c51-f431-4fc9-ba52-4a81b05bc196",
@@ -1218,7 +778,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 450.88,
       "end_sec": 451.46,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "590a349b-7386-437c-b7b6-55d4fa57ec6b",
@@ -1228,7 +789,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 451.83,
       "end_sec": 452.25,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "4d8ec47a-e320-44ce-a20b-b9368371c83b",
@@ -1238,7 +800,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 452.12,
       "end_sec": 452.62,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "9e66785f-9de6-45e9-9132-658daf3bc246",
@@ -1248,7 +811,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 453.17,
       "end_sec": 453.46,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "f9cf0401-a485-421b-8b44-5d5b2ac131bd",
@@ -1258,7 +822,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 453.33,
       "end_sec": 453.92,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "a3b5c009-0a92-44a0-b44b-a9338d0489a5",
@@ -1268,7 +833,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 454.33,
       "end_sec": 454.79,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "da5ffead-96d6-4b67-bb80-62122442fd31",
@@ -1278,7 +844,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 454.54,
       "end_sec": 455.12,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "7149f75f-bf2c-48e4-b705-cb4447edd338",
@@ -1288,7 +855,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 455.5,
       "end_sec": 455.96,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "d037606e-02c9-46a7-bff3-2100da91d5c4",
@@ -1298,7 +866,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 455.79,
       "end_sec": 456.38,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "b587e97a-58cf-41b8-972d-45f2d92a68d7",
@@ -1308,7 +877,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 456.83,
       "end_sec": 457.12,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "f3bbbd37-f145-484a-aa7f-eeee3be28b33",
@@ -1318,7 +888,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 457,
       "end_sec": 457.5,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "1da0fd93-d80c-4e3d-a79f-6efcdcb1f96d",
@@ -1328,7 +899,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 458.08,
       "end_sec": 458.38,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "60421629-4f9b-4f6c-9fc9-95554857584e",
@@ -1338,7 +910,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 458.21,
       "end_sec": 458.71,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "f8d14ae8-4327-4a1a-8292-128f400d9650",
@@ -1348,7 +921,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 459.21,
       "end_sec": 459.59000000000003,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "52a55495-cf69-4691-8838-bd5bee199f87",
@@ -1358,7 +932,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 459.46,
       "end_sec": 459.92,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "215a29b2-de28-4576-b216-95d587c1dc17",
@@ -1368,7 +943,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 526.25,
       "end_sec": 526.62,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "1c116a4b-4786-4dae-863c-e0d22fbf69ea",
@@ -1378,7 +954,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 526.5,
       "end_sec": 526.88,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "3c466669-6d42-4424-9acc-382ef1032c0c",
@@ -1388,7 +965,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 527.21,
       "end_sec": 527.58,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "580304ac-976d-4e57-a383-19885fef64f8",
@@ -1398,7 +976,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 527.5,
       "end_sec": 527.79,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "f7cc502c-a7cc-44fb-867f-f292a349db61",
@@ -1408,7 +987,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 528,
       "end_sec": 528.38,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "b49c476d-5819-4edc-8eea-2a350a47ae1e",
@@ -1418,7 +998,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 528.29,
       "end_sec": 528.62,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "e91ecdcd-a2b0-4d2d-98d9-813e9aa7c88d",
@@ -1428,7 +1009,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 528.83,
       "end_sec": 529.21,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "12b6901d-65c5-4cda-9fc2-0851498e4479",
@@ -1438,7 +1020,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 529.12,
       "end_sec": 529.5,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "d112130f-8db8-4fbe-bcd2-5b8a01c332ea",
@@ -1448,7 +1031,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 529.71,
       "end_sec": 530.08,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "0b513713-5d19-4b71-b2de-afc71ac9f98c",
@@ -1458,7 +1042,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 530,
       "end_sec": 530.29,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "669176c7-5e2f-4520-8d27-89b1ee9f62b9",
@@ -1468,7 +1053,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 530.62,
       "end_sec": 531,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "db1f6127-2556-4359-9699-dfc953be741f",
@@ -1478,7 +1064,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 530.92,
       "end_sec": 531.29,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "a1bc1860-26ba-49f9-99ad-0fbd3892e393",
@@ -1488,7 +1075,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 531.5,
       "end_sec": 531.92,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "2a3ca9a4-d055-41fa-92f2-1e67c1068193",
@@ -1498,7 +1086,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 531.79,
       "end_sec": 532.17,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "88b1dc7c-9f4d-4728-ab7b-7afaa113a309",
@@ -1508,7 +1097,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 532.42,
       "end_sec": 532.83,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "e196fda3-7b7a-4a04-ba37-260f23bba8e9",
@@ -1518,7 +1108,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 532.75,
       "end_sec": 533.08,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "d2fe8dc1-9dc0-4986-bcf9-2bed902b5638",
@@ -1528,7 +1119,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 533.46,
       "end_sec": 533.88,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "c8cf6be6-9f59-42df-889d-653245709b0c",
@@ -1538,7 +1130,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 533.75,
       "end_sec": 534.17,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "6eb72548-eee6-432d-9fae-76c9409ca1a0",
@@ -1548,7 +1141,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 534.33,
       "end_sec": 534.75,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "f2ee1738-b6b0-469d-809f-c3096511efb4",
@@ -1558,7 +1152,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 534.62,
       "end_sec": 534.96,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "a1aeadda-ac3d-443f-b124-75f16b7385c3",
@@ -1568,7 +1163,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 535.21,
       "end_sec": 535.58,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "b4e1c558-e363-4996-af09-57c20feee7c8",
@@ -1578,7 +1174,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 535.46,
       "end_sec": 535.75,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "1fe376dd-c975-4304-abde-23263d6aba59",
@@ -1588,7 +1185,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 536.33,
       "end_sec": 536.67,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "115259f4-8fd5-446c-b260-1ebe2df34660",
@@ -1598,7 +1196,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 536.54,
       "end_sec": 536.88,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "64f00ce5-57a6-4961-ade9-a1b1cdeb5fbd",
@@ -1608,7 +1207,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 537.12,
       "end_sec": 537.46,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "9941b25d-5b29-43e8-a6d4-442a9e322617",
@@ -1618,7 +1218,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 537.33,
       "end_sec": 537.75,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "d8f67152-03fe-4183-8813-86c318e87625",
@@ -1628,7 +1229,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 537.96,
       "end_sec": 538.38,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "5a2ef9da-de3b-4b55-9623-87d0db0caa6a",
@@ -1638,7 +1240,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 538.21,
       "end_sec": 538.62,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "ff33c394-be42-43f7-b956-b99233fd4e86",
@@ -1648,7 +1251,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 538.88,
       "end_sec": 539.21,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "c9798431-8e25-4a9b-bc78-7aac20910e0c",
@@ -1658,7 +1262,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 539.08,
       "end_sec": 539.42,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "e325c395-a53f-40bb-8c9b-3106ab355390",
@@ -1668,7 +1273,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 539.67,
       "end_sec": 540.08,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "9531719e-3602-44ea-8c51-78bd7f1c0772",
@@ -1678,7 +1284,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 539.92,
       "end_sec": 540.33,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "dfc61298-7a31-41de-801f-6e68950c632c",
@@ -1688,7 +1295,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 540.54,
       "end_sec": 540.92,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "652087c9-01b6-426c-83ac-1ce515b5b0a2",
@@ -1698,7 +1306,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 540.79,
       "end_sec": 541.17,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "b1f325c1-5b09-445c-9404-8e2fad4ed171",
@@ -1708,7 +1317,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 541.42,
       "end_sec": 541.79,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "1effa82d-dc25-4fcb-8fcd-a5e9587a142b",
@@ -1718,7 +1328,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 541.67,
       "end_sec": 542.04,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "01c1f2be-7f3a-49ad-8776-8c509d44c4a6",
@@ -1728,7 +1339,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 542.33,
       "end_sec": 542.71,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "76427ff9-8fb1-4781-8424-21d1bb8a7f66",
@@ -1738,7 +1350,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 542.58,
       "end_sec": 542.92,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "916d1a68-5940-4f90-8064-c6d60cc62116",
@@ -1748,7 +1361,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 543.25,
       "end_sec": 543.62,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "f3e215a0-aab1-4061-bbeb-e1ef9ee0be91",
@@ -1758,7 +1372,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 543.5,
       "end_sec": 543.79,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "2ec4a1ba-7a20-423e-b9b8-b0eb1a8c86ab",
@@ -1768,7 +1383,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 544.04,
       "end_sec": 544.46,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "fb3ec864-f34c-4a7a-85c4-ca0b8b347f12",
@@ -1778,7 +1394,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 544.33,
       "end_sec": 544.71,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "61f2239d-20b2-4681-8bcd-e4b9e3be9c9d",
@@ -1788,7 +1405,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 544.96,
       "end_sec": 545.38,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "f2b6178e-5c10-4479-9de6-739a9fb0eaef",
@@ -1798,7 +1416,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 545.17,
       "end_sec": 545.62,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "83adb1df-9981-4210-8700-4d5d11dd2348",
@@ -1808,7 +1427,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 545.83,
       "end_sec": 546.38,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "d6a57671-9d02-47bb-803b-f5bfa615eef4",
@@ -1818,7 +1438,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 546.08,
       "end_sec": 546.54,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "930504b0-63c5-4d52-ae55-1fbd4e351ecd",
@@ -1828,7 +1449,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 546.71,
       "end_sec": 547.12,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "bdeecbb6-c2f3-4488-a690-8e338dd884c1",
@@ -1838,7 +1460,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 546.96,
       "end_sec": 547.38,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "e14a46b2-4986-4d23-8559-3f5223194524",
@@ -1848,7 +1471,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 547.58,
       "end_sec": 548.08,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "8afa6a03-7dab-4fca-8cf5-7000be82321c",
@@ -1858,7 +1482,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 547.88,
       "end_sec": 548.33,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "1f55c4c5-ffbb-45a1-b5ad-b636d026c671",
@@ -1868,7 +1493,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 631.29,
       "end_sec": 631.67,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "4ed0323a-dd42-42ee-bb9e-72d50a2104e4",
@@ -1878,7 +1504,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 631.5,
       "end_sec": 631.88,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "df45e725-d643-4b09-846f-4cc5c55aa6e6",
@@ -1888,7 +1515,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 632.21,
       "end_sec": 632.5,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "60f9e4b1-e6f8-4e2f-adcf-68de66183861",
@@ -1898,7 +1526,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 632.42,
       "end_sec": 632.75,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "2aa3de76-72ec-4f1c-96ad-38abc9beb145",
@@ -1908,7 +1537,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 633.08,
       "end_sec": 633.42,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "3bf82320-8163-42f7-b18b-449322337edd",
@@ -1918,7 +1548,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 633.29,
       "end_sec": 633.67,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "6700bd93-a9a1-441f-8351-f59fc7f5f980",
@@ -1928,7 +1559,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 634.17,
       "end_sec": 634.54,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "14408ce0-7446-42f8-afbe-5eec789d0c65",
@@ -1938,7 +1570,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 635.04,
       "end_sec": 635.5,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "fd0c995d-41ba-4387-9e10-3a37a7480481",
@@ -1948,7 +1581,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 635.33,
       "end_sec": 635.71,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "316f0c69-b65f-47c1-beb7-447afc4afd1d",
@@ -1958,7 +1592,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 636.25,
       "end_sec": 636.62,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "97f02cc0-d547-4e63-b892-f251c033b68c",
@@ -1968,7 +1603,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 636.5,
       "end_sec": 636.88,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "74e55d8c-7c81-4658-b49c-3b860e6b09b4",
@@ -1978,7 +1614,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 637.17,
       "end_sec": 637.5,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "02cee267-3eee-468b-b37a-3f025b0154f6",
@@ -1988,7 +1625,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 637.42,
       "end_sec": 637.83,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "8c501ce2-9427-4ff8-8c14-b40570a75f59",
@@ -1998,7 +1636,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 638.25,
       "end_sec": 638.67,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "296e73c6-2d5e-41e9-8ef8-8e077fb78c5f",
@@ -2008,7 +1647,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 638.92,
       "end_sec": 639.33,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "84101f1c-2b03-4946-8daa-a667937ae772",
@@ -2018,7 +1658,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 639.12,
       "end_sec": 639.58,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "c8dc2aa6-624b-44f0-ab85-710e8b8db356",
@@ -2028,7 +1669,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 639.88,
       "end_sec": 640.08,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "ce9771ed-fea4-4637-88bd-46fa2dc7b937",
@@ -2038,7 +1680,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 640,
       "end_sec": 640.42,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "d54261d1-5e2e-46ba-8779-89921f1f6895",
@@ -2048,7 +1691,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 641.005,
       "end_sec": 641.255,
-      "stance": "Southpaw"
+      "stance": "Southpaw",
+      "labeler": ""
     },
     {
       "punch_uuid": "0f03076b-7295-4744-b074-38180afffe84",
@@ -2058,7 +1702,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 641.12,
       "end_sec": 641.54,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "9c62c544-fdb0-436d-8f6d-84234debf3f1",
@@ -2068,7 +1713,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 642.08,
       "end_sec": 642.42,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "e49bbb6f-f9de-4c4a-8ca4-f6d7864cf25b",
@@ -2078,7 +1724,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 642.25,
       "end_sec": 642.71,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "5f36788d-5c96-40b7-9d6e-43014b8ca541",
@@ -2088,7 +1735,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 643,
       "end_sec": 643.42,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "94b5f2d7-2c20-499a-87fd-1e84a09f87f5",
@@ -2098,7 +1746,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 643.17,
       "end_sec": 643.58,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "6f0f617a-b6ba-4d94-b33d-02f0cd502d5e",
@@ -2108,7 +1757,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 643.92,
       "end_sec": 644.17,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "078f1079-2e65-4031-b28d-bae3bd5ee077",
@@ -2118,7 +1768,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 644.04,
       "end_sec": 644.42,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "9a471209-a31e-4771-80e4-310c2b4d6895",
@@ -2128,7 +1779,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 644.75,
       "end_sec": 645.04,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "128d447c-76bf-42e7-b4dd-cff9b851c06a",
@@ -2138,7 +1790,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 644.96,
       "end_sec": 645.33,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "2d25f1e8-8121-43b5-bf0e-42e9a746a6f5",
@@ -2148,7 +1801,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 645.62,
       "end_sec": 645.96,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "5ba2119c-3329-4ba0-ab72-ee514162e935",
@@ -2158,7 +1812,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 645.88,
       "end_sec": 646.25,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "1d29c04b-d7e9-4fff-84a1-39e102caecf1",
@@ -2168,7 +1823,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 646.62,
       "end_sec": 646.96,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "9bfcb36e-82c6-45b5-88a0-812fba8b2e37",
@@ -2178,7 +1834,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 646.88,
       "end_sec": 647.29,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "90768704-09b0-4560-b65f-3caa03e53f0e",
@@ -2188,7 +1845,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 647.54,
       "end_sec": 647.88,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "55b7f8cd-2e79-4304-adcc-5aeb7c38e3e2",
@@ -2198,7 +1856,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 647.75,
       "end_sec": 648.21,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "ab18eebc-3ee8-470d-9c6e-6b382c5138ac",
@@ -2208,7 +1867,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 648.46,
       "end_sec": 648.79,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "213db20e-3a43-4592-bd2d-502abfaaef84",
@@ -2218,7 +1878,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 648.62,
       "end_sec": 649.04,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "bd7c4212-949e-40bb-93f5-db05889a3529",
@@ -2228,7 +1889,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 649.33,
       "end_sec": 649.67,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "66a2489c-101b-440f-a6c4-e738f1848ffa",
@@ -2238,7 +1900,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 649.54,
       "end_sec": 649.92,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "e6f2ddb3-1e19-40b7-8220-534afb1fa354",
@@ -2248,7 +1911,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 650.25,
       "end_sec": 650.62,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "2fcb163d-7b73-41e6-91d3-16e245d03f15",
@@ -2258,7 +1922,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 650.46,
       "end_sec": 650.83,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "366d080b-3e7d-4d6a-a4ec-1ae925919ac2",
@@ -2268,7 +1933,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 651.12,
       "end_sec": 651.54,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "5c4e4ed4-4370-498a-b46c-f4194fd30b05",
@@ -2278,7 +1944,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 651.38,
       "end_sec": 651.75,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "9fc8ee04-14ec-40d0-9d7c-d581c0513762",
@@ -2288,7 +1955,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 652.04,
       "end_sec": 652.38,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "18f7b72f-e648-4276-9606-ae2472580aad",
@@ -2298,7 +1966,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 652.25,
       "end_sec": 652.58,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "2369c307-122b-43e3-a468-aa1944517418",
@@ -2308,7 +1977,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 652.92,
       "end_sec": 653.29,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "af0e6b0b-0dbe-4bd1-ab43-5a8158a74465",
@@ -2318,7 +1988,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 809.71,
       "end_sec": 810.54,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "d7cad465-4a7f-4958-a87d-1b3da1aff820",
@@ -2328,7 +1999,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 810.71,
       "end_sec": 810.92,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "eeb216e2-1281-4bb4-ac31-8841a6838d5d",
@@ -2338,7 +2010,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 811.92,
       "end_sec": 812.62,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "c722df7a-3d27-4172-b998-a9970d58ec5c",
@@ -2348,7 +2021,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 814.17,
       "end_sec": 815.08,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "e10a0336-4652-43e2-9d13-77ad535da5ec",
@@ -2358,7 +2032,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 815,
       "end_sec": 816.12,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "469c10a7-75c7-4946-a579-b4c8d67e189b",
@@ -2368,7 +2043,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 816.62,
       "end_sec": 817.83,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "d24b8984-d579-4f13-a4e4-f5fc7f9ff8b9",
@@ -2378,7 +2054,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 818.62,
       "end_sec": 819.67,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "797dbd2a-2657-456d-b85e-f82a3ef328bb",
@@ -2388,7 +2065,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 819.71,
       "end_sec": 820.62,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "8b3a0872-f5fc-41a6-a348-7d5358f4cbfc",
@@ -2398,7 +2076,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 821.33,
       "end_sec": 822.08,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "0bcff172-cbf7-4e55-bf21-d7260a8db0de",
@@ -2408,7 +2087,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 822.38,
       "end_sec": 823.29,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "2a56ae42-0776-4d03-938b-b8a5ca96822b",
@@ -2418,7 +2098,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 823.62,
       "end_sec": 825,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "de293feb-423b-4961-88d3-ddecb7ab6e12",
@@ -2428,7 +2109,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 825.38,
       "end_sec": 826.29,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "a9302cc9-8a75-4a49-b487-ed2b12ba88ef",
@@ -2438,7 +2120,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 826.42,
       "end_sec": 827.54,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "7848b591-b7ee-438f-b104-ad8cd1d895d7",
@@ -2448,7 +2131,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 828.25,
       "end_sec": 829.21,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "12e06cdf-1846-4ae2-a1ef-13bb8dd2fd6b",
@@ -2458,7 +2142,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 829.08,
       "end_sec": 830.25,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "6670b386-b526-4f91-a047-313b62d4cca6",
@@ -2468,7 +2153,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 831.08,
       "end_sec": 831.88,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "e49625ac-9135-4ce3-9659-90a6dc655347",
@@ -2478,7 +2164,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 831.92,
       "end_sec": 833.25,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "f7eff541-295b-423c-bf57-07fb4c624968",
@@ -2488,7 +2175,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 834,
       "end_sec": 834.75,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "7973f11b-b522-43fd-9bb5-9aea84334888",
@@ -2498,7 +2186,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 834.92,
       "end_sec": 836,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "ee1d5620-7d19-4ae8-95d7-71b0dd70a1af",
@@ -2508,7 +2197,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 836.92,
       "end_sec": 837.88,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "687670e1-861b-48e6-9b17-624459df8488",
@@ -2518,7 +2208,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 837.92,
       "end_sec": 839,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "ac07c949-7942-40fd-975a-cba61514c6b8",
@@ -2528,7 +2219,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 839.58,
       "end_sec": 840.62,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "385a9922-2608-40d1-aa6b-018d6f2e6ccd",
@@ -2538,7 +2230,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 840.62,
       "end_sec": 841.25,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "f30d0b0e-0564-4b18-b996-7666b2deb3ce",
@@ -2548,7 +2241,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 927,
       "end_sec": 927.75,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "e32dd798-8411-45cd-87f4-12b49e318626",
@@ -2558,7 +2252,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 927.83,
       "end_sec": 928.54,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "80e65fb6-7905-46a3-932d-481b2c6a946a",
@@ -2568,7 +2263,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 930.92,
       "end_sec": 931.88,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "c8d1d1ec-777f-417b-b995-0b86af7860af",
@@ -2578,7 +2274,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 933.58,
       "end_sec": 934.17,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "877508bf-4caf-452b-a229-c886c2a6a213",
@@ -2588,7 +2285,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 934.29,
       "end_sec": 934.92,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "47c0ba66-b29f-43a0-bdb7-c731653f3f6b",
@@ -2598,7 +2296,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 936.75,
       "end_sec": 937.5,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "aff8ea16-8e59-4d95-b7cb-fffbe8184680",
@@ -2608,7 +2307,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 937.5,
       "end_sec": 938.25,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "a105794a-e325-4458-90ad-b5e62f76bc05",
@@ -2618,7 +2318,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 939.79,
       "end_sec": 940.67,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "30eb4cb4-c3c3-4cc4-acec-212fe8bcd7c5",
@@ -2628,7 +2329,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 943.12,
       "end_sec": 943.79,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "64ecc43e-58b1-4ac3-993c-e033caad97a7",
@@ -2638,7 +2340,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 943.88,
       "end_sec": 944.54,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "21c39513-e37c-4621-9b57-6225eb9e43d7",
@@ -2648,7 +2351,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 502.78,
       "end_sec": 503.18,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "e95f634b-332d-4772-9518-74b068d6c9d1",
@@ -2658,7 +2362,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 506.15,
       "end_sec": 506.48,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "92436d0a-ab7c-4ec4-b407-ad03aade030c",
@@ -2668,7 +2373,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 509.55,
       "end_sec": 509.88,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "f2996d02-eb6d-4072-9ba3-83a3c0e72986",
@@ -2678,7 +2384,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 512.75,
       "end_sec": 513.11,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "6c1215b9-0664-420a-9654-f70e435b19fe",
@@ -2688,7 +2395,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 516.08,
       "end_sec": 516.35,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "49ac53da-1fd6-4498-bfb3-c1c43b779c14",
@@ -2698,7 +2406,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 519.28,
       "end_sec": 519.61,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "423323a4-629a-432c-9451-74acf1343136",
@@ -2708,7 +2417,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 522.58,
       "end_sec": 522.91,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "097cf965-6656-4c00-87db-ba0738aa154c",
@@ -2718,7 +2428,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 525.88,
       "end_sec": 526.15,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "ee5ab732-1099-4721-9d26-e383d2fd4635",
@@ -2728,7 +2439,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 529.15,
       "end_sec": 529.41,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "7f74f941-108d-4fc9-a0a1-f3e5bfa3a396",
@@ -2738,7 +2450,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 869.64,
       "end_sec": 870.27,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "438d170a-2e80-48ec-9ec0-0a94f798b555",
@@ -2748,7 +2461,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 870.27,
       "end_sec": 870.5,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "f33a718d-ec84-4ef9-b18c-32811c29f52a",
@@ -2758,7 +2472,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 870.44,
       "end_sec": 870.77,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "e316c1d6-aa87-455f-83e5-33c90bbd538e",
@@ -2768,7 +2483,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 870.74,
       "end_sec": 871.07,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "442eafb8-4117-4b84-a6f9-8b550ee679b8",
@@ -2778,7 +2494,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 872.97,
       "end_sec": 873.5,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "9adfdbce-3893-4417-bb6d-2d2bb12563bc",
@@ -2788,7 +2505,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 873.44,
       "end_sec": 873.7,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "e7fa00fa-a763-4d22-9983-29690fb003da",
@@ -2798,7 +2516,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 873.67,
       "end_sec": 874,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "b8859b63-6f84-41d4-abe1-37286a424e9f",
@@ -2808,7 +2527,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 873.94,
       "end_sec": 874.4,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "b01ce5da-5224-4ee3-acb8-a009640f8ac6",
@@ -2818,7 +2538,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 876.1,
       "end_sec": 876.7,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "c645c524-cec4-4174-bb77-8cbaf013df9b",
@@ -2828,7 +2549,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 876.64,
       "end_sec": 876.94,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "db82cbcf-d87a-4897-8289-1ac9512e4b1f",
@@ -2838,7 +2560,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 876.79,
       "end_sec": 877.7,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "03c6147a-01bb-4a98-8f71-038767e0b32d",
@@ -2848,7 +2571,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 879.34,
       "end_sec": 880,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "6bfd644d-bf19-4297-8a6b-96cc538cd2f1",
@@ -2858,7 +2582,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 879.94,
       "end_sec": 880.2,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "93b65db6-2d5f-4985-967d-79f00de37bd1",
@@ -2868,7 +2593,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 880.2,
       "end_sec": 880.5,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "ed3eab01-a7fe-4160-ba1f-caf18ffea640",
@@ -2878,7 +2604,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 880.44,
       "end_sec": 880.9,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "eb9c547b-51f5-4019-acb9-23cd9f7fd11e",
@@ -2888,7 +2615,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 882.57,
       "end_sec": 883.24,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "9222dad6-5c87-4f50-b738-4af8d761062b",
@@ -2898,7 +2626,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 883.17,
       "end_sec": 883.47,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "7785afa2-fb4f-47a2-9bdc-43eed46bb4cc",
@@ -2908,7 +2637,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 883.4,
       "end_sec": 883.7,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "8bfdb084-dc78-4380-91b9-6b6211c41416",
@@ -2918,7 +2648,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 883.67,
       "end_sec": 884.07,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "3f6a1026-964a-40b6-bdc9-b2608c761440",
@@ -2928,7 +2659,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 885.9,
       "end_sec": 886.5,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "54d0c23b-cccc-4ebd-a109-e2033c270ef9",
@@ -2938,7 +2670,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 886.47,
       "end_sec": 886.74,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "63708973-d28e-40da-b03c-cc4a263538e6",
@@ -2948,7 +2681,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 886.67,
       "end_sec": 887,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "cd9bb1e4-1eca-4020-943c-e08b8146fbb6",
@@ -2958,7 +2692,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 886.94,
       "end_sec": 887.34,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "c982f345-2bb0-4186-b66f-3c5e82320ff4",
@@ -2968,7 +2703,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 889.27,
       "end_sec": 889.77,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "894abb84-5e14-4507-b62e-7add43f2c965",
@@ -2978,7 +2714,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 889.7,
       "end_sec": 890,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "4a619b3e-5f44-455f-a792-2e0613305069",
@@ -2988,7 +2725,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 889.94,
       "end_sec": 890.27,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "5af5d9e5-a106-4c56-89e9-23425dd2c374",
@@ -2998,7 +2736,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 890.2,
       "end_sec": 890.8,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "5b91a166-ea27-4372-ad6f-0522aabbce46",
@@ -3008,7 +2747,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1232.606,
       "end_sec": 1233.106,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "2ec78135-1fdf-4732-b8a5-63a6baa80601",
@@ -3018,7 +2758,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1237.411,
       "end_sec": 1238.044,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "65918e1c-9e5c-4aee-a093-4b7040d53036",
@@ -3028,7 +2769,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1242.582,
       "end_sec": 1243.15,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "05ad4f24-0b0e-4474-802b-a7810a7e6474",
@@ -3038,7 +2780,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1246.82,
       "end_sec": 1247.387,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "3ffea9ca-4c10-4cc7-9ef8-a61f50d3da53",
@@ -3048,7 +2791,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1251.858,
       "end_sec": 1252.426,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "32bb6284-0121-40ad-be64-9b1e29cda7c8",
@@ -3058,7 +2802,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1254.35,
       "end_sec": 1255.216,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "38bd7891-f20c-465b-a625-f303865f5b4c",
@@ -3068,7 +2813,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1258.816,
       "end_sec": 1259.55,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "8706207d-b2c6-49e4-b1a3-1490f26ba25a",
@@ -3078,7 +2824,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1263.57,
       "end_sec": 1264.171,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "54071c39-0b8d-4ba0-b675-6c6946c3cfe2",
@@ -3088,7 +2835,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1268.016,
       "end_sec": 1268.749,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "c869aad4-609d-48d4-8741-b68da30d1701",
@@ -3098,7 +2846,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1272.713,
       "end_sec": 1273.347,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "1a02e591-4da8-4c34-9103-24be9bc9955f",
@@ -3108,7 +2857,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1277.518,
       "end_sec": 1278.218,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "ad8d452a-8e66-4c85-bb3b-80cdb44504ef",
@@ -3118,7 +2868,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1282.189,
       "end_sec": 1282.823,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "540d0dcf-44d9-43b4-9557-14e4c30a3136",
@@ -3128,7 +2879,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1283.657,
       "end_sec": 1283.991,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "ca3afbda-cca3-4151-8556-e3d751142e5f",
@@ -3138,7 +2890,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1286.46,
       "end_sec": 1286.794,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "de11c16b-448c-4de2-8269-9c4189ef4dd2",
@@ -3148,7 +2901,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1289.183,
       "end_sec": 1289.483,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "cd9ff2c0-7cc9-48cd-b3a2-496e0d5c33e0",
@@ -3158,7 +2912,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1291.683,
       "end_sec": 1292.016,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "98dc57cf-92f6-468a-a8f3-22b03ad9121e",
@@ -3168,7 +2923,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1294.349,
       "end_sec": 1294.716,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "f3540382-54d7-44d3-a929-9322e479d3fc",
@@ -3178,7 +2934,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1296.916,
       "end_sec": 1297.283,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "3c9d67de-eb74-4d67-89c5-f824d8454a41",
@@ -3188,7 +2945,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1299.583,
       "end_sec": 1299.916,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "3c04c2fc-4925-4516-9b90-381642ddf242",
@@ -3198,7 +2956,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1302.349,
       "end_sec": 1302.682,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "9d7e0c68-565f-450e-802c-68895bb6354f",
@@ -3208,7 +2967,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1305.216,
       "end_sec": 1305.516,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "6eda3037-24b8-4839-be3d-3a5ac88e5a22",
@@ -3218,7 +2978,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 4.3,
       "end_sec": 4.77,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "440c1e2b-3224-4524-9ec9-242665cd40de",
@@ -3228,7 +2989,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 6.09,
       "end_sec": 6.46,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "71ebaff3-16fc-4550-b07f-b2be6b77967a",
@@ -3238,7 +3000,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 6.31,
       "end_sec": 6.84,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "3ecb529c-e4db-4dd1-a348-327d9972b33a",
@@ -3248,7 +3011,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 8.88,
       "end_sec": 9.54,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "8eaa23d6-504b-44ee-b80b-de92954ed5c9",
@@ -3258,7 +3022,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 11.33,
       "end_sec": 11.71,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Anila"
     },
     {
       "punch_uuid": "1d848951-b311-4214-93a2-ab778449b39f",
@@ -3268,7 +3033,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 260.38,
       "end_sec": 260.92,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "f2ec650e-b0af-41a6-b931-ff84c845a8c1",
@@ -3278,7 +3044,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 263.58,
       "end_sec": 264.08,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "8a4f661d-6f96-4096-a88e-dfe210efd2aa",
@@ -3288,7 +3055,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 266.08,
       "end_sec": 266.78,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "33830e1a-60a1-4e35-9f6f-55eea7b85880",
@@ -3298,7 +3066,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 315.02,
       "end_sec": 315.58,
-      "stance": "Southpaw"
+      "stance": "Southpaw",
+      "labeler": ""
     },
     {
       "punch_uuid": "951bf805-33a0-4d63-9e44-b0514f1d673c",
@@ -3308,7 +3077,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 317.62,
       "end_sec": 318.35,
-      "stance": "Southpaw"
+      "stance": "Southpaw",
+      "labeler": ""
     },
     {
       "punch_uuid": "f1a3e83a-d89c-42e8-929e-9c05207e7af2",
@@ -3318,7 +3088,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 322.65,
       "end_sec": 323.18,
-      "stance": "Southpaw"
+      "stance": "Southpaw",
+      "labeler": ""
     },
     {
       "punch_uuid": "b7b8f190-7d7c-4d62-a766-9563887177eb",
@@ -3328,7 +3099,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 370.58,
       "end_sec": 371.75,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "7bbcb8cd-6858-4273-97ec-b3e8c1b612d0",
@@ -3338,7 +3110,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 371.82,
       "end_sec": 373.08,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "e7773070-9ad5-41a1-936c-0268ce465b51",
@@ -3348,7 +3121,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 376.65,
       "end_sec": 377.28,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "2f58626a-958a-4ecb-ac91-5d8cf3f71b47",
@@ -3358,7 +3132,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 377.28,
       "end_sec": 377.98,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "a017920e-94ec-4b29-825b-53d0fb1a2127",
@@ -3368,7 +3143,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 5.27,
       "end_sec": 5.57,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "6379eac1-1ddc-4e60-9537-87525a3fc98c",
@@ -3378,7 +3154,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 5.533,
       "end_sec": 6.1,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "3c5e44fa-185d-45af-8ef8-02e90320c9bf",
@@ -3388,7 +3165,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 7.733,
       "end_sec": 8.07,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "1ae894e0-0124-4adc-b514-50f1d548f3ba",
@@ -3398,7 +3176,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 10.236,
       "end_sec": 10.537,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "43753f29-50dd-4900-8235-7c40ee735db9",
@@ -3408,7 +3187,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 10.336,
       "end_sec": 10.837,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "1af21197-edaa-48f6-a4c4-b0fdb9e97a89",
@@ -3418,7 +3198,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 16.663,
       "end_sec": 16.964,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "0106b351-349e-4d48-9213-b700ed91fc24",
@@ -3428,7 +3209,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 16.8,
       "end_sec": 17.234,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "319ddd6f-368c-44cb-8698-e005ecb5d751",
@@ -3438,7 +3220,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 21.63,
       "end_sec": 22.03,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "b1d0f626-12e4-4faf-aee4-d52dad697962",
@@ -3448,7 +3231,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 21.803,
       "end_sec": 22.27,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "49df0f3a-4809-4377-ba46-3061da32ed4c",
@@ -3458,7 +3242,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 25.237,
       "end_sec": 25.537,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "3e216306-4e5a-45f3-804a-b5ca08bc357d",
@@ -3468,7 +3253,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 25.367,
       "end_sec": 25.834,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "18a2ba9e-d289-4f4c-ac82-691249097b89",
@@ -3478,7 +3264,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 31.437,
       "end_sec": 31.87,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "fadcc1e5-f255-4510-aa0c-a0fbea437833",
@@ -3488,7 +3275,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 31.663,
       "end_sec": 32.13,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "4662f5a2-afdf-4cf7-aeff-2de58f9d9032",
@@ -3498,7 +3286,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 36.733,
       "end_sec": 37.1,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "7aebaf01-d587-4863-bd78-abcb07020874",
@@ -3508,7 +3297,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 37.003,
       "end_sec": 37.304,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "6c6a4558-eb9d-4d69-8ce0-a5e8a47427d5",
@@ -3518,7 +3308,470 @@
       "punch": "rear_bodyshot",
       "start_sec": 42.67,
       "end_sec": 43.137,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "e7e92e6a-a662-4856-95b7-30044e29febf",
+      "clip": "clips/e7e92e6a-a662-4856-95b7-30044e29febf.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 413.822,
+      "end_sec": 414.703,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "6a9b38cf-0a78-436c-92ab-a620bfee3a13",
+      "clip": "clips/6a9b38cf-0a78-436c-92ab-a620bfee3a13.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 421.196,
+      "end_sec": 421.896,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "3cc4bcce-9ec7-49ec-8ea1-1e06e1b08c7e",
+      "clip": "clips/3cc4bcce-9ec7-49ec-8ea1-1e06e1b08c7e.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 433.057,
+      "end_sec": 433.958,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "4a3767e5-84fd-414b-b30a-da1c6d676a03",
+      "clip": "clips/4a3767e5-84fd-414b-b30a-da1c6d676a03.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 462.553,
+      "end_sec": 463.53499999999997,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "d99fc0e8-a8ad-4e99-addd-3964766b2edb",
+      "clip": "clips/d99fc0e8-a8ad-4e99-addd-3964766b2edb.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 465.389,
+      "end_sec": 466.18399999999997,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "a6b4c489-4515-4b54-ac6e-23163b21ec8f",
+      "clip": "clips/a6b4c489-4515-4b54-ac6e-23163b21ec8f.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 474.198,
+      "end_sec": 475.23199999999997,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "32b4881b-9dd7-4ea7-bc0c-985fe36c1f0e",
+      "clip": "clips/32b4881b-9dd7-4ea7-bc0c-985fe36c1f0e.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 475.249,
+      "end_sec": 476.736,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "9dccf6a6-3d65-4bb4-af88-afb0546d091b",
+      "clip": "clips/9dccf6a6-3d65-4bb4-af88-afb0546d091b.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 480.47,
+      "end_sec": 481.321,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "ccecc0c3-2ca2-422a-b335-61ea098c1ca2",
+      "clip": "clips/ccecc0c3-2ca2-422a-b335-61ea098c1ca2.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 485.675,
+      "end_sec": 486.491,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "0c4dd9b7-087b-43fd-9495-36711c6ef780",
+      "clip": "clips/0c4dd9b7-087b-43fd-9495-36711c6ef780.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 488.161,
+      "end_sec": 489.17,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "014dd5c8-a1e8-4428-bae4-7adae145ee10",
+      "clip": "clips/014dd5c8-a1e8-4428-bae4-7adae145ee10.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 495.51800000000003,
+      "end_sec": 496.747,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "6edaf25e-6232-4ff6-b4da-67fcbbf2b988",
+      "clip": "clips/6edaf25e-6232-4ff6-b4da-67fcbbf2b988.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 502.692,
+      "end_sec": 503.554,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "1fbb6ae5-dbb9-4064-a1aa-0f7cc70d22c4",
+      "clip": "clips/1fbb6ae5-dbb9-4064-a1aa-0f7cc70d22c4.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 507.714,
+      "end_sec": 508.631,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "9939514b-4f17-4d20-a882-c88e71aedbc7",
+      "clip": "clips/9939514b-4f17-4d20-a882-c88e71aedbc7.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 510.169,
+      "end_sec": 511.573,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "502c038c-a2ab-4b50-a54f-6f02bb172cb3",
+      "clip": "clips/502c038c-a2ab-4b50-a54f-6f02bb172cb3.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 512.752,
+      "end_sec": 513.603,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "b280e283-58c2-40b9-814f-0915cbf2cd5d",
+      "clip": "clips/b280e283-58c2-40b9-814f-0915cbf2cd5d.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 520.105,
+      "end_sec": 520.988,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "b05dcc80-466e-444b-9803-a0f7b98c985f",
+      "clip": "clips/b05dcc80-466e-444b-9803-a0f7b98c985f.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 624.33,
+      "end_sec": 625.264,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "d12b5d68-e3c2-4024-867b-369e216bd2bc",
+      "clip": "clips/d12b5d68-e3c2-4024-867b-369e216bd2bc.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 628.799,
+      "end_sec": 629.533,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "6c564935-d946-40b6-bc13-b3daffa401ce",
+      "clip": "clips/6c564935-d946-40b6-bc13-b3daffa401ce.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 647.768,
+      "end_sec": 648.468,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "2f8ed9cb-df69-4d7b-b7a0-910209712929",
+      "clip": "clips/2f8ed9cb-df69-4d7b-b7a0-910209712929.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 649.922,
+      "end_sec": 650.656,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "46b95d9d-0bc2-4602-b629-ab2c06e5a8c8",
+      "clip": "clips/46b95d9d-0bc2-4602-b629-ab2c06e5a8c8.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 650.656,
+      "end_sec": 651.449,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "e9aca06e-5b90-44d7-92b9-5ca9aa828b65",
+      "clip": "clips/e9aca06e-5b90-44d7-92b9-5ca9aa828b65.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 656.076,
+      "end_sec": 656.543,
+      "stance": "Orthodox",
+      "labeler": "John"
+    },
+    {
+      "punch_uuid": "2e5ceb7e-2917-467f-b6f4-ea9954d286bb",
+      "clip": "clips/2e5ceb7e-2917-467f-b6f4-ea9954d286bb.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 656.109,
+      "end_sec": 656.543,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "e83aaebc-db86-4b21-82f5-fe6c1de4cb04",
+      "clip": "clips/e83aaebc-db86-4b21-82f5-fe6c1de4cb04.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 660.864,
+      "end_sec": 661.481,
+      "stance": "Orthodox",
+      "labeler": "John"
+    },
+    {
+      "punch_uuid": "03bc3c94-b760-4f71-b468-ef15da8f063c",
+      "clip": "clips/03bc3c94-b760-4f71-b468-ef15da8f063c.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 661.498,
+      "end_sec": 661.981,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "551764a7-7922-488e-af24-74e1c42ea4b4",
+      "clip": "clips/551764a7-7922-488e-af24-74e1c42ea4b4.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 661.981,
+      "end_sec": 662.747,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "ee02bf72-cab9-4907-81e4-92fcdfe15989",
+      "clip": "clips/ee02bf72-cab9-4907-81e4-92fcdfe15989.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 671.624,
+      "end_sec": 672.582,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "29647c38-5805-4adc-a617-7fa8fce15cf0",
+      "clip": "clips/29647c38-5805-4adc-a617-7fa8fce15cf0.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "lead_bodyshot",
+      "start_sec": 676.596,
+      "end_sec": 677.113,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "c1468c4f-8200-47db-8d41-4e44773a173a",
+      "clip": "clips/c1468c4f-8200-47db-8d41-4e44773a173a.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 705.708,
+      "end_sec": 706.72,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "5cf691ef-680c-4979-9a1f-7974f57805e3",
+      "clip": "clips/5cf691ef-680c-4979-9a1f-7974f57805e3.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 710.813,
+      "end_sec": 711.43,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "e077bc46-50cf-4f9f-af9c-cbfb9c7d7eea",
+      "clip": "clips/e077bc46-50cf-4f9f-af9c-cbfb9c7d7eea.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 714.6,
+      "end_sec": 715.434,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "99e709a5-f019-4ce8-b594-ec9da59332fc",
+      "clip": "clips/99e709a5-f019-4ce8-b594-ec9da59332fc.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 718.0360000000001,
+      "end_sec": 718.749,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "c83ab509-d486-4281-8fb8-a51339b7ddb6",
+      "clip": "clips/c83ab509-d486-4281-8fb8-a51339b7ddb6.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 722.09,
+      "end_sec": 722.624,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "f10ee76a-dfce-4ca7-8093-1800ff4da8bd",
+      "clip": "clips/f10ee76a-dfce-4ca7-8093-1800ff4da8bd.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 727.913,
+      "end_sec": 728.674,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "7d73cad1-175e-49bf-976c-745f492ff540",
+      "clip": "clips/7d73cad1-175e-49bf-976c-745f492ff540.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 733.985,
+      "end_sec": 734.727,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "ba6bda30-425d-40f4-b8e4-b27f733bddd6",
+      "clip": "clips/ba6bda30-425d-40f4-b8e4-b27f733bddd6.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 737.422,
+      "end_sec": 738.287,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "bcc50274-b8e0-48c9-bd36-b09eb3129d51",
+      "clip": "clips/bcc50274-b8e0-48c9-bd36-b09eb3129d51.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 740.875,
+      "end_sec": 741.782,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "40047592-7cfb-4376-9db7-3c70aaa2d55e",
+      "clip": "clips/40047592-7cfb-4376-9db7-3c70aaa2d55e.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 743.978,
+      "end_sec": 744.827,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "7fe7a647-4c75-4d63-b464-f0ac650cc815",
+      "clip": "clips/7fe7a647-4c75-4d63-b464-f0ac650cc815.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 751.936,
+      "end_sec": 752.608,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "bddc9338-dc2e-4671-bb57-5e78dde9ef82",
+      "clip": "clips/bddc9338-dc2e-4671-bb57-5e78dde9ef82.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 752.721,
+      "end_sec": 753.471,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "2a671d9d-234f-4878-b422-dd96e1abd05a",
+      "clip": "clips/2a671d9d-234f-4878-b422-dd96e1abd05a.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 753.504,
+      "end_sec": 754.501,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "401604cb-eeb4-4e7e-8495-d5f2b1f6555b",
+      "clip": "clips/401604cb-eeb4-4e7e-8495-d5f2b1f6555b.mp4",
+      "video_name": "Follow Along Heavy Bag Workout \uff5c 10 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1yFhBwb8nZWEwg8LwNoFDTcw0WQsjj8XZ/view",
+      "punch": "rear_bodyshot",
+      "start_sec": 757.075,
+      "end_sec": 757.962,
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "cc0bac93-49fd-4045-bac2-5e7b5e41c50f",
@@ -3528,7 +3781,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 205.365,
       "end_sec": 206.065,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "65a1a863-8ac8-4e5e-ae39-ab2134e65e12",
@@ -3538,7 +3792,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 205.732,
       "end_sec": 206.399,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "ee3881ff-c3f3-43a1-90ec-b47da9ed6ce3",
@@ -3548,7 +3803,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 209.065,
       "end_sec": 209.665,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "1a9ecea3-a508-4499-aa39-f23976118f35",
@@ -3558,7 +3814,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 209.399,
       "end_sec": 210.065,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "a74909ed-6f6d-46a3-a91f-7c7e172feee0",
@@ -3568,7 +3825,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 212.865,
       "end_sec": 213.43200000000002,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "188544ef-42b2-4f0b-86c2-e75a655344db",
@@ -3578,7 +3836,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 213.132,
       "end_sec": 213.799,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "06bc4733-4332-4f01-9477-a6885b2bcd72",
@@ -3588,7 +3847,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 355.404,
       "end_sec": 356.071,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "c55ba5f4-ca13-489a-a9e6-0fced1a3dbef",
@@ -3598,7 +3858,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 355.538,
       "end_sec": 356.072,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "84da3236-941e-4465-bce4-b6cdd8aea394",
@@ -3608,7 +3869,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 358.538,
       "end_sec": 359.271,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "3aa5a047-c1c9-4b82-a722-471be4007a70",
@@ -3618,7 +3880,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 358.938,
       "end_sec": 359.538,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "1fe96ecd-8b67-4078-8df8-f76e94198fdf",
@@ -3628,7 +3891,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 362.272,
       "end_sec": 362.904,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "4a4b1183-0e04-4777-890b-c41cd45a20e7",
@@ -3638,7 +3902,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 362.538,
       "end_sec": 363.204,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "6fb5922e-b0e1-4118-b4c2-63dae7dbcf40",
@@ -3648,7 +3913,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 240.788,
       "end_sec": 241.222,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "70388f5f-878c-41e3-9d7d-755a831f5d57",
@@ -3658,7 +3924,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 241.155,
       "end_sec": 241.556,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "83dd1a6c-3bfb-443c-bda2-5d1fcfd3f101",
@@ -3668,7 +3935,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 245.326,
       "end_sec": 245.827,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "295381b9-2bed-4726-8275-acd243882047",
@@ -3678,7 +3946,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 248.563,
       "end_sec": 249.063,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "18353442-e4d9-4770-8156-672d7be54777",
@@ -3688,7 +3957,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 393.388,
       "end_sec": 393.855,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "fad6f998-a95e-4dda-b4a4-663ce458e9ee",
@@ -3698,7 +3968,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 396.291,
       "end_sec": 397.258,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "2d5f37df-72eb-4a2c-a5f4-c66ad7b53295",
@@ -3708,7 +3979,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 400.595,
       "end_sec": 401.995,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "6e1a6b46-64ce-4506-b6de-b4241e580d44",
@@ -3718,7 +3990,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 417.712,
       "end_sec": 418.213,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "1a437254-1b00-4e19-a2c0-395359df6dad",
@@ -3728,7 +4001,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 420.915,
       "end_sec": 421.383,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "e828c825-6709-47cb-aa18-3d7fd616712e",
@@ -3738,7 +4012,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 424.552,
       "end_sec": 425.086,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "bce6688c-e702-4c02-9e71-62d6561586ec",
@@ -3748,7 +4023,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 356.82,
       "end_sec": 357.31,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "5d8405aa-216c-495b-b0f1-2e2845a72c99",
@@ -3758,7 +4034,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 357.09000000000003,
       "end_sec": 357.49,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "9f07fe10-0b51-4dd6-b9ac-9cda9d523e98",
@@ -3768,7 +4045,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 357.31,
       "end_sec": 357.69,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "375116fa-8f29-4209-83e0-2da5c1c3204c",
@@ -3778,7 +4056,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 357.46,
       "end_sec": 358.02,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "767056a7-062b-47a4-a3ea-6e5af13864c7",
@@ -3788,7 +4067,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 362.06,
       "end_sec": 362.54,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "1badeaef-91b3-4510-ae58-a19bb9be810e",
@@ -3798,7 +4078,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 362.38,
       "end_sec": 362.76,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "1d9bb41f-a681-4b85-b06d-10cf81b40a14",
@@ -3808,7 +4089,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 362.54,
       "end_sec": 363,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "a6eb52b0-8a55-4a9d-b04a-5e26faa6dd5a",
@@ -3818,7 +4100,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 362.71,
       "end_sec": 363.46,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "ab7a91aa-cf8a-4429-b85c-2ee46f5f644c",
@@ -3828,7 +4111,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 365.63,
       "end_sec": 366.1,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "828f4432-4b68-4a21-9f23-2aa6077a4477",
@@ -3838,7 +4122,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 365.9,
       "end_sec": 366.3,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "4d0e5af5-9b28-44de-ad74-247368291125",
@@ -3848,7 +4133,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 366.12,
       "end_sec": 366.5,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "0f50d4a0-37d7-4da8-9f0f-3c484d907be7",
@@ -3858,7 +4144,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 366.26,
       "end_sec": 366.73,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "067c5d8f-85f6-4ed4-9c5e-25a58f2786da",
@@ -3868,7 +4155,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 366.45,
       "end_sec": 367.13,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "fd2eca40-c248-4784-aba9-02bace85ec4c",
@@ -3878,7 +4166,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 370.02,
       "end_sec": 370.57,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "adc59df2-06c9-432f-b87d-627386e9d070",
@@ -3888,7 +4177,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 370.3,
       "end_sec": 370.809,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "03f76b7b-bbaa-486f-8deb-9df7beb740f7",
@@ -3898,7 +4188,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 373.67,
       "end_sec": 374.19,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "c5f21614-b765-4654-91c3-c138b1fa13e3",
@@ -3908,7 +4199,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 373.99,
       "end_sec": 374.37,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "a8ab27db-e7c6-4036-bd7f-31a0dd8c5f45",
@@ -3918,7 +4210,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 580.54,
       "end_sec": 581.28,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "3a7b31ba-8145-453b-9aa5-f7fc65e3fbc8",
@@ -3928,7 +4221,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 585.08,
       "end_sec": 585.71,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "fbe91906-a338-415a-8340-c526d2c26dea",
@@ -3938,7 +4232,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 586.21,
       "end_sec": 586.81,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "93faff00-434c-44ea-9096-9c0af6b82008",
@@ -3948,7 +4243,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 587.68,
       "end_sec": 588.18,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "6206fc8e-4d28-487e-92ce-bd8b07669404",
@@ -3958,7 +4254,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 589.51,
       "end_sec": 590.28,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "f249aa61-b83c-4aad-95ca-c27e48653cfb",
@@ -3968,7 +4265,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 591.28,
       "end_sec": 591.91,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "faaac821-f587-4022-98a6-4e21308b30f7",
@@ -3978,7 +4276,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 593.88,
       "end_sec": 594.38,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "9303c81c-d23c-436c-8199-a714b54c9734",
@@ -3988,7 +4287,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 595.28,
       "end_sec": 595.74,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "927f9f3f-3d66-4d2c-a948-f79d630a5b3a",
@@ -3998,7 +4298,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 598.51,
       "end_sec": 599.08,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "b0ead655-381d-4cd9-9e45-f4cda98d9500",
@@ -4008,7 +4309,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 601.11,
       "end_sec": 601.64,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "c84ce09f-5088-45d3-aa54-ca9a2bcc8589",
@@ -4018,7 +4320,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 603.84,
       "end_sec": 604.48,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "5a6a4d1d-3685-46ca-abf5-dbfed8c90960",
@@ -4028,7 +4331,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 605.48,
       "end_sec": 606.08,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "615ae341-8517-4eda-9519-44ba7fff5f9f",
@@ -4038,7 +4342,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 608.71,
       "end_sec": 609.34,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "9b51f3ad-e9c9-411c-94bf-40ad72b4adfb",
@@ -4048,7 +4353,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 610.41,
       "end_sec": 611.01,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "9241a895-109b-4304-9e42-83f60513051c",
@@ -4058,7 +4364,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 613.54,
       "end_sec": 614.11,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "18202f7e-0fa3-406a-87ec-bc01409a174e",
@@ -4068,7 +4375,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 615.68,
       "end_sec": 616.28,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "5dc03dd8-2082-455f-8276-11ba2263f7a9",
@@ -4078,7 +4386,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 762.77,
       "end_sec": 763.44,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "1bcbcb6a-4915-4467-8f51-9d9c88a235a4",
@@ -4088,7 +4397,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 764.1,
       "end_sec": 764.74,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "aba7e19e-9bea-461c-bcc0-e777fe35bc54",
@@ -4098,7 +4408,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 768.34,
       "end_sec": 768.97,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "79222893-8c66-43c3-95b1-25cac3c9b5da",
@@ -4108,7 +4419,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 769.64,
       "end_sec": 770.3,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "5a7eb133-1c01-48e6-b1e6-f75ff1490912",
@@ -4118,7 +4430,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 777,
       "end_sec": 777.57,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "2106b8fa-0407-4c59-a0fe-c0304433be1b",
@@ -4128,7 +4441,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 778.04,
       "end_sec": 778.47,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "f7afa48f-766d-4a9f-908d-21a932fb182e",
@@ -4138,7 +4452,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 783.44,
       "end_sec": 783.94,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "04b6c61c-e3e1-412c-b0d7-256fce0b203b",
@@ -4148,7 +4463,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 784.34,
       "end_sec": 784.77,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "21db3d5b-d1ed-462d-8cde-a45f5663ea92",
@@ -4158,7 +4474,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1221.29,
       "end_sec": 1221.52,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "a145380f-2406-481d-8540-a52791903b33",
@@ -4168,7 +4485,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1221.42,
       "end_sec": 1221.89,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "a88667cb-865d-4106-8289-6dd0b2f5716c",
@@ -4178,7 +4496,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1224.09,
       "end_sec": 1224.59,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "6aacedf1-7817-425e-a363-e5f708c8170c",
@@ -4188,7 +4507,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1229.32,
       "end_sec": 1229.89,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "543fa0fa-43ac-40d1-928b-750b9dfa19c9",
@@ -4198,7 +4518,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1229.79,
       "end_sec": 1230.22,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "319d65d3-7f9c-4632-81bf-ca1769ced79e",
@@ -4208,7 +4529,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1232.22,
       "end_sec": 1233.09,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "66b10853-254d-4d54-923b-f1c380cf4721",
@@ -4218,7 +4540,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1234.4,
       "end_sec": 1235,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "029ba5cb-2735-4842-b7c3-37e8ce8cc4d3",
@@ -4228,7 +4551,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1236.42,
       "end_sec": 1237.12,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "e32b268b-845f-4f18-ab6b-5de054496e5d",
@@ -4238,7 +4562,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1239.39,
       "end_sec": 1240.05,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "d15c36e8-446c-42c4-81ab-55c4a60bad5d",
@@ -4248,7 +4573,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1239.99,
       "end_sec": 1240.32,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "6c5521f1-7472-42ab-bd55-52c349c92b91",
@@ -4258,7 +4584,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1244.02,
       "end_sec": 1244.72,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "fb2b82fb-67cd-4ce5-bd39-7baf4bb16c1e",
@@ -4268,7 +4595,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1250.25,
       "end_sec": 1250.75,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "44145360-4d77-49df-9e7f-782ba83fb6cb",
@@ -4278,7 +4606,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1255.45,
       "end_sec": 1256.05,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "9fa3ea1e-2ce8-47ad-97ac-4bade295545e",
@@ -4288,7 +4617,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1256.05,
       "end_sec": 1256.32,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "e2c59a91-4c40-469b-82a2-e479234d1c0f",
@@ -4298,7 +4628,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1258.98,
       "end_sec": 1259.55,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "2a5dd334-0c2a-4405-ab3c-e0c7ecd06a27",
@@ -4308,7 +4639,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1259.58,
       "end_sec": 1260.02,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "db91e250-7d06-4e78-8ccc-506ab8c8d8df",
@@ -4318,7 +4650,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1265.12,
       "end_sec": 1265.62,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "206f1112-05ba-4e8e-9e64-a7004a035bef",
@@ -4328,7 +4661,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1267.02,
       "end_sec": 1267.45,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "3ac58193-2bad-459b-a401-3a93b9fd63ff",
@@ -4338,7 +4672,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1267.38,
       "end_sec": 1267.75,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "546f3655-fb83-45cb-a694-ddb6a8cba8b9",
@@ -4348,7 +4683,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1308.64,
       "end_sec": 1309.14,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "da7c53f7-47aa-454d-bbf0-c45275203503",
@@ -4358,7 +4694,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1310.54,
       "end_sec": 1311.04,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "2128dcf3-f670-4a5f-8b1c-6764b62b329b",
@@ -4368,7 +4705,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1312.2,
       "end_sec": 1312.54,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "8abb84c7-3122-4d45-9972-424d089c9d13",
@@ -4378,7 +4716,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1312.44,
       "end_sec": 1312.87,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "9ca1b432-6007-4268-9a93-58139e1cc187",
@@ -4388,7 +4727,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1316.37,
       "end_sec": 1316.77,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "3bd6b43b-5e16-424e-9a2b-76cc243ff2c7",
@@ -4398,7 +4738,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1317.37,
       "end_sec": 1317.67,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "9d3e1852-fc81-4d9e-a29f-db1233622028",
@@ -4408,7 +4749,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1317.54,
       "end_sec": 1317.97,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "5c9a1b92-dbaf-49da-9fd7-0b14ecdf9e22",
@@ -4418,7 +4760,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1321.57,
       "end_sec": 1321.97,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "aed14a3b-a5ec-48f5-9cb1-839ad0e9e192",
@@ -4428,7 +4771,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1321.83,
       "end_sec": 1322.5,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "f55c447b-52cf-4b78-8d5a-10cdaad08048",
@@ -4438,7 +4782,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1326.93,
       "end_sec": 1327.53,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "6d467850-128e-45ba-885d-b46f5b9ef441",
@@ -4448,7 +4793,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1329.13,
       "end_sec": 1329.57,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "f2f91c8d-65ad-404d-be92-3c2927444945",
@@ -4458,7 +4804,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1331.23,
       "end_sec": 1331.77,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "20859e2d-f0d1-435b-a8fe-90777a5ae3bc",
@@ -4468,7 +4815,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1333.2,
       "end_sec": 1333.47,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "afdae668-727f-4b88-878c-bf323a8e34fb",
@@ -4478,7 +4826,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 1336.37,
       "end_sec": 1336.87,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "dae13b99-aa4a-45f7-9a5f-99b73516a4ce",
@@ -4488,7 +4837,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 1336.73,
       "end_sec": 1337.37,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "aded5ebc-16d8-4383-9d2e-888340faf384",
@@ -4498,7 +4848,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 31.93,
       "end_sec": 32.43,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "62bd494a-0d66-407d-91bd-b3ea6f929821",
@@ -4508,7 +4859,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 32.29,
       "end_sec": 32.69,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "84190802-4451-401a-b29f-5d764aa94c9b",
@@ -4518,7 +4870,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 35.33,
       "end_sec": 35.96,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "69a5f9c5-c7de-4e78-bad3-e976cf66a33f",
@@ -4528,7 +4881,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 38.13,
       "end_sec": 38.73,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "8062b972-d5e3-4e05-8d08-62c3e557341f",
@@ -4538,7 +4892,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 39.96,
       "end_sec": 40.53,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "ee00012e-97ac-42cf-a10c-b3c8882ebb8a",
@@ -4548,7 +4903,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 41.16,
       "end_sec": 41.76,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "00e96928-706c-40c0-a769-166ab53b78b5",
@@ -4558,7 +4914,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 42.29,
       "end_sec": 42.86,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "f6aab12d-e6d4-4f1a-ba31-78e56270509a",
@@ -4568,7 +4925,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 43.49,
       "end_sec": 44.09,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "de799cd8-11cf-4d83-9c75-cb85177b0cdc",
@@ -4578,7 +4936,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 44.76,
       "end_sec": 45.43,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "e0508386-fa5b-4ab2-b813-0ef73913ab47",
@@ -4588,7 +4947,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 78.89,
       "end_sec": 79.43,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "25ad9a00-b38d-4fed-86fd-d12b6c2bbc61",
@@ -4598,7 +4958,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 83.23,
       "end_sec": 83.78999999999999,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "37df5f9c-190a-4b5c-a979-881d04e76118",
@@ -4608,7 +4969,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 83.78999999999999,
       "end_sec": 84.43,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "f8c50dbb-764e-4813-84c5-5af866543cda",
@@ -4618,7 +4980,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 84.36,
       "end_sec": 84.99,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "f307eb8c-3443-44c0-8a36-fae55c16c07b",
@@ -4628,7 +4991,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 89.73,
       "end_sec": 89.99,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "b5bd9cf7-0f0a-437f-a861-846b4d424bc0",
@@ -4638,7 +5002,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 90.28999999999999,
       "end_sec": 90.78999999999999,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "c90adbef-d948-4e03-afdd-dfae81313b6b",
@@ -4648,7 +5013,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 90.83,
       "end_sec": 91.28999999999999,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "1d0d9b9a-1a1b-451c-9fbb-15432cd5cc71",
@@ -4658,7 +5024,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 93.39,
       "end_sec": 93.96000000000001,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "b82d898d-9e0b-41f1-a39f-f0bc878540d1",
@@ -4668,7 +5035,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 94.22999999999999,
       "end_sec": 94.78999999999999,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "4ec3aa74-0613-42ea-8d66-efd3d8acde49",
@@ -4678,7 +5046,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 101.56,
       "end_sec": 102.19,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "fa66bcc9-89cf-48f1-bd96-9a6afadefd1a",
@@ -4688,7 +5057,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 102.63,
       "end_sec": 103.25999999999999,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "71c14a98-812e-4430-9377-9170dbd86a40",
@@ -4698,7 +5068,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 107.09,
       "end_sec": 107.66,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "b4b5f117-8d84-48f4-be0d-0e93ddaf23df",
@@ -4708,7 +5079,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 108.83,
       "end_sec": 109.49000000000001,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "b41238b8-58a5-4ed1-a5f8-1410c8623dda",
@@ -4718,7 +5090,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 111.83,
       "end_sec": 112.39,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "71cd9317-b9dc-4d8f-bd55-7a3ab317464d",
@@ -4728,7 +5101,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 118.78999999999999,
       "end_sec": 119.33,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "578bec57-a514-41b6-8982-b21516ffd02c",
@@ -4738,7 +5112,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 124.36,
       "end_sec": 124.89,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "155ffc72-9f40-4b5b-9a1a-18aa0211012f",
@@ -4748,7 +5123,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 125.96,
       "end_sec": 126.53,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "64d9760b-bb58-428c-b61e-ae914932d533",
@@ -4758,7 +5134,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 134.734,
       "end_sec": 134.734,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "14373ddb-fbfa-4070-b681-3a3d212ce100",
@@ -4768,7 +5145,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 137.96,
       "end_sec": 138.69,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "d191ae0a-86ee-40cd-b097-65e7f30b8e4a",
@@ -4778,7 +5156,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 141.16,
       "end_sec": 141.63,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "1851cc8b-d84f-4300-b672-cb23a7ac1170",
@@ -4788,7 +5167,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 141.63,
       "end_sec": 142.19,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "9aeff01e-d9b6-42b3-b6a7-b88c4771bc01",
@@ -4798,7 +5178,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 142.26,
       "end_sec": 142.96,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "1b3b5b0b-2315-4f6e-aa47-d71b8bf6ea1d",
@@ -4808,7 +5189,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 148.848,
       "end_sec": 149.581,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "da309967-952c-4c17-94e7-542deb5a69aa",
@@ -4818,7 +5200,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 149.73,
       "end_sec": 150.26,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "6e201182-abc1-43f2-95ba-95c2f76d524f",
@@ -4828,7 +5211,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 150.46,
       "end_sec": 151.06,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "71eb212c-941b-4c8f-931b-d84eb8e03817",
@@ -4838,7 +5222,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 162.36,
       "end_sec": 162.93,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "de859dee-ca41-4e10-81bb-d6d8bb3f17ad",
@@ -4848,7 +5233,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 174.16,
       "end_sec": 174.66,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "93c6d72b-a40a-432e-803f-9d9065d3b23f",
@@ -4858,7 +5244,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 67.266,
       "end_sec": 67.799,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "893b6fff-9fb6-4191-8ad2-3a8e62703b81",
@@ -4868,7 +5255,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 67.866,
       "end_sec": 68.399,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "91f1ed8b-9ac5-49c9-8b52-465cda66feed",
@@ -4878,7 +5266,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 69.266,
       "end_sec": 69.733,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "67e194f5-4afa-4b75-a6d1-3e8dbd94b517",
@@ -4888,7 +5277,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 69.999,
       "end_sec": 70.599,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "52af9d9f-9b72-41ec-8a5b-a5f757b030cb",
@@ -4898,7 +5288,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 71.832,
       "end_sec": 72.266,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "4b73e1a4-9f4a-4922-8608-d1507f1b3c19",
@@ -4908,7 +5299,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 50.27,
       "end_sec": 50.8,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "01a78f18-44c3-4aeb-81a1-23fab0ee5fd5",
@@ -4918,7 +5310,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 90.17,
       "end_sec": 91.23,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "2283713c-dcb5-4ef5-9b7c-247dfa78bcad",
@@ -4928,7 +5321,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 93.53,
       "end_sec": 94.17,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "2dbbcaae-db1b-4d99-8300-67da32b635ec",
@@ -4938,7 +5332,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 96.5,
       "end_sec": 97.27000000000001,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "ab7da4b2-feb4-4d26-a76a-50b4cd469659",
@@ -4948,7 +5343,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 99.77000000000001,
       "end_sec": 100.67,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "8ddee76a-db14-418d-8e7e-b578e94f0451",
@@ -4958,7 +5354,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 105.43,
       "end_sec": 106.6,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "88ba20b2-d723-4d4f-9728-774b45244c19",
@@ -4968,7 +5365,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 110.97,
       "end_sec": 111.72999999999999,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "37f6cd90-e80a-4f44-989a-7edd478ae1d2",
@@ -4978,7 +5376,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 114.3,
       "end_sec": 115.1,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "222c96d4-9ee6-4105-bac6-b52cad1f449c",
@@ -4988,7 +5387,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 117.83,
       "end_sec": 118.4,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "eb3faaee-61b3-4f69-aa39-68fec864c105",
@@ -4998,7 +5398,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 121.03,
       "end_sec": 121.87,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "81f0bcd9-e4e4-4f1c-9e05-5228bd6f4176",
@@ -5008,7 +5409,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 124.5,
       "end_sec": 125.3,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "101dd218-11cb-40ce-bc8f-0c3bf0554560",
@@ -5018,7 +5420,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 129.13,
       "end_sec": 129.97,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "30e55e3d-142b-40f5-b3fe-9518d9864c1f",
@@ -5028,7 +5431,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 132.73,
       "end_sec": 133.6,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "2650dfec-6008-4120-bf9c-39cb30e0f22e",
@@ -5038,7 +5442,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 136.43,
       "end_sec": 137.13,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "41936a28-7c95-4c33-a057-a963eedd34f6",
@@ -5048,7 +5453,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 139.6,
       "end_sec": 140.43,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "47d1c2d9-149b-4e67-80db-ac63b284d987",
@@ -5058,7 +5464,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 142.77,
       "end_sec": 143.63,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "687fa78e-47ea-477c-935c-e0588e517964",
@@ -5068,7 +5475,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 150.5,
       "end_sec": 151.4,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "f86699cc-87b5-48e5-b62a-bf26e1d44e6c",
@@ -5078,7 +5486,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 155.5,
       "end_sec": 156.4,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "0719567b-0c82-4667-b3fb-913ad447c0b7",
@@ -5088,7 +5497,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 159.97,
       "end_sec": 160.82999999999998,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "4a1a2564-dd88-41a2-8b15-58b465b06155",
@@ -5098,7 +5508,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 164.07,
       "end_sec": 164.87,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "da650298-5a44-4991-bfa5-ded680681365",
@@ -5108,7 +5519,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 167.97,
       "end_sec": 168.87,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "07acd6f0-1862-4ba0-8845-b8e4d90a5362",
@@ -5118,7 +5530,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 172.1,
       "end_sec": 172.9,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "9c42a204-bf12-4d45-b045-a9855a7b4ef2",
@@ -5128,7 +5541,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 176.13,
       "end_sec": 176.9,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "a49113c0-af62-4eed-8a46-ca1fc0c3b36c",
@@ -5138,7 +5552,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 176.9,
       "end_sec": 176.82999999999998,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "ffa4ba0b-8e42-46f1-98d0-bcf5a599fd20",
@@ -5148,7 +5563,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 180.03,
       "end_sec": 180.9,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "e9b52b1c-7a2f-40c1-80b5-8096abdff91c",
@@ -5158,7 +5574,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 184.47,
       "end_sec": 185.2,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "4d9dbfac-3d35-4d5c-be50-bc3559c3ceca",
@@ -5168,7 +5585,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 188.5,
       "end_sec": 189.37,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "c57221de-0366-4fae-a930-d7af91d35393",
@@ -5178,7 +5596,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 192.77,
       "end_sec": 193.63,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "ee2aa3bf-b0ca-467c-a056-d914fbc69f8a",
@@ -5188,7 +5607,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 214.06,
       "end_sec": 214.6,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "dac59ab3-a7a1-480b-8360-77317d1e186d",
@@ -5198,7 +5618,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 217.1,
       "end_sec": 217.9,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "9aeef150-58cf-44ef-8292-3b315713d7b2",
@@ -5208,7 +5629,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 220.53,
       "end_sec": 221.13,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "7de8f2f9-ed1b-45d0-ae51-422c25303b9d",
@@ -5218,7 +5640,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 223.7,
       "end_sec": 224.32999999999998,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "117569ab-822d-4fc7-84e0-b85f64797332",
@@ -5228,7 +5651,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 226.93,
       "end_sec": 227.56,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "a8188380-9229-4b64-bd26-ec4f5c401608",
@@ -5238,7 +5662,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 230.03,
       "end_sec": 230.53,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": ""
     },
     {
       "punch_uuid": "79807283-9f4d-4671-a323-9114a834cccd",
@@ -5248,7 +5673,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 62.98,
       "end_sec": 63.88,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Nisha"
     },
     {
       "punch_uuid": "f05a02aa-e5c2-4f05-b410-770d6a6eba94",
@@ -5258,7 +5684,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 4.9,
       "end_sec": 5.6,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "557976b6-be92-4078-844e-b77870f5d0a6",
@@ -5268,7 +5695,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 6.27,
       "end_sec": 6.93,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "a91e02e0-8048-4c3d-891e-9c77db827f0d",
@@ -5278,7 +5706,8 @@
       "punch": "rear_bodyshot",
       "start_sec": 11.07,
       "end_sec": 11.67,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "10a03526-a003-402f-b51e-eb687137951f",
@@ -5288,7 +5717,8 @@
       "punch": "lead_bodyshot",
       "start_sec": 11.97,
       "end_sec": 12.57,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": "Mathe"
     },
     {
       "punch_uuid": "c755560c-f8c2-43f4-ae5b-ba4102c5a92b",
@@ -5298,8 +5728,119 @@
       "punch": "rear_bodyshot",
       "start_sec": 277.38,
       "end_sec": 277.78,
-      "stance": "Orthodox"
+      "stance": "Orthodox",
+      "labeler": 3
+    },
+    {
+      "punch_uuid": "0e44daa7-8297-465f-aed2-bcf39e096151",
+      "clip": "clips/0e44daa7-8297-465f-aed2-bcf39e096151.mp4",
+      "video_name": "Shadow Boxing Workout \uff5c Follow Along.mp4",
+      "video_file": "https://drive.google.com/file/d/1FR9gXlDydyKA9r9xvoExebl2ta6QmiNB/view?usp=sharing",
+      "punch": "lead_bodyshot",
+      "start_sec": 331.658,
+      "end_sec": 332.325,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "c4e4889a-bc08-4a73-af07-3286d5653b1a",
+      "clip": "clips/c4e4889a-bc08-4a73-af07-3286d5653b1a.mp4",
+      "video_name": "Shadow Boxing Workout \uff5c Follow Along.mp4",
+      "video_file": "https://drive.google.com/file/d/1FR9gXlDydyKA9r9xvoExebl2ta6QmiNB/view?usp=sharing",
+      "punch": "lead_bodyshot",
+      "start_sec": 335.378,
+      "end_sec": 336.146,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "8f76bf6a-404a-46a8-9119-a6cb1b69b3d7",
+      "clip": "clips/8f76bf6a-404a-46a8-9119-a6cb1b69b3d7.mp4",
+      "video_name": "Shadow Boxing Workout \uff5c Follow Along.mp4",
+      "video_file": "https://drive.google.com/file/d/1FR9gXlDydyKA9r9xvoExebl2ta6QmiNB/view?usp=sharing",
+      "punch": "lead_bodyshot",
+      "start_sec": 339.065,
+      "end_sec": 339.859,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "365f6811-d63a-4de9-86df-b30af8bc4fc2",
+      "clip": "clips/365f6811-d63a-4de9-86df-b30af8bc4fc2.mp4",
+      "video_name": "Shadow Boxing Workout \uff5c Follow Along.mp4",
+      "video_file": "https://drive.google.com/file/d/1FR9gXlDydyKA9r9xvoExebl2ta6QmiNB/view?usp=sharing",
+      "punch": "lead_bodyshot",
+      "start_sec": 344.457,
+      "end_sec": 345.31,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "a174516e-fab4-412a-9a39-74200e80ed66",
+      "clip": "clips/a174516e-fab4-412a-9a39-74200e80ed66.mp4",
+      "video_name": "Shadow Boxing Workout \uff5c Follow Along.mp4",
+      "video_file": "https://drive.google.com/file/d/1FR9gXlDydyKA9r9xvoExebl2ta6QmiNB/view?usp=sharing",
+      "punch": "lead_bodyshot",
+      "start_sec": 348.027,
+      "end_sec": 348.871,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "6253fa11-62c4-466f-8978-39d35c5fc6fe",
+      "clip": "clips/6253fa11-62c4-466f-8978-39d35c5fc6fe.mp4",
+      "video_name": "Shadow Boxing Workout \uff5c Follow Along.mp4",
+      "video_file": "https://drive.google.com/file/d/1FR9gXlDydyKA9r9xvoExebl2ta6QmiNB/view?usp=sharing",
+      "punch": "lead_bodyshot",
+      "start_sec": 351.761,
+      "end_sec": 352.724,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "3e01ca89-1fc2-4e97-98ee-8582316542d3",
+      "clip": "clips/3e01ca89-1fc2-4e97-98ee-8582316542d3.mp4",
+      "video_name": "Shadow Boxing Workout \uff5c Follow Along.mp4",
+      "video_file": "https://drive.google.com/file/d/1FR9gXlDydyKA9r9xvoExebl2ta6QmiNB/view?usp=sharing",
+      "punch": "lead_bodyshot",
+      "start_sec": 355.381,
+      "end_sec": 356.229,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "7ee60ec3-8ce8-4200-b7af-9e0eb91616bc",
+      "clip": "clips/7ee60ec3-8ce8-4200-b7af-9e0eb91616bc.mp4",
+      "video_name": "Shadow Boxing Workout \uff5c Let me coach you for 12 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1B4JVRbY1CTVUdqp9F_BdIZGvm3RG41VL/view?usp=sharing",
+      "punch": "rear_bodyshot",
+      "start_sec": 375.66,
+      "end_sec": 376.481,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "8755de72-107a-4ac9-bc97-096aec885778",
+      "clip": "clips/8755de72-107a-4ac9-bc97-096aec885778.mp4",
+      "video_name": "Shadow Boxing Workout \uff5c Let me coach you for 12 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1B4JVRbY1CTVUdqp9F_BdIZGvm3RG41VL/view?usp=sharing",
+      "punch": "rear_bodyshot",
+      "start_sec": 379.243,
+      "end_sec": 379.753,
+      "stance": "Orthodox",
+      "labeler": ""
+    },
+    {
+      "punch_uuid": "c1424df6-ed18-4d8b-80ad-5e036c85c957",
+      "clip": "clips/c1424df6-ed18-4d8b-80ad-5e036c85c957.mp4",
+      "video_name": "Shadow Boxing Workout \uff5c Let me coach you for 12 minutes.mp4",
+      "video_file": "https://drive.google.com/file/d/1B4JVRbY1CTVUdqp9F_BdIZGvm3RG41VL/view?usp=sharing",
+      "punch": "rear_bodyshot",
+      "start_sec": 395.328,
+      "end_sec": 396.113,
+      "stance": "Orthodox",
+      "labeler": ""
     }
   ],
-  "count": 530
+  "count": 531
 }

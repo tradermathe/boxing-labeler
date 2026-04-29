@@ -28,7 +28,10 @@
     .shot-row.current { background: #2b3a5e; outline: 1px solid #533483; }
     .shot-row.status-done { border-left-color: #28a745; opacity: 0.65; }
     .shot-row.status-skip { border-left-color: #888; opacity: 0.55; }
+    .shot-row.flagged { border-left-color: #ffaa33; opacity: 1; box-shadow: inset 0 0 0 1px rgba(255, 170, 51, 0.35); }
+    .shot-row.flagged.status-done { border-left-color: #ffaa33; }
     .shot-row.missing-video { color: #777; }
+    .sr-review { color: #ffaa33; margin-left: 4px; font-size: 13px; }
     .sr-idx { color: #666; text-align: right; }
     .sr-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .sr-time { color: #888; font-size: 11px; text-align: right; }
@@ -141,6 +144,9 @@
 
         <div style="display:flex; gap:6px">
           <button class="meta-btn" style="flex:1" onclick="skipShot()">Skip <span style="color:#666; font-size:11px">(S)</span></button>
+          <button class="meta-btn" style="flex:1" onclick="toggleFlag()">★ Flag <span style="color:#666; font-size:11px">(F)</span></button>
+        </div>
+        <div style="display:flex; gap:6px">
           <button class="meta-btn" style="flex:1" onclick="prevShot()">&larr; Prev</button>
           <button class="meta-btn" style="flex:1" onclick="nextShot()">Next &rarr;</button>
         </div>
@@ -156,7 +162,7 @@
       Shift+&larr;/&rarr; = Prev/Next shot &nbsp;|&nbsp;
       1 = Lead Hook &nbsp;|&nbsp; 2 = Rear Hook &nbsp;|&nbsp;
       3 = Lead Uppercut &nbsp;|&nbsp; 4 = Rear Uppercut &nbsp;|&nbsp;
-      S = Skip &nbsp;|&nbsp;
+      S = Skip &nbsp;|&nbsp; F = Flag for review &nbsp;|&nbsp;
       L = Toggle Labels
     </div>
   </div>

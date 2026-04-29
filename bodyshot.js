@@ -30,6 +30,9 @@ Object.assign(state, {
 // localStorage key — surviving reclassifications across refreshes so
 // already-handled rows stay flagged even before the user re-extracts.
 const RECLASSIFIED_KEY = 'bodyshot_reclassified_v1';
+// Independent of done/skip/pending: a "come back to this one" mark.
+// Survives refreshes, kept entirely client-side.
+const FLAGGED_KEY = 'bodyshot_flagged_v1';
 
 // ============================================================
 // Init
@@ -83,10 +86,12 @@ async function loadManifest() {
     if (!resp.ok) throw new Error('manifest.json missing — run extract_bodyshot_clips.py');
     const data = await resp.json();
     const reclassified = readReclassifiedFromStorage();
+    const flagged = readFlaggedFromStorage();
     state.shots = (data.shots || []).map(s => ({
       ...s,
       status: reclassified[s.punch_uuid] ? 'done' : 'pending',
       newType: reclassified[s.punch_uuid] || null,
+      flagged: !!flagged[s.punch_uuid],
     }));
     state.currentIdx = state.shots.length > 0 ? 0 : -1;
     renderShotList();
@@ -111,6 +116,30 @@ function persistReclassification(uuid, newType) {
   const all = readReclassifiedFromStorage();
   all[uuid] = newType;
   localStorage.setItem(RECLASSIFIED_KEY, JSON.stringify(all));
+}
+
+function readFlaggedFromStorage() {
+  try {
+    return JSON.parse(localStorage.getItem(FLAGGED_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function persistFlag(uuid, isFlagged) {
+  const all = readFlaggedFromStorage();
+  if (isFlagged) all[uuid] = 1; else delete all[uuid];
+  localStorage.setItem(FLAGGED_KEY, JSON.stringify(all));
+}
+
+function toggleFlag() {
+  const shot = state.shots[state.currentIdx];
+  if (!shot) return;
+  shot.flagged = !shot.flagged;
+  persistFlag(shot.punch_uuid, shot.flagged);
+  renderShotList();
+  renderCurrentShot();
+  showToast(shot.flagged ? 'Flagged for review' : 'Flag cleared', 'info');
 }
 
 function setLoadStatus(text, isError) {
@@ -144,6 +173,8 @@ function renderShotList() {
 
     const flag = s.status === 'done' ? '✓' : (s.status === 'skip' ? '~' : '');
     const display = prettyPunch(s.newType || s.punch);
+    if (s.flagged) row.classList.add('flagged');
+    const review = s.flagged ? '<span class="sr-review" title="Flagged for review">★</span>' : '';
 
     row.innerHTML = `
       <span class="sr-idx">${idx + 1}</span>
@@ -151,7 +182,7 @@ function renderShotList() {
         ${escapeHtml((s.video_name || '').slice(0, 28) || '—')}
         <br><small style="color:#888">${display}</small>
       </span>
-      <span class="sr-time">${formatTime(s.start_sec)}</span>
+      <span class="sr-time">${formatTime(s.start_sec)}${review}</span>
       <span class="sr-flag">${flag}</span>
     `;
     row.onclick = () => selectShot(idx);
@@ -255,12 +286,15 @@ function renderCurrentShot() {
     card.innerHTML = '<div id="current-shot-empty" style="color:#888; text-align:center; padding:8px">No shots loaded</div>';
     return;
   }
+  const shortUuid = (shot.punch_uuid || '').slice(0, 8);
   card.innerHTML = `
-    <div class="cs-row"><span class="cs-label">#</span><span class="cs-value">${state.currentIdx + 1} of ${state.shots.length}</span></div>
+    <div class="cs-row"><span class="cs-label">#</span><span class="cs-value">${state.currentIdx + 1} of ${state.shots.length}${shot.flagged ? ' <span style="color:#ffaa33">★ flagged</span>' : ''}</span></div>
     <div class="cs-row"><span class="cs-label">Video</span><span class="cs-value">${escapeHtml(shot.video_name || '—')}</span></div>
     <div class="cs-row"><span class="cs-label">Current</span><span class="cs-value"><strong>${prettyPunch(shot.newType || shot.punch)}</strong></span></div>
     <div class="cs-row"><span class="cs-label">Stance</span><span class="cs-value">${escapeHtml(shot.stance || '—')}</span></div>
     <div class="cs-row"><span class="cs-label">Span</span><span class="cs-value">${formatTime(shot.start_sec)} &rarr; ${formatTime(shot.end_sec)} <small style="color:#888">(${(shot.end_sec - shot.start_sec).toFixed(2)}s)</small></span></div>
+    <div class="cs-row"><span class="cs-label">Source</span><span class="cs-value">${escapeHtml(shot.labeler || '—')}</span></div>
+    <div class="cs-row"><span class="cs-label">UUID</span><span class="cs-value" style="font-family:monospace; font-size:11px; cursor:pointer" title="${escapeHtml(shot.punch_uuid || '')} — click to copy" onclick="navigator.clipboard.writeText('${escapeHtml(shot.punch_uuid || '')}'); showToast('UUID copied', 'info')">${shortUuid || '—'}</span></div>
   `;
 }
 
@@ -352,6 +386,7 @@ function setupKeyboardShortcuts() {
 
       case 'KeyL': e.preventDefault(); toggleOverlay(); break;
       case 'KeyS': e.preventDefault(); skipShot(); break;
+      case 'KeyF': e.preventDefault(); toggleFlag(); break;
 
       case 'Digit1': case 'Numpad1': e.preventDefault(); reclassify('lead_hook_body'); break;
       case 'Digit2': case 'Numpad2': e.preventDefault(); reclassify('rear_hook_body'); break;
