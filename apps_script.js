@@ -520,10 +520,12 @@ function doGetBodyshots(p, action) {
     var newType = p.new_punch_type;
     var labelerHits = [];
     var combinedHit = null;
+    var archiveHit = null;
 
     // 1) Labeler sheets — search every "Labeled Data ..." sheet for the uuid.
     //    Only update the punch_type column. Fingerprint identity (start/end)
-    //    stays the same.
+    //    stays the same. Multiple matches across labeler sheets all get
+    //    updated so cross-labeler agreement on the same event is consistent.
     var sheets = ss.getSheets();
     for (var s = 0; s < sheets.length; s++) {
       var sheet = sheets[s];
@@ -543,9 +545,30 @@ function doGetBodyshots(p, action) {
       }
     }
 
-    // 2) Combined Data — also update so the bodyshot tool's next listBodyshots
-    //    call no longer surfaces this row. (Will be regenerated cleanly on the
-    //    next "Rebuild Combined Data" run anyway.)
+    // 2) Combined Data Archive — frozen historical rows whose source
+    //    labeler sheet has been deleted. Rebuild Combined Data carries
+    //    Archive rows in verbatim, so without updating Archive a
+    //    reclassify of an old row would revert on the next rebuild.
+    var archive = ss.getSheetByName(COMBINED_ARCHIVE_NAME);
+    if (archive && archive.getLastRow() >= 2) {
+      var ad = archive.getDataRange().getValues();
+      var aCols = findColumns(ad[0]);
+      if (aCols.uuid >= 0 && aCols.punch >= 0) {
+        for (var ar = 1; ar < ad.length; ar++) {
+          if (String(ad[ar][aCols.uuid]) === targetUuid) {
+            archive.getRange(ar + 1, aCols.punch + 1).setValue(newType);
+            archiveHit = { row: ar + 1 };
+            break;
+          }
+        }
+      }
+    }
+
+    // 3) Combined Data — update directly so the bodyshot tool's next
+    //    listBodyshots call no longer surfaces this row. Steps 1+2 already
+    //    keep the upstream sources correct, but waiting on a manual
+    //    "Rebuild Combined Data" run before the queue updates would feel
+    //    laggy during a sweep.
     var cdata = combined.getDataRange().getValues();
     var cIdx = headerIndex(cdata[0]);
     var labelCol = cIdx['label'] != null ? cIdx['label'] : cIdx['punch_type'];
@@ -566,6 +589,7 @@ function doGetBodyshots(p, action) {
       punch_uuid: targetUuid,
       new_punch_type: newType,
       labeler_hits: labelerHits,
+      archive_hit: archiveHit,
       combined_hit: combinedHit
     });
   }

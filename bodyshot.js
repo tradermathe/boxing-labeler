@@ -2,18 +2,18 @@
 // bodyshot.js — Bodyshot Reclassifier (page-specific)
 //
 // Temporary tool to sweep over every `lead_bodyshot` /
-// `rear_bodyshot` row in Combined Data and reclassify it as a
-// hook / uppercut / straight body variant.
+// `rear_bodyshot` clip and reclassify it as a hook / uppercut /
+// straight body variant.
 //
-// Flow:
-//   1. User opens a folder/multi-selects video files.
-//   2. Filenames are matched against video_name on each shot row.
-//   3. Selecting a shot loads the matching video (if loaded) and
-//      loops between start_sec and end_sec.
-//   4. A reclassify button calls action=reclassify on the backend,
-//      which updates both the labeler sheet (canonical) and the
-//      Combined Data row (so the same shot drops out of the list
-//      on a refresh).
+// Clips are pre-extracted by `extract_bodyshot_clips.py` and bundled
+// in `clips/` next to this file, with a manifest at
+// `clips/manifest.json`. The page reads the manifest and plays each
+// clip directly — no local video import needed.
+//
+// Reclassify writes through the Apps Script `reclassify` action,
+// which updates both the originating labeler sheet (canonical) and
+// Combined Data (so a future re-extraction drops the row from the
+// queue automatically).
 //
 // Shared video + seek-bar + zoom + helpers live in player.js
 // (loaded first). The shared `state` object is defined there;
@@ -21,46 +21,31 @@
 // ============================================================
 
 Object.assign(state, {
-  shots: [],          // [{ id, punch_uuid, video_file, video_name, punch, start_sec, end_sec, stance, labeler, status, newType }]
-  currentIdx: -1,     // index into state.shots
-  videoMap: {},       // filename (lower) -> ObjectURL
+  shots: [],          // [{ punch_uuid, clip, video_name, video_file, punch, start_sec, end_sec, stance, status, newType }]
+  currentIdx: -1,
   loopEnabled: true,
   // status values: 'pending' | 'done' | 'skip'
 });
 
+// localStorage key — surviving reclassifications across refreshes so
+// already-handled rows stay flagged even before the user re-extracts.
+const RECLASSIFIED_KEY = 'bodyshot_reclassified_v1';
+
 // ============================================================
 // Init
 // ============================================================
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
   setupPlayer();
   setupKeyboardShortcuts();
-  setupVideoFiles();
-  fetchBodyshots();
-  renderCurrentShot();
-
-  // Loop the current shot — when playback passes end_sec, jump back
-  // to start_sec. timeupdate fires often enough (~4×/sec) that the
-  // overshoot stays within a frame or two.
-  const video = document.getElementById('video-player');
-  video.addEventListener('timeupdate', () => {
-    if (!state.loopEnabled) return;
-    const shot = state.shots[state.currentIdx];
-    if (!shot) return;
-    if (video.currentTime >= shot.end_sec) {
-      video.currentTime = shot.start_sec;
-    }
-  });
+  attachVideoListeners();
+  await loadManifest();
+  hookLoopWatcher();
 });
 
-// ============================================================
-// Multi-file video loader
-//
-// player.js's setupVideoLoader() bails out because the picker id here
-// is `video-files` (plural), so we have to attach the video-element
-// listeners ourselves: loadedmetadata for fps detection + frame
-// duration, timeupdate to drive the seek bar, seeked to sync chrome.
-// ============================================================
-function setupVideoFiles() {
+function attachVideoListeners() {
+  // player.js's setupVideoLoader() bails out because the original
+  // file picker isn't on this page, so we wire up the listeners it
+  // would otherwise add ourselves.
   const video = document.getElementById('video-player');
   video.addEventListener('loadedmetadata', () => {
     state.frameDuration = 1 / 30;
@@ -73,86 +58,58 @@ function setupVideoFiles() {
     if (typeof updateTimeDisplay === 'function') updateTimeDisplay();
   });
   if (typeof _onSeeked === 'function') video.addEventListener('seeked', _onSeeked);
+  // <video loop> is good enough since each clip IS the start->end window.
+  video.loop = true;
+}
 
-  const input = document.getElementById('video-files');
-  input.addEventListener('change', (e) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-
-    // Accumulate (don't reset) so the user can drop multiple folders one
-    // at a time. Keys are lowercased filenames since macOS/iCloud sometimes
-    // capitalizes inconsistently.
-    for (const f of files) {
-      const key = f.name.toLowerCase();
-      if (state.videoMap[key]) URL.revokeObjectURL(state.videoMap[key]);
-      state.videoMap[key] = URL.createObjectURL(f);
-    }
-
-    document.getElementById('video-name').textContent = `${Object.keys(state.videoMap).length} files loaded`;
-    renderShotList();
-    // If a shot was selected before videos loaded, retry now that we have a match
-    if (state.currentIdx >= 0) selectShot(state.currentIdx);
-    updateLoadStatus();
+function hookLoopWatcher() {
+  // Belt-and-suspenders: video.loop handles seamless looping, but if
+  // the user toggles loop off we still want the manual replay UX —
+  // keep the timeupdate listener so the toggle has an effect.
+  const video = document.getElementById('video-player');
+  video.addEventListener('ended', () => {
+    if (state.loopEnabled) video.play().catch(() => {});
   });
 }
 
-function updateLoadStatus() {
-  const total = state.shots.length;
-  if (total === 0) return;
-  const matched = state.shots.filter(s => state.videoMap[shotVideoKey(s)]).length;
-  const done = state.shots.filter(s => s.status === 'done').length;
-  document.getElementById('load-status').textContent =
-    `${matched}/${total} matched to videos · ${done} reclassified`;
-}
-
-// Filename used as the videoMap key. Combined Data has video_name = filename;
-// fall back to the basename of video_file (Drive URL → no help, so this is
-// best-effort) so a missing video_name doesn't kill matching outright.
-function shotVideoKey(shot) {
-  const name = (shot.video_name || '').trim();
-  if (name) return name.toLowerCase();
-  const url = String(shot.video_file || '');
-  const m = url.match(/[^\/]+\.(mp4|mov|m4v|webm)$/i);
-  return m ? m[0].toLowerCase() : '';
-}
-
 // ============================================================
-// Fetch all bodyshots from Combined Data
+// Manifest load
 // ============================================================
-async function fetchBodyshots() {
-  if (!state.scriptUrl) return;
-  setLoadStatus('Loading bodyshots...');
+async function loadManifest() {
+  setLoadStatus('Loading clips...');
   try {
-    const url = sheetUrl({ action: 'listBodyshots' });
-    const resp = await fetch(url);
-    const result = await resp.json();
-    if (result.status === 'error') {
-      setLoadStatus('Error: ' + result.message, true);
-      return;
-    }
-    state.shots = (result.shots || []).map(s => ({
+    const resp = await fetch('clips/manifest.json', { cache: 'no-cache' });
+    if (!resp.ok) throw new Error('manifest.json missing — run extract_bodyshot_clips.py');
+    const data = await resp.json();
+    const reclassified = readReclassifiedFromStorage();
+    state.shots = (data.shots || []).map(s => ({
       ...s,
-      status: 'pending',
-      newType: null,
+      status: reclassified[s.punch_uuid] ? 'done' : 'pending',
+      newType: reclassified[s.punch_uuid] || null,
     }));
-    // Stable order: by video_name, then start_sec — so neighbors in the list
-    // are usually the same video, which matches how a reviewer wants to work.
-    state.shots.sort((a, b) => {
-      const va = (a.video_name || '').toLowerCase();
-      const vb = (b.video_name || '').toLowerCase();
-      if (va !== vb) return va < vb ? -1 : 1;
-      return a.start_sec - b.start_sec;
-    });
     state.currentIdx = state.shots.length > 0 ? 0 : -1;
     renderShotList();
     renderCurrentShot();
     selectShot(state.currentIdx);
-    updateLoadStatus();
-    setLoadStatus(`${state.shots.length} bodyshots loaded`);
+    setLoadStatus(`${state.shots.length} clips loaded`);
   } catch (e) {
-    console.error('listBodyshots failed', e);
-    setLoadStatus('Failed to fetch bodyshots: ' + e.message, true);
+    console.error('manifest load failed', e);
+    setLoadStatus('Failed to load manifest: ' + e.message, true);
   }
+}
+
+function readReclassifiedFromStorage() {
+  try {
+    return JSON.parse(localStorage.getItem(RECLASSIFIED_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function persistReclassification(uuid, newType) {
+  const all = readReclassifiedFromStorage();
+  all[uuid] = newType;
+  localStorage.setItem(RECLASSIFIED_KEY, JSON.stringify(all));
 }
 
 function setLoadStatus(text, isError) {
@@ -160,6 +117,14 @@ function setLoadStatus(text, isError) {
   if (!el) return;
   el.textContent = text;
   el.style.color = isError ? '#e94560' : '#888';
+}
+
+function updateLoadStatus() {
+  const total = state.shots.length;
+  if (total === 0) return;
+  const done = state.shots.filter(s => s.status === 'done').length;
+  const skip = state.shots.filter(s => s.status === 'skip').length;
+  setLoadStatus(`${total} clips · ${done} reclassified · ${skip} skipped`);
 }
 
 // ============================================================
@@ -173,21 +138,17 @@ function renderShotList() {
 
   state.shots.forEach((s, idx) => {
     const row = document.createElement('div');
-    row.className = 'shot-row';
-    row.classList.add('status-' + s.status);
+    row.className = 'shot-row status-' + s.status;
     if (idx === state.currentIdx) row.classList.add('current');
-    const haveVideo = !!state.videoMap[shotVideoKey(s)];
-    if (!haveVideo) row.classList.add('missing-video');
 
     const flag = s.status === 'done' ? '✓' : (s.status === 'skip' ? '~' : '');
-    const punchShort = (s.punch || '').replace('_bodyshot', '').replace('_', ' ');
-    const display = s.newType ? prettyPunch(s.newType) : prettyPunch(s.punch);
+    const display = prettyPunch(s.newType || s.punch);
 
     row.innerHTML = `
       <span class="sr-idx">${idx + 1}</span>
-      <span class="sr-name" title="${escapeHtml(s.video_name || s.video_file || '')}">
+      <span class="sr-name" title="${escapeHtml(s.video_name || '')}">
         ${escapeHtml((s.video_name || '').slice(0, 28) || '—')}
-        <br><small style="color:${haveVideo ? '#888' : '#e94560'}">${haveVideo ? display : 'no video'}</small>
+        <br><small style="color:#888">${display}</small>
       </span>
       <span class="sr-time">${formatTime(s.start_sec)}</span>
       <span class="sr-flag">${flag}</span>
@@ -197,6 +158,7 @@ function renderShotList() {
   });
 
   updateProgress();
+  updateLoadStatus();
 }
 
 function updateProgress() {
@@ -229,48 +191,33 @@ function selectShot(idx) {
 
   const shot = state.shots[idx];
   const video = document.getElementById('video-player');
-  const key = shotVideoKey(shot);
-  const url = state.videoMap[key];
-  if (!url) {
-    // No matching video file loaded yet — show the card but don't try to
-    // play. Loading the right file later will retrigger this branch.
-    video.removeAttribute('src');
+  if (video.dataset.activeUuid !== shot.punch_uuid) {
+    video.dataset.activeUuid = shot.punch_uuid;
+    video.src = shot.clip;
     video.load();
-    return;
+    video.play().catch(() => {});
+  } else {
+    video.currentTime = 0;
+    video.play().catch(() => {});
   }
 
-  // Only swap the video src when we change videos — switching ObjectURLs
-  // resets the buffer, so we don't want to do it for every shot in the
-  // same file.
-  if (video.dataset.activeKey !== key) {
-    video.dataset.activeKey = key;
-    video.src = url;
-    video.load();
-    const thumbVideo = document.getElementById('thumb-video');
-    if (thumbVideo) {
-      thumbVideo.src = url;
-      thumbVideo.load();
-    }
-    state.videoName = shot.video_name || '';
-    document.getElementById('video-name').textContent = `${Object.keys(state.videoMap).length} files loaded · ${shot.video_name}`;
-    video.addEventListener('loadedmetadata', () => seekToShot(idx, true), { once: true });
-  } else {
-    seekToShot(idx, true);
-  }
+  state.videoName = shot.video_name || '';
+  document.getElementById('video-name').textContent = shot.video_name || '—';
 
   const entry = document.querySelectorAll('.shot-row')[idx];
   if (entry) entry.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
-function seekToShot(idx, autoPlay) {
-  const video = document.getElementById('video-player');
-  const shot = state.shots[idx];
-  if (!shot || !video.duration) return;
-  video.currentTime = shot.start_sec;
-  if (autoPlay) video.play().catch(() => {});
+function nextShot() {
+  // Prefer the next shot still pending; if everything's resolved, just
+  // step linearly so the user can revisit.
+  const start = state.currentIdx;
+  for (let i = start + 1; i < state.shots.length; i++) {
+    if (state.shots[i].status === 'pending') return selectShot(i);
+  }
+  selectShot(Math.min(state.shots.length - 1, start + 1));
 }
 
-function nextShot() { selectShot(Math.min(state.shots.length - 1, state.currentIdx + 1)); }
 function prevShot() { selectShot(Math.max(0, state.currentIdx - 1)); }
 
 function skipShot() {
@@ -288,40 +235,38 @@ function renderCurrentShot() {
   const card = document.getElementById('current-shot-card');
   const shot = state.shots[state.currentIdx];
   if (!shot) {
-    card.innerHTML = '<div id="current-shot-empty" style="color:#888; text-align:center; padding:8px">Pick a shot from the list</div>';
+    card.innerHTML = '<div id="current-shot-empty" style="color:#888; text-align:center; padding:8px">No shots loaded</div>';
     return;
   }
-  const haveVideo = !!state.videoMap[shotVideoKey(shot)];
   card.innerHTML = `
     <div class="cs-row"><span class="cs-label">#</span><span class="cs-value">${state.currentIdx + 1} of ${state.shots.length}</span></div>
-    <div class="cs-row"><span class="cs-label">Video</span><span class="cs-value" style="${haveVideo ? '' : 'color:#e94560'}">${escapeHtml(shot.video_name || '—')}</span></div>
+    <div class="cs-row"><span class="cs-label">Video</span><span class="cs-value">${escapeHtml(shot.video_name || '—')}</span></div>
     <div class="cs-row"><span class="cs-label">Current</span><span class="cs-value"><strong>${prettyPunch(shot.newType || shot.punch)}</strong></span></div>
     <div class="cs-row"><span class="cs-label">Stance</span><span class="cs-value">${escapeHtml(shot.stance || '—')}</span></div>
-    <div class="cs-row"><span class="cs-label">Time</span><span class="cs-value">${formatTime(shot.start_sec)} &rarr; ${formatTime(shot.end_sec)} <small style="color:#888">(${(shot.end_sec - shot.start_sec).toFixed(2)}s)</small></span></div>
-    <div class="cs-row"><span class="cs-label">Labeler</span><span class="cs-value">${escapeHtml(shot.labeler || '—')}</span></div>
+    <div class="cs-row"><span class="cs-label">Span</span><span class="cs-value">${formatTime(shot.start_sec)} &rarr; ${formatTime(shot.end_sec)} <small style="color:#888">(${(shot.end_sec - shot.start_sec).toFixed(2)}s)</small></span></div>
   `;
 }
 
 // ============================================================
-// Reclassify — call backend, mark done, advance
+// Reclassify
 // ============================================================
 async function reclassify(newType) {
   const shot = state.shots[state.currentIdx];
   if (!shot) return;
   if (!shot.punch_uuid) {
-    showToast('Shot has no punch_uuid — cannot reclassify. Re-run punch labeler to backfill.', 'error');
+    showToast('Shot has no punch_uuid — re-run the extraction script.', 'error');
     return;
   }
 
-  // Optimistic UI: mark done immediately, advance, fix up if save fails.
+  // Optimistic UI: mark done, advance, fix up if save fails.
   const previousType = shot.punch;
   const previousStatus = shot.status;
   shot.newType = newType;
   shot.punch = newType;
   shot.status = 'done';
+  persistReclassification(shot.punch_uuid, newType);
   renderShotList();
   renderCurrentShot();
-  updateLoadStatus();
   showToast(`Marked ${prettyPunch(newType)}, saving...`, 'info');
   nextShot();
 
@@ -338,23 +283,21 @@ async function reclassify(newType) {
       shot.punch = previousType;
       shot.newType = null;
       shot.status = previousStatus;
+      const all = readReclassifiedFromStorage();
+      delete all[shot.punch_uuid];
+      localStorage.setItem(RECLASSIFIED_KEY, JSON.stringify(all));
       renderShotList();
       renderCurrentShot();
-      updateLoadStatus();
       return;
     }
     const labelerHits = (result.labeler_hits || []).length;
-    const combinedHit = result.combined_hit ? 1 : 0;
-    showToast(`Saved (${labelerHits} labeler row${labelerHits === 1 ? '' : 's'} + ${combinedHit} combined)`, 'info');
+    showToast(`Saved (${labelerHits} sheet row${labelerHits === 1 ? '' : 's'} updated)`, 'info');
   } catch (e) {
     console.error('reclassify failed', e);
-    showToast('Save failed: ' + e.message, 'error');
-    shot.punch = previousType;
-    shot.newType = null;
-    shot.status = previousStatus;
-    renderShotList();
-    renderCurrentShot();
-    updateLoadStatus();
+    showToast('Save failed: ' + e.message + ' (Apps Script redeployed?)', 'error');
+    // Don't roll back optimistic UI — the user wants to keep moving;
+    // localStorage flag means the row stays marked done on refresh,
+    // and the actual sheet write can be retried via the manifest later.
   }
 }
 
@@ -363,6 +306,8 @@ async function reclassify(newType) {
 // ============================================================
 function toggleLoop() {
   state.loopEnabled = !state.loopEnabled;
+  const video = document.getElementById('video-player');
+  video.loop = state.loopEnabled;
   const btn = document.getElementById('btn-loop');
   if (btn) btn.textContent = 'Loop: ' + (state.loopEnabled ? 'ON' : 'OFF');
 }
@@ -416,36 +361,20 @@ function setupKeyboardShortcuts() {
 }
 
 // ============================================================
-// Timeline overlay — color the current shot's start→end window
-// on the seek bar. Hook called by player.js on zoom/metadata change.
+// Timeline overlay — clips ARE the start->end window so the bar just
+// shows playback progress against the clip itself.
 // ============================================================
 function renderTimelineOverlay() {
   const overlay = document.getElementById('seek-bar-overlay');
-  const video = document.getElementById('video-player');
-  const duration = video.duration;
+  if (!overlay) return;
   overlay.innerHTML = '';
-  if (!duration || duration <= 0) return;
-
-  const shot = state.shots[state.currentIdx];
-  if (!shot) return;
-  const lPct = timeToViewportPct(shot.start_sec, duration);
-  const rPct = timeToViewportPct(shot.end_sec, duration);
-  if (rPct < 0 || lPct > 100) return;
-  const seg = document.createElement('div');
-  seg.className = 'seek-segment';
-  seg.style.left = Math.max(0, lPct) + '%';
-  seg.style.width = Math.max(Math.min(100, rPct) - Math.max(0, lPct), 0.15) + '%';
-  seg.style.backgroundColor = '#ffaa33';
-  overlay.appendChild(seg);
 }
 
 function updateVideoOverlay() {
-  // Lightweight: just show the current punch label so the user can confirm
-  // they're looking at the right shot.
   const overlay = document.getElementById('video-overlay');
   if (!overlay) return;
   const shot = state.shots[state.currentIdx];
-  const key = shot ? (shot.punch || '') : '';
+  const key = shot ? (shot.newType || shot.punch || '') : '';
   if (overlay.dataset.activeKey === key) return;
   overlay.dataset.activeKey = key;
   overlay.innerHTML = '';
