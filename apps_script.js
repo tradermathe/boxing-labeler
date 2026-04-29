@@ -491,14 +491,30 @@ function doGetBodyshots(p, action) {
     if (data.length < 2) return jsonOut({ status: 'ok', shots: [] });
     var idx = headerIndex(data[0]);
     var shots = [];
+    var nameCache = {}; // file_id -> filename, populated lazily via DriveApp
     for (var i = 1; i < data.length; i++) {
       var punch = String(pickFromRow(data[i], idx, 'label') || pickFromRow(data[i], idx, 'punch_type') || '').toLowerCase().trim();
       if (BODYSHOT_TYPES.indexOf(punch) < 0) continue;
+      var vfile = pickFromRow(data[i], idx, 'video_file');
+      var vname = pickFromRow(data[i], idx, 'video_name');
+      // Fill empty video_name from DriveApp (cached per file_id, only ~5
+      // unique calls expected for the legacy bodyshot tail). Single-call
+      // DriveApp lookups are fast — no 6-min timeout risk at this scale.
+      if (!vname || String(vname).trim() === '') {
+        var fid = extractFileId(String(vfile));
+        if (fid) {
+          if (nameCache[fid] === undefined) {
+            try { nameCache[fid] = DriveApp.getFileById(fid).getName(); }
+            catch (e) { nameCache[fid] = ''; }
+          }
+          vname = nameCache[fid];
+        }
+      }
       shots.push({
         id:         pickFromRow(data[i], idx, 'id'),
         punch_uuid: String(pickFromRow(data[i], idx, 'punch_uuid') || ''),
-        video_file: pickFromRow(data[i], idx, 'video_file'),
-        video_name: pickFromRow(data[i], idx, 'video_name'),
+        video_file: vfile,
+        video_name: vname,
         punch:      punch,
         start_sec:  toSeconds(pickFromRow(data[i], idx, 'start_sec')),
         end_sec:    toSeconds(pickFromRow(data[i], idx, 'end_sec')),
