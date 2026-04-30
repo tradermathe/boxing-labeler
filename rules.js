@@ -74,6 +74,7 @@ Object.assign(state, {
   currentIdx: -1,         // index into state.punches
   activeRuleIdx: 0,       // which rule row is selected (0..RULES.length-1)
   answers: {},            // { punch_uuid: { rule_id: 'pass'|'fail'|'unclear' } }
+  loopPunch: false,       // when true, video re-seeks to start_sec on crossing end_sec
 });
 
 // ============================================================
@@ -83,6 +84,7 @@ window.addEventListener('DOMContentLoaded', () => {
   setupPlayer();
   setupKeyboardShortcuts();
   setupDriveLink();
+  setupLoopToggle();
   renderCurrentPunch();      // empty state
   if (LABELER_ID) {
     const badge = document.getElementById('labeler-badge');
@@ -117,6 +119,54 @@ function setupDriveLink() {
   });
 
   if (saved && saved.trim()) loadPunchesAndAnswers();
+}
+
+// ============================================================
+// Loop-current-punch toggle. While ON and a punch is selected,
+// playback wraps from end_sec back to start_sec so the labeler
+// can stare at one punch while ticking off rule answers. Pause
+// still pauses — the timeupdate hook only fires while playing.
+// ============================================================
+function loopPrefKey() {
+  return (LABELER_ID ? 'labeler_' + LABELER_ID + '_rules_' : 'labeler_rules_') + 'loop_punch';
+}
+
+function setupLoopToggle() {
+  state.loopPunch = localStorage.getItem(loopPrefKey()) === '1';
+  updateLoopButton();
+
+  const video = document.getElementById('video-player');
+  if (!video) return;
+  video.addEventListener('timeupdate', () => {
+    if (!state.loopPunch || state.currentIdx < 0) return;
+    const p = state.punches[state.currentIdx];
+    if (!p || !(p.end_sec > p.start_sec)) return;
+    if (video.currentTime >= p.end_sec) video.currentTime = p.start_sec;
+  });
+}
+
+function toggleLoopPunch() {
+  state.loopPunch = !state.loopPunch;
+  localStorage.setItem(loopPrefKey(), state.loopPunch ? '1' : '0');
+  updateLoopButton();
+  if (!state.loopPunch) return;
+
+  // Snap to current punch's start and play so the loop kicks in
+  // immediately — otherwise toggling while paused looks broken.
+  const video = document.getElementById('video-player');
+  const p = state.punches[state.currentIdx];
+  if (!video || !p || !video.duration) return;
+  video.currentTime = p.start_sec;
+  video.play().catch(() => {});
+  const playBtn = document.getElementById('btn-play');
+  if (playBtn) playBtn.textContent = 'Pause';
+}
+
+function updateLoopButton() {
+  const btn = document.getElementById('btn-loop-punch');
+  if (!btn) return;
+  btn.textContent = state.loopPunch ? 'Loop: ON' : 'Loop: OFF';
+  btn.classList.toggle('loop-on', state.loopPunch);
 }
 
 // ============================================================
@@ -348,12 +398,27 @@ function renderCurrentPunch() {
   // has an answer, and there's another punch after this one. Acts as the
   // primary "move on" affordance — the Shift+→ shortcut still works as an
   // escape hatch for skipping ahead without completing.
+  // When every punch in the session is fully labeled, swap the button for
+  // a static green completion pill so the end-state is unambiguous.
   const nextBtn = document.getElementById('rule-next-btn');
-  if (nextBtn) {
-    const allAnswered = applicable.length > 0 && answered === applicable.length;
-    const hasNext = state.currentIdx + 1 < state.punches.length;
-    nextBtn.disabled = !(allAnswered && hasNext);
-    nextBtn.textContent = hasNext ? 'Next punch →' : 'All punches done';
+  const badge = document.getElementById('rule-complete-badge');
+  const allPunchesComplete = state.punches.length > 0 && state.punches.every(pp => {
+    const ans = state.answers[pp.punch_uuid] || {};
+    const apps = RULES.filter(r => ruleAppliesTo(r.id, pp));
+    return apps.length > 0 && apps.every(r => ans[r.id]);
+  });
+  if (nextBtn && badge) {
+    if (allPunchesComplete) {
+      nextBtn.style.display = 'none';
+      badge.style.display = 'block';
+    } else {
+      nextBtn.style.display = '';
+      badge.style.display = 'none';
+      const allAnswered = applicable.length > 0 && answered === applicable.length;
+      const hasNext = state.currentIdx + 1 < state.punches.length;
+      nextBtn.disabled = !(allAnswered && hasNext);
+      nextBtn.textContent = 'Next punch →';
+    }
   }
 }
 
@@ -444,6 +509,7 @@ function setupKeyboardShortcuts() {
       case 'KeyU': e.preventDefault(); answerRule(state.activeRuleIdx, 'unclear'); break;
 
       case 'KeyL': e.preventDefault(); toggleOverlay(); break;
+      case 'KeyR': e.preventDefault(); toggleLoopPunch(); break;
 
       case 'Digit1': case 'Numpad1': selectRuleRow(0); break;
       case 'Digit2': case 'Numpad2': selectRuleRow(1); break;

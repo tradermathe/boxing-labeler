@@ -64,6 +64,7 @@
           <div id="controls-row">
             <button id="btn-play" onclick="togglePlay()">Play</button>
             <button id="btn-mute" onclick="toggleMute()">&#128266;</button>
+            <button id="btn-loop-punch" onclick="toggleLoopPunch()" title="Loop the currently-selected punch (R)">Loop: OFF</button>
             <button onclick="stepFrames(-2)" title="Back 2 frames">&laquo;</button>
             <button onclick="stepFrames(-1)" title="Back 1 frame">&lsaquo;</button>
             <button onclick="stepFrames(1)" title="Forward 1 frame">&rsaquo;</button>
@@ -95,6 +96,7 @@
         <div id="rule-checklist"></div>
         <div id="rule-progress" style="font-size:11px; color:#666; text-align:center; padding:4px"></div>
         <button id="rule-next-btn" onclick="nextPunch()" disabled>Next punch &rarr;</button>
+        <div id="rule-complete-badge" style="display:none">&#10003; All punches done</div>
       </div>
     </div>
 
@@ -107,6 +109,7 @@
       1-7 = Select rule row &nbsp;|&nbsp;
       Y = Pass, N = Fail, U = Unclear &nbsp;|&nbsp;
       L = Toggle Labels &nbsp;|&nbsp;
+      R = Loop punch &nbsp;|&nbsp;
       Shift+&lt;/&gt; = Speed &minus;/+ &nbsp;|&nbsp;
       Alt+Scroll = Zoom
     </div>
