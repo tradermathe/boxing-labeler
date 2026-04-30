@@ -56,7 +56,9 @@ function ruleAppliesTo(ruleId, punch) {
     return type.endsWith('_head') || type.includes('head');
   }
   if (ruleId === 'rule_punch_height') {
-    // Only applies to head-labeled punches
+    // Only applies to head-labeled punches; uppercuts excluded since they
+    // travel upward into the chin rather than landing at head height.
+    if (type.includes('uppercut')) return false;
     return type.endsWith('_head') || type.includes('head');
   }
   if (ruleId === 'rule_extension') {
