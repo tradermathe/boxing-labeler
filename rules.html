@@ -35,6 +35,19 @@
       <!-- Left: punch list -->
       <div id="punch-list-panel">
         <h3>Punches <span id="punch-list-count" style="color:#666; font-weight:normal; font-size:12px">(0)</span></h3>
+        <div id="punch-filter">
+          <div class="filter-row">
+            <label for="filter-rule">Rule</label>
+            <select id="filter-rule"><option value="">Any rule</option></select>
+          </div>
+          <div class="filter-row filter-answer-row">
+            <button class="filter-ans active" data-ans="" title="No filter">All</button>
+            <button class="filter-ans ans-pass"    data-ans="pass"        title="Marked Pass">&#10003;</button>
+            <button class="filter-ans ans-fail"    data-ans="fail"        title="Marked Fail">&#10007;</button>
+            <button class="filter-ans ans-unclear" data-ans="unclear"     title="Marked Unclear">?</button>
+            <button class="filter-ans ans-unanswered" data-ans="unanswered" title="Not yet answered">&empty;</button>
+          </div>
+        </div>
         <div id="punch-list"></div>
       </div>
 

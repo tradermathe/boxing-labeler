@@ -77,6 +77,8 @@ Object.assign(state, {
   activeRuleIdx: 0,       // which rule row is selected (0..RULES.length-1)
   answers: {},            // { punch_uuid: { rule_id: 'pass'|'fail'|'unclear' } }
   loopPunch: false,       // when true, video re-seeks to start_sec on crossing end_sec
+  filterRule: '',         // '' = any rule, or a rule_id from RULES
+  filterAnswer: '',       // '' = no filter, 'pass'|'fail'|'unclear'|'unanswered'
 });
 
 // ============================================================
@@ -87,6 +89,7 @@ window.addEventListener('DOMContentLoaded', () => {
   setupKeyboardShortcuts();
   setupDriveLink();
   setupLoopToggle();
+  setupFilter();
   renderCurrentPunch();      // empty state
   if (LABELER_ID) {
     const badge = document.getElementById('labeler-badge');
@@ -172,6 +175,108 @@ function updateLoopButton() {
 }
 
 // ============================================================
+// Filter: narrow the punch list by rule answer.
+// "Any rule" + "Fail" surfaces every punch with at least one
+// failed applicable rule; pairing a specific rule with "Unanswered"
+// is useful for finding work to finish on one rule at a time.
+// State persists per-labeler in localStorage so reloading the page
+// keeps the active filter.
+// ============================================================
+function filterPrefKey() {
+  return (LABELER_ID ? 'labeler_' + LABELER_ID + '_rules_' : 'labeler_rules_') + 'filter';
+}
+
+function setupFilter() {
+  const sel = document.getElementById('filter-rule');
+  const row = document.querySelector('#punch-filter .filter-answer-row');
+  if (!sel || !row) return;
+
+  // Populate rule dropdown from the catalogue so adding a rule
+  // auto-extends the filter without further edits.
+  for (const rule of RULES) {
+    const opt = document.createElement('option');
+    opt.value = rule.id;
+    opt.textContent = rule.label;
+    sel.appendChild(opt);
+  }
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(filterPrefKey()) || '{}');
+    if (typeof saved.rule === 'string')   state.filterRule   = saved.rule;
+    if (typeof saved.answer === 'string') state.filterAnswer = saved.answer;
+  } catch (_) { /* ignore corrupt prefs */ }
+
+  sel.value = state.filterRule;
+  syncFilterAnswerButtons();
+
+  sel.addEventListener('change', () => {
+    state.filterRule = sel.value;
+    persistFilter();
+    onFilterChanged();
+  });
+
+  row.querySelectorAll('.filter-ans').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.filterAnswer = btn.dataset.ans || '';
+      syncFilterAnswerButtons();
+      persistFilter();
+      onFilterChanged();
+    });
+  });
+}
+
+function syncFilterAnswerButtons() {
+  document.querySelectorAll('#punch-filter .filter-ans').forEach(btn => {
+    btn.classList.toggle('active', (btn.dataset.ans || '') === state.filterAnswer);
+  });
+}
+
+function persistFilter() {
+  localStorage.setItem(filterPrefKey(), JSON.stringify({
+    rule: state.filterRule, answer: state.filterAnswer,
+  }));
+}
+
+function onFilterChanged() {
+  renderPunchList();
+  // If the current punch is still in the filtered set, leave it.
+  // Otherwise jump to the first match so the rules panel matches the list.
+  const visible = getFilteredIndices();
+  if (visible.length === 0) return;
+  if (!visible.includes(state.currentIdx)) selectPunch(visible[0]);
+}
+
+// True when the punch should appear in the filtered list.
+function punchMatchesFilter(p) {
+  if (!state.filterRule && !state.filterAnswer) return true;
+  const a = state.answers[p.punch_uuid] || {};
+
+  if (state.filterRule) {
+    // Specific rule: skip punches the rule doesn't apply to so the
+    // result set only contains punches the rule actually scored.
+    if (!ruleAppliesTo(state.filterRule, p)) return false;
+    const ans = a[state.filterRule] || '';
+    if (!state.filterAnswer) return true;
+    if (state.filterAnswer === 'unanswered') return !ans;
+    return ans === state.filterAnswer;
+  }
+
+  // Any rule + answer: punch matches if at least one applicable rule
+  // has the requested answer (or, for "unanswered", at least one
+  // applicable rule is still missing).
+  const apps = RULES.filter(r => ruleAppliesTo(r.id, p));
+  if (apps.length === 0) return false;
+  if (state.filterAnswer === 'unanswered') return apps.some(r => !a[r.id]);
+  return apps.some(r => a[r.id] === state.filterAnswer);
+}
+
+function getFilteredIndices() {
+  const out = [];
+  state.punches.forEach((p, idx) => { if (punchMatchesFilter(p)) out.push(idx); });
+  return out;
+}
+
+// ============================================================
 // Load punches (from Combined Data via ?labeler=combined list) +
 // load any already-saved rule answers.
 // ============================================================
@@ -232,8 +337,11 @@ async function loadPunchesAndAnswers() {
 
   state.punches = punchList;
   state.answers = savedAnswers;
-  state.currentIdx = punchList.length > 0 ? 0 : -1;
   state.activeRuleIdx = 0;
+  // Honor any filter restored from localStorage by landing on the
+  // first match instead of always idx 0 (which may be filtered out).
+  const visible = getFilteredIndices();
+  state.currentIdx = visible.length > 0 ? visible[0] : (punchList.length > 0 ? 0 : -1);
 
   renderPunchList();
   renderCurrentPunch();
@@ -277,10 +385,16 @@ function deriveHand(punchType) {
 function renderPunchList() {
   const list = document.getElementById('punch-list');
   const count = document.getElementById('punch-list-count');
-  count.textContent = `(${state.punches.length})`;
   list.innerHTML = '';
 
+  const filterActive = !!(state.filterRule || state.filterAnswer);
+  const total = state.punches.length;
+  let shown = 0;
+
   state.punches.forEach((p, idx) => {
+    if (!punchMatchesFilter(p)) return;
+    shown++;
+
     const entry = document.createElement('div');
     entry.className = 'punch-list-entry';
     entry.dataset.idx = idx;
@@ -304,6 +418,15 @@ function renderPunchList() {
     entry.onclick = () => selectPunch(idx);
     list.appendChild(entry);
   });
+
+  count.textContent = filterActive ? `(${shown}/${total})` : `(${total})`;
+
+  if (shown === 0 && total > 0) {
+    const empty = document.createElement('div');
+    empty.id = 'punch-list-empty';
+    empty.textContent = 'No punches match the current filter';
+    list.appendChild(empty);
+  }
 }
 
 function prettyPunch(s) {
@@ -332,8 +455,28 @@ function seekToPunch(idx) {
   video.currentTime = p.start_sec;
 }
 
-function nextPunch() { selectPunch(Math.min(state.punches.length - 1, state.currentIdx + 1)); }
-function prevPunch() { selectPunch(Math.max(0, state.currentIdx - 1)); }
+function nextPunch() {
+  const visible = getFilteredIndices();
+  if (visible.length === 0) return;
+  const pos = visible.indexOf(state.currentIdx);
+  if (pos < 0) {
+    // Current punch was filtered out (e.g., its answer changed and it
+    // no longer matches). Walk forward to the next match after it.
+    const after = visible.find(i => i > state.currentIdx);
+    if (after !== undefined) selectPunch(after);
+  } else if (pos + 1 < visible.length) selectPunch(visible[pos + 1]);
+}
+function prevPunch() {
+  const visible = getFilteredIndices();
+  if (visible.length === 0) return;
+  const pos = visible.indexOf(state.currentIdx);
+  if (pos < 0) {
+    // Current punch was filtered out: walk backward to the previous match.
+    let before;
+    for (const i of visible) { if (i < state.currentIdx) before = i; else break; }
+    if (before !== undefined) selectPunch(before);
+  } else if (pos > 0) selectPunch(visible[pos - 1]);
+}
 
 // ============================================================
 // Current punch checklist
@@ -417,7 +560,11 @@ function renderCurrentPunch() {
       nextBtn.style.display = '';
       badge.style.display = 'none';
       const allAnswered = applicable.length > 0 && answered === applicable.length;
-      const hasNext = state.currentIdx + 1 < state.punches.length;
+      const visible = getFilteredIndices();
+      const pos = visible.indexOf(state.currentIdx);
+      const hasNext = pos >= 0
+        ? pos + 1 < visible.length
+        : visible.some(i => i > state.currentIdx);
       nextBtn.disabled = !(allAnswered && hasNext);
       nextBtn.textContent = 'Next punch →';
     }
