@@ -464,8 +464,12 @@ async function saveAnswerToSheet(punch, rule, answer) {
       punch_type: punch.punch,
       hand:       punch.hand || '',
       stance:     punch.stance || '',
-      start_sec:  String(punch.start_sec),
-      end_sec:    String(punch.end_sec),
+      // mm:ss.SSS string, matching the punch labeler. Raw floats like
+      // "756.897" get coerced to a number by Sheets, and in locales with
+      // a comma decimal separator the dot is read as a thousands separator
+      // (756.897 → 756897). The colon-prefixed string side-steps that.
+      start_sec:  formatTimeSheet(punch.start_sec),
+      end_sec:    formatTimeSheet(punch.end_sec),
       rule:       rule.id,
       answer:     answer,
     });

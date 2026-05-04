@@ -23,6 +23,12 @@ id | video_file | training_type | stance | fighter | angle | punch_type | start_
 **Combined Data sheet**:
 id | video_name | video_file | training_type | stance | fighter | angle | label | start_sec | end_sec
 
+**Form Labels sheets** ("Form Labels {Name}"):
+id | punch_uuid | video_file | punch_type | hand | stance | start_sec | end_sec | rule_hand_extended | rule_hand_low | rule_hand_ushape | rule_hip_rotation | rule_rear_heel_lift | rule_resting_hand | rule_extension | rule_punch_height | labeled_at
+
+**Combined Form Labels sheet**:
+Same columns as Form Labels + `labeler`. Built by `rebuildCombinedFormLabels()` (MyCorner > Rebuild Combined Form Labels). Dedupes by (punch_uuid, labeler) — same uuid intentionally appears across labelers (inter-rater data). Header mapping is by name, so per-labeler column-order differences are tolerated.
+
 ## Setup
 
 See `SETUP.md` for Google Sheets + Apps Script deployment instructions.

@@ -662,7 +662,9 @@ function onOpen() {
   SpreadsheetApp.getUi()
     .createMenu('MyCorner')
     .addItem('Rebuild Combined Data', 'rebuildCombinedData')
+    .addItem('Rebuild Combined Form Labels', 'rebuildCombinedFormLabels')
     .addItem('Unify Duplicate UUIDs', 'unifyDuplicateUuids') // ONE-TIME: remove this line after running
+    .addItem('Migrate Form Labels Times', 'migrateFormLabelsTimes') // ONE-TIME: remove this line after running
     .addToUi();
 }
 
@@ -884,3 +886,259 @@ function rebuildCombinedData() {
   if (skipped.length > 0) msg += '\n\nSkipped:\n  ' + skipped.join('\n  ');
   SpreadsheetApp.getUi().alert('Rebuild Combined Data', msg, SpreadsheetApp.getUi().ButtonSet.OK);
 }
+
+// ============================================================
+// AUTO-MERGE: Form Labels sheets → Combined Form Labels
+//
+// Mirrors rebuildCombinedData but for the per-labeler rule answers:
+//   sources:  every "Form Labels {Name}" sheet
+//   target:   "Combined Form Labels" (prev → "Combined Form Labels Backup")
+//   key:      (punch_uuid, labeler) — same uuid intentionally appears
+//             across labelers (inter-rater data); only collapse same-uuid
+//             same-labeler duplicates.
+//
+// Header mapping is by name, not column position, because John's and
+// Arianne's form sheets historically have the rule columns in different
+// orders. Missing columns in a source sheet just leave that cell blank
+// in the output.
+// ============================================================
+var FORM_LABELS_PREFIX = 'Form Labels';
+var COMBINED_FORM_LABELS_NAME = 'Combined Form Labels';
+var COMBINED_FORM_LABELS_BACKUP_NAME = 'Combined Form Labels Backup';
+
+var COMBINED_FORM_LABELS_HEADERS = [
+  'id', 'punch_uuid', 'video_file', 'punch_type', 'hand', 'stance',
+  'start_sec', 'end_sec',
+  'rule_hand_extended', 'rule_hand_low', 'rule_hand_ushape',
+  'rule_hip_rotation', 'rule_rear_heel_lift', 'rule_resting_hand',
+  'rule_extension', 'rule_punch_height',
+  'labeled_at', 'labeler'
+];
+
+function rebuildCombinedFormLabels() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  var combined = ss.getSheetByName(COMBINED_FORM_LABELS_NAME);
+  if (combined) {
+    var prev = ss.getSheetByName(COMBINED_FORM_LABELS_BACKUP_NAME);
+    if (prev) ss.deleteSheet(prev);
+    combined.copyTo(ss).setName(COMBINED_FORM_LABELS_BACKUP_NAME);
+    combined.clear();
+  } else {
+    combined = ss.insertSheet(COMBINED_FORM_LABELS_NAME);
+  }
+  combined.getRange(1, 1, 1, COMBINED_FORM_LABELS_HEADERS.length)
+          .setValues([COMBINED_FORM_LABELS_HEADERS]);
+  combined.setFrozenRows(1);
+
+  var rows = [];
+  var skipped = [];
+  var sheets = ss.getSheets();
+
+  for (var s = 0; s < sheets.length; s++) {
+    var sheet = sheets[s];
+    var name = sheet.getName();
+    if (name.indexOf(FORM_LABELS_PREFIX) !== 0) continue;
+    if (name === COMBINED_FORM_LABELS_NAME ||
+        name === COMBINED_FORM_LABELS_BACKUP_NAME) continue;
+    if (sheet.getLastRow() < 2) continue;
+
+    var data = sheet.getDataRange().getValues();
+    var idx = {};
+    for (var c = 0; c < data[0].length; c++) {
+      var h = String(data[0][c]).toLowerCase().trim();
+      if (h) idx[h] = c;
+    }
+    if (idx['punch_uuid'] == null) {
+      skipped.push(name + ' (no punch_uuid column)');
+      continue;
+    }
+
+    var labelerName = name.substring(FORM_LABELS_PREFIX.length).trim();
+
+    for (var r = 1; r < data.length; r++) {
+      var rowVals = data[r];
+      var uuid = rowVals[idx['punch_uuid']];
+      if (!uuid) continue;
+      rows.push([
+        pickFromRow(rowVals, idx, 'id'),
+        uuid,
+        pickFromRow(rowVals, idx, 'video_file'),
+        pickFromRow(rowVals, idx, 'punch_type'),
+        pickFromRow(rowVals, idx, 'hand'),
+        pickFromRow(rowVals, idx, 'stance'),
+        pickFromRow(rowVals, idx, 'start_sec'),
+        pickFromRow(rowVals, idx, 'end_sec'),
+        pickFromRow(rowVals, idx, 'rule_hand_extended'),
+        pickFromRow(rowVals, idx, 'rule_hand_low'),
+        pickFromRow(rowVals, idx, 'rule_hand_ushape'),
+        pickFromRow(rowVals, idx, 'rule_hip_rotation'),
+        pickFromRow(rowVals, idx, 'rule_rear_heel_lift'),
+        pickFromRow(rowVals, idx, 'rule_resting_hand'),
+        pickFromRow(rowVals, idx, 'rule_extension'),
+        pickFromRow(rowVals, idx, 'rule_punch_height'),
+        pickFromRow(rowVals, idx, 'labeled_at'),
+        labelerName
+      ]);
+    }
+  }
+
+  // Dedup by (punch_uuid, labeler). Multi-labeler-per-uuid is the whole
+  // point, so we only collapse exact duplicates within one labeler's sheet.
+  var seen = {}, deduped = [], dupesDropped = 0;
+  for (var di = 0; di < rows.length; di++) {
+    var key = rows[di][1] + '|' + rows[di][17];
+    if (seen[key]) { dupesDropped++; continue; }
+    seen[key] = true;
+    deduped.push(rows[di]);
+  }
+  rows = deduped;
+
+  for (var i = 0; i < rows.length; i++) rows[i][0] = i + 1;
+
+  if (rows.length > 0) {
+    combined.getRange(2, 1, rows.length, COMBINED_FORM_LABELS_HEADERS.length)
+            .setValues(rows);
+  }
+
+  var msg = 'Wrote ' + rows.length + ' rows ('
+            + dupesDropped + ' duplicates dropped).\n'
+            + 'Backup → ' + COMBINED_FORM_LABELS_BACKUP_NAME + '.';
+  if (skipped.length > 0) msg += '\n\nSkipped:\n  ' + skipped.join('\n  ');
+  SpreadsheetApp.getUi().alert(
+    'Rebuild Combined Form Labels', msg,
+    SpreadsheetApp.getUi().ButtonSet.OK
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ONE-TIME MIGRATION — delete this whole block after running once
+// ═══════════════════════════════════════════════════════════════
+// Pre-fix rules.js sent start_sec / end_sec as raw float-string
+// seconds (`String(267.306)` → "267.306"). In locales with a comma
+// decimal separator, Sheets read the dot as a thousands separator
+// and stored 267306, etc. — producing garbled values like 756897.0
+// for a punch at 12:36.897.
+//
+// This migration looks up each Form Labels row's punch_uuid in
+// Combined Data (canonical mm:ss.SSS) and rewrites start_sec /
+// end_sec to match. Idempotent — re-running on already-fixed rows
+// produces the same value.
+function migrateFormLabelsTimes() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ui = SpreadsheetApp.getUi();
+  var combined = ss.getSheetByName(COMBINED_NAME);
+  if (!combined) {
+    ui.alert('Migrate Form Labels Times',
+             'Combined Data sheet not found — rebuild it first.',
+             ui.ButtonSet.OK);
+    return;
+  }
+
+  // Build punch_uuid → {start, end} map from Combined Data. Parse
+  // each cell with toSeconds() (handles strings, numbers, Dates) and
+  // re-emit with formatTimeSheetServer so we know the exact format
+  // we're writing into Form Labels.
+  var cdata = combined.getDataRange().getValues();
+  var cIdx = headerIndex(cdata[0]);
+  var cUuid = cIdx['punch_uuid'];
+  var cStart = cIdx['start_sec'];
+  var cEnd = cIdx['end_sec'];
+  if (cUuid == null || cStart == null || cEnd == null) {
+    ui.alert('Migrate Form Labels Times',
+             'Combined Data is missing punch_uuid / start_sec / end_sec.',
+             ui.ButtonSet.OK);
+    return;
+  }
+
+  var canonical = {};
+  for (var i = 1; i < cdata.length; i++) {
+    var u = String(cdata[i][cUuid] || '').trim();
+    if (!u) continue;
+    canonical[u] = {
+      start: formatTimeSheetServer(toSeconds(cdata[i][cStart])),
+      end:   formatTimeSheetServer(toSeconds(cdata[i][cEnd])),
+    };
+  }
+
+  var totalRewritten = 0;
+  var totalUnmatched = 0;
+  var perSheet = [];
+  var skipped = [];
+  var sheets = ss.getSheets();
+
+  for (var s = 0; s < sheets.length; s++) {
+    var sheet = sheets[s];
+    var name = sheet.getName();
+    if (name.indexOf(FORM_LABELS_PREFIX) !== 0) continue;
+    if (name === COMBINED_FORM_LABELS_NAME ||
+        name === COMBINED_FORM_LABELS_BACKUP_NAME) continue;
+    if (sheet.getLastRow() < 2) continue;
+
+    var data = sheet.getDataRange().getValues();
+    var idx = {};
+    for (var c = 0; c < data[0].length; c++) {
+      var h = String(data[0][c]).toLowerCase().trim();
+      if (h) idx[h] = c;
+    }
+    var fUuid = idx['punch_uuid'];
+    var fStart = idx['start_sec'];
+    var fEnd = idx['end_sec'];
+    if (fUuid == null || fStart == null || fEnd == null) {
+      skipped.push(name + ' (missing required columns)');
+      continue;
+    }
+
+    // Build the full start/end columns in memory and write each in
+    // one batch — single-cell setValue calls are >100x slower over
+    // hundreds of rows.
+    var n = data.length - 1;
+    var startCol = new Array(n);
+    var endCol = new Array(n);
+    var rewritten = 0;
+    var unmatched = 0;
+    for (var r = 1; r < data.length; r++) {
+      var u2 = String(data[r][fUuid] || '').trim();
+      var canon = canonical[u2];
+      if (canon) {
+        startCol[r - 1] = [canon.start];
+        endCol[r - 1] = [canon.end];
+        rewritten++;
+      } else {
+        // Leave unmatched rows untouched — preserves the original
+        // value so a human can inspect / fix them later.
+        startCol[r - 1] = [data[r][fStart]];
+        endCol[r - 1] = [data[r][fEnd]];
+        if (u2) unmatched++;
+      }
+    }
+    if (n > 0) {
+      sheet.getRange(2, fStart + 1, n, 1).setValues(startCol);
+      sheet.getRange(2, fEnd + 1, n, 1).setValues(endCol);
+    }
+    perSheet.push('  ' + name + ': ' + rewritten + ' rewritten, '
+                  + unmatched + ' uuid not in Combined Data');
+    totalRewritten += rewritten;
+    totalUnmatched += unmatched;
+  }
+
+  var msg = 'Rewrote ' + totalRewritten + ' rows from Combined Data.\n'
+          + totalUnmatched + ' rows had a uuid not present in Combined Data '
+          + '(left untouched).\n\nPer sheet:\n' + perSheet.join('\n');
+  if (skipped.length) msg += '\n\nSkipped:\n  ' + skipped.join('\n  ');
+  ui.alert('Migrate Form Labels Times', msg, ui.ButtonSet.OK);
+}
+
+// Server-side mirror of player.js:formatTimeSheet. Used by the
+// migration to emit canonical mm:ss.SSS strings without round-
+// tripping through the client.
+function formatTimeSheetServer(seconds) {
+  if (!isFinite(seconds) || seconds < 0) return '00:00.000';
+  var mins = Math.floor(seconds / 60);
+  var secs = seconds - mins * 60;
+  var pad2 = function (n) { return n < 10 ? '0' + n : String(n); };
+  return pad2(mins) + ':' + (secs < 10 ? '0' : '') + secs.toFixed(3);
+}
+// ═══════════════════════════════════════════════════════════════
+// END ONE-TIME MIGRATION
+// ═══════════════════════════════════════════════════════════════
