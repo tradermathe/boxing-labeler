@@ -337,7 +337,46 @@ function doGet(e) {
 // ============================================================
 // Rules-labeler endpoints
 // ============================================================
+
+// listRules for ?labeler=combined: serve the cross-labeler rule answers
+// from the merged Combined Form Labels sheet. Returns an empty list if
+// the sheet hasn't been built yet (run MyCorner > Rebuild Combined Form
+// Labels). The sheet has one row per (punch_uuid, labeler), so the same
+// uuid can appear multiple times; the client merges last-row-wins.
+function doListCombinedRules(p) {
+  if (!p.video) {
+    return jsonOut({ status: 'error', message: 'video parameter required' });
+  }
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(COMBINED_FORM_LABELS_NAME);
+  if (!sheet || sheet.getLastRow() < 2) {
+    return jsonOut({ status: 'ok', rules: [] });
+  }
+  var data = sheet.getDataRange().getValues();
+  var headers = data[0];
+  var videoCol = rulesColIndex(headers, 'video_file');
+  var target = normalizeDriveUrl(p.video);
+  var out = [];
+  for (var i = 1; i < data.length; i++) {
+    if (videoCol >= 0 && normalizeDriveUrl(data[i][videoCol]) !== target) continue;
+    var row = {};
+    for (var c = 0; c < headers.length; c++) row[String(headers[c])] = data[i][c];
+    out.push(row);
+  }
+  return jsonOut({ status: 'ok', rules: out });
+}
+
 function doGetRules(p, labeler, action) {
+  // Read-only "all labelers" view, served from the merged Combined Form
+  // Labels sheet (built by rebuildCombinedFormLabels). Saves can't target
+  // this view because every row needs an explicit labeler; clients must
+  // pick a real labeler ID before writing.
+  if (labeler === 'combined') {
+    if (action === 'saveRule') {
+      return jsonOut({ status: 'error', message: 'saveRule requires a per-labeler id, not combined' });
+    }
+    return doListCombinedRules(p);
+  }
+
   var info = getOrCreateRulesSheet(labeler);
   var sheet = info.sheet;
   var headers = info.headers;
