@@ -196,8 +196,11 @@ function doGet(e) {
 
   // Orientation labeler actions — separate sheet, frame-level labels of
   // body facing direction. Feeds an ML classifier used by depth-sensitive
-  // form rules.
-  if (action === 'listOrientation' || action === 'saveOrientation' || action === 'deleteOrientation') {
+  // form rules. `listCombinedVideos` returns the distinct video_name set
+  // from Combined Data — used to populate the orientation labeler's
+  // dropdown so any already-labelled video can be picked.
+  if (action === 'listOrientation' || action === 'saveOrientation' ||
+      action === 'deleteOrientation' || action === 'listCombinedVideos') {
     return doGetOrientation(p, labeler, action);
   }
 
@@ -1085,6 +1088,28 @@ function orientationHeaderIndex(headerRow) {
 }
 
 function doGetOrientation(p, labeler, action) {
+  // === LIST distinct video_name values from Combined Data ===
+  // Lets the orientation labeler's dropdown show every video already in
+  // the punch-labels system, including ones without glove caches.
+  if (action === 'listCombinedVideos') {
+    var cd = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Combined Data');
+    if (!cd) return jsonOut({ status: 'ok', videos: [] });
+    var cdData = cd.getDataRange().getValues();
+    if (cdData.length <= 1) return jsonOut({ status: 'ok', videos: [] });
+    var cdCols = findColumns(cdData[0]);
+    if (cdCols.videoName < 0) return jsonOut({ status: 'ok', videos: [] });
+    var counts = {};
+    for (var r = 1; r < cdData.length; r++) {
+      var name = String(cdData[r][cdCols.videoName] || '').trim();
+      if (!name) continue;
+      counts[name] = (counts[name] || 0) + 1;
+    }
+    var videos = Object.keys(counts).map(function (n) {
+      return { stem: n.replace(/\.(mp4|mov|webm)$/i, ''), name: n, n_labels: counts[n] };
+    }).sort(function (a, b) { return b.n_labels - a.n_labels; });
+    return jsonOut({ status: 'ok', videos: videos });
+  }
+
   var sh = getOrCreateOrientationSheet();
   var data = sh.getDataRange().getValues();
   var idx = orientationHeaderIndex(data[0]);

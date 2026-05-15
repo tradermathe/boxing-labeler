@@ -378,16 +378,41 @@ async function loadVideosConfig() {
   }
 }
 
-function populateDatalist(videos) {
+async function fetchCombinedVideos() {
+  try {
+    const url = sheetUrl({ action: 'listCombinedVideos' });
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const body = await res.json();
+    if (body.status !== 'ok') return [];
+    return body.videos || [];
+  } catch { return []; }
+}
+
+// Populate the datalist with the union of:
+//   - cached videos (videos.json) — annotated with round count + "cached"
+//   - Combined-Data videos (from the Sheet) — annotated with label count
+// Cached entries take precedence when a stem is in both.
+function populateDatalist(cachedVideos, combinedVideos) {
   const dl = document.getElementById('known-videos');
   if (!dl) return;
   dl.innerHTML = '';
-  for (const v of videos) {
+  const seen = new Set();
+  for (const v of cachedVideos) {
     if (v.heldOut) continue;
+    seen.add(v.stem);
     const opt = document.createElement('option');
     opt.value = v.stem;
     const n = (v.rounds || []).length;
     opt.label = n + ' round' + (n === 1 ? '' : 's') + ' · cached';
+    dl.appendChild(opt);
+  }
+  for (const v of combinedVideos) {
+    if (seen.has(v.stem)) continue;
+    seen.add(v.stem);
+    const opt = document.createElement('option');
+    opt.value = v.stem;
+    opt.label = v.n_labels + ' punch label' + (v.n_labels === 1 ? '' : 's') + ' · no cache';
     dl.appendChild(opt);
   }
 }
@@ -404,10 +429,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (state.currentStem && state.candidates.length) syncFromSheet();
   });
 
-  // Load and offer known videos as autocomplete in the combobox
+  // Load known videos: union of cached (videos.json) + Combined Data
+  // (Sheet). Cached entries supply round meta for exact frame mapping;
+  // Combined-Data entries are dropdown-only and fall through to free mode.
   const cfg = await loadVideosConfig();
   state.knownVideos = cfg.videos || [];
-  populateDatalist(state.knownVideos);
+  const combined = await fetchCombinedVideos();
+  populateDatalist(state.knownVideos, combined);
 
   const nameInput = document.getElementById('video-name-input');
   nameInput.addEventListener('change', () => {
