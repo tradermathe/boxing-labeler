@@ -194,6 +194,13 @@ function doGet(e) {
     return doGetBodyshots(p, action);
   }
 
+  // Orientation labeler actions — separate sheet, frame-level labels of
+  // body facing direction. Feeds an ML classifier used by depth-sensitive
+  // form rules.
+  if (action === 'listOrientation' || action === 'saveOrientation' || action === 'deleteOrientation') {
+    return doGetOrientation(p, labeler, action);
+  }
+
   var sheetName;
   if (labeler === 'combined') {
     sheetName = 'Combined Data';
@@ -1049,3 +1056,113 @@ function rebuildCombinedFormLabels() {
   );
 }
 
+// ============================================================
+// Orientation labeler — frame-level facing direction labels
+// ============================================================
+
+var ORIENTATION_SHEET_NAME = 'Orientation Labels';
+var ORIENTATION_HEADERS = ['ts', 'labeler', 'video', 'round', 'frame', 'label', 'deleted'];
+var ORIENTATION_VALID_BINS = [-180, -135, -90, -45, 0, 45, 90, 135, 180];
+
+function getOrCreateOrientationSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(ORIENTATION_SHEET_NAME);
+  if (!sh) {
+    sh = ss.insertSheet(ORIENTATION_SHEET_NAME);
+    sh.appendRow(ORIENTATION_HEADERS);
+    sh.setFrozenRows(1);
+  } else if (sh.getLastRow() === 0) {
+    sh.appendRow(ORIENTATION_HEADERS);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function orientationHeaderIndex(headerRow) {
+  var idx = {};
+  for (var i = 0; i < headerRow.length; i++) idx[String(headerRow[i])] = i;
+  return idx;
+}
+
+function doGetOrientation(p, labeler, action) {
+  var sh = getOrCreateOrientationSheet();
+  var data = sh.getDataRange().getValues();
+  var idx = orientationHeaderIndex(data[0]);
+
+  // === LIST labels for a video (optionally filtered by labeler) ===
+  if (action === 'listOrientation') {
+    var video = p.video || '';
+    var filterLabeler = p.labeler || '';
+    var rows = [];
+    for (var i = 1; i < data.length; i++) {
+      var r = data[i];
+      if (String(r[idx.deleted]) === '1') continue;
+      if (video && r[idx.video] !== video) continue;
+      if (filterLabeler && r[idx.labeler] !== filterLabeler) continue;
+      rows.push({
+        ts: r[idx.ts],
+        labeler: r[idx.labeler],
+        video: r[idx.video],
+        round: Number(r[idx.round]),
+        frame: Number(r[idx.frame]),
+        label: r[idx.label] === '' ? null : Number(r[idx.label])
+      });
+    }
+    return jsonOut({ status: 'ok', rows: rows });
+  }
+
+  // === SAVE a label (insert; supersedes any prior row for same key) ===
+  if (action === 'saveOrientation') {
+    var required = ['labeler', 'video', 'round', 'frame'];
+    for (var k = 0; k < required.length; k++) {
+      if (p[required[k]] === undefined || p[required[k]] === '') {
+        return jsonOut({ status: 'error', message: 'missing field: ' + required[k] });
+      }
+    }
+    var lbl = p.label;
+    if (lbl === undefined || lbl === '' || lbl === 'null') {
+      lbl = '';
+    } else if (ORIENTATION_VALID_BINS.indexOf(Number(lbl)) === -1) {
+      return jsonOut({ status: 'error', message: 'invalid label: ' + lbl });
+    } else {
+      lbl = Number(lbl);
+      if (lbl === 180) lbl = -180;
+    }
+    // Mark any prior row for the same (labeler, video, round, frame) deleted
+    for (var i2 = 1; i2 < data.length; i2++) {
+      if (String(data[i2][idx.deleted]) === '1') continue;
+      if (data[i2][idx.labeler] !== p.labeler) continue;
+      if (data[i2][idx.video] !== p.video) continue;
+      if (Number(data[i2][idx.round]) !== Number(p.round)) continue;
+      if (Number(data[i2][idx.frame]) !== Number(p.frame)) continue;
+      sh.getRange(i2 + 1, idx.deleted + 1).setValue('1');
+    }
+    sh.appendRow([
+      new Date().toISOString(),
+      p.labeler,
+      p.video,
+      Number(p.round),
+      Number(p.frame),
+      lbl,
+      ''
+    ]);
+    return jsonOut({ status: 'ok' });
+  }
+
+  // === DELETE: mark all current rows for the key as deleted ===
+  if (action === 'deleteOrientation') {
+    var found = 0;
+    for (var i3 = 1; i3 < data.length; i3++) {
+      if (String(data[i3][idx.deleted]) === '1') continue;
+      if (data[i3][idx.labeler] !== p.labeler) continue;
+      if (data[i3][idx.video] !== p.video) continue;
+      if (Number(data[i3][idx.round]) !== Number(p.round)) continue;
+      if (Number(data[i3][idx.frame]) !== Number(p.frame)) continue;
+      sh.getRange(i3 + 1, idx.deleted + 1).setValue('1');
+      found++;
+    }
+    return jsonOut({ status: 'ok', deleted: found });
+  }
+
+  return jsonOut({ status: 'error', message: 'unknown orientation action: ' + action });
+}
