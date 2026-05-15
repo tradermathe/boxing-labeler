@@ -389,32 +389,58 @@ async function fetchCombinedVideos() {
   } catch { return []; }
 }
 
-// Populate the datalist with the union of:
-//   - cached videos (videos.json) — annotated with round count + "cached"
-//   - Combined-Data videos (from the Sheet) — annotated with label count
-// Cached entries take precedence when a stem is in both.
-function populateDatalist(cachedVideos, combinedVideos) {
-  const dl = document.getElementById('known-videos');
-  if (!dl) return;
-  dl.innerHTML = '';
+// Populate the <select> with the union of:
+//   - cached videos  (videos.json)   — annotated "N rounds · cached"
+//   - combined videos (Combined Data) — annotated "N punch labels"
+// Plus an "Other — type custom name" option that reveals the freeform
+// text input below. Cached entries win when a stem is in both.
+function populateVideoSelect(cachedVideos, combinedVideos) {
+  const sel = document.getElementById('video-select');
+  if (!sel) return;
+  sel.innerHTML = '';
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = '— pick a video —';
+  sel.appendChild(placeholder);
+
   const seen = new Set();
-  for (const v of cachedVideos) {
-    if (v.heldOut) continue;
-    seen.add(v.stem);
-    const opt = document.createElement('option');
-    opt.value = v.stem;
-    const n = (v.rounds || []).length;
-    opt.label = n + ' round' + (n === 1 ? '' : 's') + ' · cached';
-    dl.appendChild(opt);
+
+  // Cached group
+  const cachedActive = cachedVideos.filter(v => !v.heldOut);
+  if (cachedActive.length) {
+    const grp = document.createElement('optgroup');
+    grp.label = 'Cached (with glove caches)';
+    for (const v of cachedActive.slice().sort((a, b) => a.stem.localeCompare(b.stem))) {
+      seen.add(v.stem);
+      const opt = document.createElement('option');
+      opt.value = v.stem;
+      const n = (v.rounds || []).length;
+      opt.textContent = v.stem + ' (' + n + ' round' + (n === 1 ? '' : 's') + ')';
+      grp.appendChild(opt);
+    }
+    sel.appendChild(grp);
   }
-  for (const v of combinedVideos) {
-    if (seen.has(v.stem)) continue;
-    seen.add(v.stem);
-    const opt = document.createElement('option');
-    opt.value = v.stem;
-    opt.label = v.n_labels + ' punch label' + (v.n_labels === 1 ? '' : 's') + ' · no cache';
-    dl.appendChild(opt);
+
+  // Combined Data group — every other video the team has touched
+  const combinedNew = combinedVideos.filter(v => !seen.has(v.stem));
+  if (combinedNew.length) {
+    const grp = document.createElement('optgroup');
+    grp.label = 'From Combined Data';
+    for (const v of combinedNew) {
+      seen.add(v.stem);
+      const opt = document.createElement('option');
+      opt.value = v.stem;
+      opt.textContent = v.stem + ' (' + v.n_labels + ' label' + (v.n_labels === 1 ? '' : 's') + ')';
+      grp.appendChild(opt);
+    }
+    sel.appendChild(grp);
   }
+
+  // Other / custom
+  const otherOpt = document.createElement('option');
+  otherOpt.value = '__custom__';
+  otherOpt.textContent = 'Other — type custom name below';
+  sel.appendChild(otherOpt);
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -435,17 +461,34 @@ window.addEventListener('DOMContentLoaded', async () => {
   const cfg = await loadVideosConfig();
   state.knownVideos = cfg.videos || [];
   const combined = await fetchCombinedVideos();
-  populateDatalist(state.knownVideos, combined);
+  populateVideoSelect(state.knownVideos, combined);
 
-  const nameInput = document.getElementById('video-name-input');
-  nameInput.addEventListener('change', () => {
-    const stem = nameInput.value.trim();
-    if (!stem) {
-      state.currentStem = null; setModeBadge('no video');
-      return;
+  // Select + custom-name pair: when "Other" is picked, reveal the
+  // freeform text input; otherwise use the selected option's value.
+  const selectEl = document.getElementById('video-select');
+  const customInput = document.getElementById('custom-name-input');
+
+  function onVideoChoiceChanged() {
+    const picked = selectEl.value;
+    if (picked === '__custom__') {
+      customInput.style.display = '';
+      const stem = customInput.value.trim();
+      state.currentStem = stem || null;
+    } else {
+      customInput.style.display = 'none';
+      state.currentStem = picked || null;
     }
-    state.currentStem = stem;
+    if (!state.currentStem) { setModeBadge('no video'); return; }
     tryGenerateCandidates();
+  }
+
+  selectEl.addEventListener('change', onVideoChoiceChanged);
+  customInput.addEventListener('change', onVideoChoiceChanged);
+  customInput.addEventListener('input', () => {
+    // Live-update as the user types so they don't have to blur.
+    if (selectEl.value !== '__custom__') return;
+    state.currentStem = customInput.value.trim() || null;
+    if (!state.currentStem) setModeBadge('no video');
   });
 
   // Hook into video loading. player.js fires loadedmetadata after a file
