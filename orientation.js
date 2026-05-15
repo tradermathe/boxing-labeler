@@ -283,7 +283,7 @@ function updateButtonHighlight() {
   }
 }
 
-async function applyKey(key) {
+function applyKey(key) {
   if (!state.currentStem || !state.candidates.length) {
     setStatus('Pick a video and load the file first.', 'err'); return;
   }
@@ -298,24 +298,44 @@ async function applyKey(key) {
   const c = state.candidates[state.cursor];
   if (!c) return;
   const k = c.round + ':' + c.frame;
+
+  // Optimistic local update — labeler advances immediately. The save is
+  // fire-and-forget; if it fails we surface the error and roll back the
+  // local state so the same frame surfaces again on the next sweep.
   state.doneKeys.add(k);
   state.labelByKey.set(k, angle);
+  state.pendingSaves = (state.pendingSaves || 0) + 1;
   updateButtonHighlight();
   redrawProgress();
-  try {
-    await saveOrientationLabel({
-      labeler,
-      video: state.currentStem,
-      round: c.round,
-      frame: c.frame,
-      label: angle,
-    });
-    setStatus('Saved: ' + (angle === null ? 'skip' : angle + '°'), 'ok');
-  } catch (e) {
-    setStatus('Save failed: ' + e.message, 'err');
-    return;
-  }
+  setStatus('saving ' + (angle === null ? 'skip' : angle + '°') + '… (' + state.pendingSaves + ' pending)');
+
+  // Advance to next unlabelled frame immediately — don't wait for the
+  // network. Apps Script POSTs typically take 300–800ms; cold-starts
+  // worse. Blocking on them is what made labelling feel sluggish.
   advanceToNextUnlabeled(state.cursor + 1);
+
+  // Fire the save in the background.
+  saveOrientationLabel({
+    labeler,
+    video: state.currentStem,
+    round: c.round,
+    frame: c.frame,
+    label: angle,
+  }).then(() => {
+    state.pendingSaves = Math.max(0, (state.pendingSaves || 1) - 1);
+    if (state.pendingSaves === 0) {
+      setStatus('Saved.', 'ok');
+    } else {
+      setStatus(state.pendingSaves + ' save' + (state.pendingSaves === 1 ? '' : 's') + ' pending…');
+    }
+  }).catch((e) => {
+    state.pendingSaves = Math.max(0, (state.pendingSaves || 1) - 1);
+    // Roll back so the labeler sees this frame again on the next pass.
+    state.doneKeys.delete(k);
+    state.labelByKey.delete(k);
+    redrawProgress();
+    setStatus('Save failed for round ' + c.round + ' frame ' + c.frame + ': ' + e.message, 'err');
+  });
 }
 
 async function clearCurrent() {
