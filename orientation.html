@@ -40,7 +40,7 @@
       color: #e0e0e0;
       border: 1px solid #0f3460;
       border-radius: 6px;
-      padding: 14px 6px;
+      padding: 10px 6px;
       cursor: pointer;
       font-family: inherit;
       text-align: center;
@@ -51,7 +51,8 @@
     .orient-btn.selected { background: #2d4d2d; border-color: #5fd97a; }
     .orient-btn.skip.selected { background: #524422; border-color: #f5b945; }
     .orient-key { color: #666; font-size: 10px; }
-    .orient-ang { font-weight: 600; margin-top: 2px; font-size: 14px; }
+    .orient-ang { font-weight: 600; margin-top: 1px; font-size: 14px; }
+    .orient-meaning { color: #888; font-size: 10px; margin-top: 2px; }
     .orient-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
     .orient-row select, .orient-row input {
       flex: 1;
@@ -198,15 +199,15 @@
 
         <h3>Label (numpad layout)</h3>
         <div class="orient-grid" id="orient-buttons">
-          <button class="orient-btn" data-key="7"><div class="orient-key">[7]</div><div class="orient-ang">-135°</div></button>
-          <button class="orient-btn" data-key="8"><div class="orient-key">[8]</div><div class="orient-ang">180°</div></button>
-          <button class="orient-btn" data-key="9"><div class="orient-key">[9]</div><div class="orient-ang">+135°</div></button>
-          <button class="orient-btn" data-key="4"><div class="orient-key">[4]</div><div class="orient-ang">-90°</div></button>
-          <button class="orient-btn" data-key="5"><div class="orient-key">[5]</div><div class="orient-ang">0°</div></button>
-          <button class="orient-btn" data-key="6"><div class="orient-key">[6]</div><div class="orient-ang">+90°</div></button>
-          <button class="orient-btn" data-key="1"><div class="orient-key">[1]</div><div class="orient-ang">-45°</div></button>
-          <button class="orient-btn skip" data-key="2"><div class="orient-key">[2]</div><div class="orient-ang">skip</div></button>
-          <button class="orient-btn" data-key="3"><div class="orient-key">[3]</div><div class="orient-ang">+45°</div></button>
+          <button class="orient-btn" data-key="7"><div class="orient-key">[7]</div><div class="orient-ang">-135°</div><div class="orient-meaning">back-left</div></button>
+          <button class="orient-btn" data-key="8"><div class="orient-key">[8]</div><div class="orient-ang">180°</div><div class="orient-meaning">back to camera</div></button>
+          <button class="orient-btn" data-key="9"><div class="orient-key">[9]</div><div class="orient-ang">+135°</div><div class="orient-meaning">back-right</div></button>
+          <button class="orient-btn" data-key="4"><div class="orient-key">[4]</div><div class="orient-ang">-90°</div><div class="orient-meaning">facing left</div></button>
+          <button class="orient-btn" data-key="5"><div class="orient-key">[5]</div><div class="orient-ang">0°</div><div class="orient-meaning">facing camera</div></button>
+          <button class="orient-btn" data-key="6"><div class="orient-key">[6]</div><div class="orient-ang">+90°</div><div class="orient-meaning">facing right</div></button>
+          <button class="orient-btn" data-key="1"><div class="orient-key">[1]</div><div class="orient-ang">-45°</div><div class="orient-meaning">front-left</div></button>
+          <button class="orient-btn skip" data-key="2"><div class="orient-key">[2]</div><div class="orient-ang">skip</div><div class="orient-meaning">unclear</div></button>
+          <button class="orient-btn" data-key="3"><div class="orient-key">[3]</div><div class="orient-ang">+45°</div><div class="orient-meaning">front-right</div></button>
         </div>
 
         <div class="orient-row">
