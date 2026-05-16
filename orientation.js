@@ -28,6 +28,7 @@ const ANGLE_LIST = [0, 45, -45, 90, -90, 135, -135, -180];
 
 Object.assign(state, {
   knownVideos: [],          // from videos.json
+  combinedVideos: [],       // from Combined Data via listCombinedVideos
   currentStem: null,
   currentMode: null,        // 'cached' | 'free'
   cachedVideo: null,        // videos.json entry when in cached mode
@@ -37,6 +38,10 @@ Object.assign(state, {
   labelByKey: new Map(),
   videoLoaded: false,
   fpsForFreeMode: 30,
+  // stem → count of THIS labeler's existing labels for that video. Populated
+  // once at startup (and whenever the labeler name changes); kept live as
+  // applyKey / clearCurrent / syncFromSheet adjust the current video's count.
+  labelCountsByVideo: new Map(),
 });
 
 // ─── PRNG + frame samplers ─────────────────────────────────────────────────
@@ -217,6 +222,9 @@ async function syncFromSheet() {
       state.labelByKey.set(k, r.label);
     }
     setStatus(`Loaded ${rows.length} prior label(s) for "${labeler}".`, 'ok');
+    // Reconcile dropdown count for this video — the initial all-videos
+    // fetch may be stale if labels were saved from another browser session.
+    updateOptionCount(state.currentStem, state.doneKeys.size);
     advanceToNextUnlabeled(0);
     redrawProgress();
   } catch (e) {
@@ -307,6 +315,7 @@ function applyKey(key) {
   state.pendingSaves = (state.pendingSaves || 0) + 1;
   updateButtonHighlight();
   redrawProgress();
+  updateOptionCount(state.currentStem, state.doneKeys.size);
   setStatus('saving ' + (angle === null ? 'skip' : angle + '°') + '… (' + state.pendingSaves + ' pending)');
 
   // Advance to next unlabelled frame immediately — don't wait for the
@@ -334,6 +343,7 @@ function applyKey(key) {
     state.doneKeys.delete(k);
     state.labelByKey.delete(k);
     redrawProgress();
+    updateOptionCount(state.currentStem, state.doneKeys.size);
     setStatus('Save failed for round ' + c.round + ' frame ' + c.frame + ': ' + e.message, 'err');
   });
 }
@@ -349,6 +359,7 @@ async function clearCurrent() {
   state.labelByKey.delete(k);
   updateButtonHighlight();
   redrawProgress();
+  updateOptionCount(state.currentStem, state.doneKeys.size);
   try {
     await deleteOrientationLabel({
       labeler, video: state.currentStem, round: c.round, frame: c.frame,
@@ -409,12 +420,65 @@ async function fetchCombinedVideos() {
   } catch { return []; }
 }
 
+// Pull every (non-deleted) orientation row for this labeler across all videos
+// and tally per-video counts. Called once at startup + on labeler-name change.
+// listOrientation with no `video` filter returns the labeler's whole history.
+async function fetchAllLabelerCounts(labeler) {
+  const out = new Map();
+  if (!labeler) return out;
+  try {
+    const url = sheetUrl({ action: 'listOrientation', labeler });
+    const res = await fetch(url);
+    if (!res.ok) return out;
+    const body = await res.json();
+    if (body.status !== 'ok') return out;
+    for (const r of body.rows || []) {
+      out.set(r.video, (out.get(r.video) || 0) + 1);
+    }
+  } catch {}
+  return out;
+}
+
+// Format one dropdown option's label: stem + base (rounds/punch labels) +
+// suffix indicating how many frames this labeler has already labeled. When
+// the total is known (cached videos), shows K/M and a ✓ once complete.
+function buildOptionText(stem, baseText, count, candidateTotal) {
+  let suffix = '';
+  if (count > 0 && candidateTotal != null) {
+    suffix = ' · ' + count + '/' + candidateTotal + ' labeled';
+    if (count >= candidateTotal) suffix = ' · ✓ ' + count + '/' + candidateTotal + ' done';
+  } else if (count > 0) {
+    suffix = ' · ' + count + ' labeled';
+  }
+  return stem + ' (' + baseText + ')' + suffix;
+}
+
+// Update one option's text in place without rebuilding the whole <select>
+// (which would close it if open, lose focus, etc.). Mirrors the change into
+// state.labelCountsByVideo so subsequent re-renders are consistent.
+function updateOptionCount(stem, count) {
+  if (!stem) return;
+  state.labelCountsByVideo.set(stem, count);
+  const sel = document.getElementById('video-select');
+  if (!sel) return;
+  for (const opt of sel.querySelectorAll('option[data-stem]')) {
+    if (opt.dataset.stem !== stem) continue;
+    const baseText = opt.dataset.base || '';
+    const totalRaw = opt.dataset.total;
+    const total = (totalRaw != null && totalRaw !== '') ? Number(totalRaw) : null;
+    opt.textContent = buildOptionText(stem, baseText, count, total);
+    return;
+  }
+}
+
 // Populate the <select> with the union of:
-//   - cached videos  (videos.json)   — annotated "N rounds · cached"
+//   - cached videos  (videos.json)   — annotated "N rounds"
 //   - combined videos (Combined Data) — annotated "N punch labels"
 // Plus an "Other — type custom name" option that reveals the freeform
-// text input below. Cached entries win when a stem is in both.
-function populateVideoSelect(cachedVideos, combinedVideos) {
+// text input below. Cached entries win when a stem is in both. Each option
+// also gets a "· K/M labeled" (or "· N labeled") suffix when this labeler
+// has already labeled frames from that video; counts come from `counts`.
+function populateVideoSelect(cachedVideos, combinedVideos, counts) {
   const sel = document.getElementById('video-select');
   if (!sel) return;
   sel.innerHTML = '';
@@ -435,7 +499,13 @@ function populateVideoSelect(cachedVideos, combinedVideos) {
       const opt = document.createElement('option');
       opt.value = v.stem;
       const n = (v.rounds || []).length;
-      opt.textContent = v.stem + ' (' + n + ' round' + (n === 1 ? '' : 's') + ')';
+      const baseText = n + ' round' + (n === 1 ? '' : 's');
+      const totalCandidates = pickCachedCandidates(v).length;
+      const count = counts.get(v.stem) || 0;
+      opt.dataset.stem = v.stem;
+      opt.dataset.base = baseText;
+      opt.dataset.total = String(totalCandidates);
+      opt.textContent = buildOptionText(v.stem, baseText, count, totalCandidates);
       grp.appendChild(opt);
     }
     sel.appendChild(grp);
@@ -450,7 +520,12 @@ function populateVideoSelect(cachedVideos, combinedVideos) {
       seen.add(v.stem);
       const opt = document.createElement('option');
       opt.value = v.stem;
-      opt.textContent = v.stem + ' (' + v.n_labels + ' label' + (v.n_labels === 1 ? '' : 's') + ')';
+      const baseText = v.n_labels + ' punch label' + (v.n_labels === 1 ? '' : 's');
+      const count = counts.get(v.stem) || 0;
+      opt.dataset.stem = v.stem;
+      opt.dataset.base = baseText;
+      // total unknown for free-mode (needs video.duration); leave unset.
+      opt.textContent = buildOptionText(v.stem, baseText, count, null);
       grp.appendChild(opt);
     }
     sel.appendChild(grp);
@@ -470,18 +545,25 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Restore labeler name from localStorage
   const labelerInput = document.getElementById('labeler-input');
   try { labelerInput.value = localStorage.getItem('orient_labeler_name') || ''; } catch {}
-  labelerInput.addEventListener('change', () => {
+  labelerInput.addEventListener('change', async () => {
     try { localStorage.setItem('orient_labeler_name', labelerInput.value.trim()); } catch {}
+    // The dropdown's "K labeled" suffixes are per-labeler — refresh them
+    // when the name changes, then rebuild the <select> in place.
+    state.labelCountsByVideo = await fetchAllLabelerCounts(labelerInput.value.trim());
+    populateVideoSelect(state.knownVideos, state.combinedVideos, state.labelCountsByVideo);
     if (state.currentStem && state.candidates.length) syncFromSheet();
   });
 
   // Load known videos: union of cached (videos.json) + Combined Data
   // (Sheet). Cached entries supply round meta for exact frame mapping;
   // Combined-Data entries are dropdown-only and fall through to free mode.
+  // Also fetch this labeler's existing per-video counts so the dropdown
+  // shows what's already done.
   const cfg = await loadVideosConfig();
   state.knownVideos = cfg.videos || [];
-  const combined = await fetchCombinedVideos();
-  populateVideoSelect(state.knownVideos, combined);
+  state.combinedVideos = await fetchCombinedVideos();
+  state.labelCountsByVideo = await fetchAllLabelerCounts(labelerInput.value.trim());
+  populateVideoSelect(state.knownVideos, state.combinedVideos, state.labelCountsByVideo);
 
   // Select + custom-name pair: when "Other" is picked, reveal the
   // freeform text input; otherwise use the selected option's value.
