@@ -713,6 +713,7 @@ function onOpen() {
     .addItem('Rebuild Combined Data', 'rebuildCombinedData')
     .addItem('Rebuild Combined Form Labels', 'rebuildCombinedFormLabels')
     .addItem('Unify Duplicate UUIDs', 'unifyDuplicateUuids') // ONE-TIME: remove this line after running
+    .addItem('Replace YouTube URLs with Drive URLs', 'replaceVideoUrls') // ONE-TIME: remove this line after running
     .addToUi();
 }
 
@@ -781,6 +782,78 @@ function unifyDuplicateUuids() {
 // END ONE-TIME MIGRATION
 // ═══════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════
+// ONE-TIME MIGRATION — delete this whole block after running once
+// ═══════════════════════════════════════════════════════════════
+// Some early labeler rows store a YouTube URL in `video_file` instead of a
+// Drive share URL. The rebuild's resolveVideoName() only understands Drive
+// (file_id → DriveApp filename), so those rows end up with blank
+// video_name. Swap them here, then run Rebuild Combined Data.
+function replaceVideoUrls() {
+  var URL_MAP = {
+    'https://www.youtube.com/shorts/GFKmYChP8vY': 'https://drive.google.com/file/d/1KbMKrplyD6h-_TqIXpDhP-A5b-MkwANS/view?usp=sharing',
+    'https://www.youtube.com/shorts/IBZf2QyFV2Q': 'https://drive.google.com/file/d/1npL0wTvsg0e6XvrUrlg85txbGQFGQYF0/view?usp=sharing',
+    'https://www.youtube.com/shorts/bWDOGuj_fZ0': 'https://drive.google.com/file/d/1wjSkaB2asxAQojvWbpb6aUb8Hc4I6ue2/view?usp=sharing',
+    'https://www.youtube.com/shorts/hgNjQhHZVKg': 'https://drive.google.com/file/d/1pfs2Z_CTdWVNSlrfoV27EeinKeIJGlmU/view?usp=sharing',
+    'https://www.youtube.com/shorts/pwMowI4E7nk': 'https://drive.google.com/file/d/1Os1cDKT88NGpS9qJnDGcz120-HkB7Z-5/view?usp=sharing',
+    'https://www.youtube.com/shorts/xIi9ePIdqVM': 'https://drive.google.com/file/d/1p297XJa9E0kFvxbhh4eHpoMcc8YsxzZd/view?usp=sharing',
+    'https://www.youtube.com/shorts/8XNwN2O4C9Q': 'https://drive.google.com/file/d/1UJ_4fOamW779XDZ1hYv7pVdbWL81eV_e/view?usp=sharing',
+    'https://www.youtube.com/watch?v=8L5Io9TOLk0': 'https://drive.google.com/file/d/168c57-gL4XNRfk7WOqfLA38GLg1Mu_ld/view?usp=sharing',
+    'https://www.youtube.com/watch?v=8gTxzGUbYII': 'https://drive.google.com/file/d/1B0pjlghWY03YKywGkIz1T9gGtz5Lunke/view?usp=sharing',
+    'https://www.youtube.com/watch?v=PAj6rwaPOsU': 'https://drive.google.com/file/d/1s5PYYue2ErZufTzAFR5XHD7cR2wP6z9W/view?usp=sharing',
+    'https://www.youtube.com/watch?v=ZId6Ne20Kag': 'https://drive.google.com/file/d/1opGmMYouPxT33c9h6mV0CGBIAnItzFG9/view?usp=sharing',
+    'https://www.youtube.com/watch?v=gHiHeUECLeU': 'https://drive.google.com/file/d/1VXVTsXBHhUIGdI-2A8eWVuC2uX7dT3dJ/view?usp=sharing'
+  };
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheets = ss.getSheets();
+  var perSheet = [];
+  var unmatched = {};  // YouTube URLs we found but had no mapping for
+
+  for (var s = 0; s < sheets.length; s++) {
+    var sheet = sheets[s];
+    var name = sheet.getName();
+    // Skip Combined Data + backup — they're regenerated from sources.
+    if (name === COMBINED_NAME || name === COMBINED_BACKUP_NAME) continue;
+    if (sheet.getLastRow() < 2) continue;
+
+    var data = sheet.getDataRange().getValues();
+    var colIdx = -1;
+    for (var c = 0; c < data[0].length; c++) {
+      if (String(data[0][c]).toLowerCase().trim() === 'video_file') {
+        colIdx = c; break;
+      }
+    }
+    if (colIdx < 0) continue;
+
+    var replaced = 0;
+    for (var r = 1; r < data.length; r++) {
+      var val = String(data[r][colIdx] || '').trim();
+      if (!val) continue;
+      if (URL_MAP[val]) {
+        sheet.getRange(r + 1, colIdx + 1).setValue(URL_MAP[val]);
+        replaced++;
+      } else if (val.indexOf('youtube.com') > -1 || val.indexOf('youtu.be') > -1) {
+        unmatched[val] = (unmatched[val] || 0) + 1;
+      }
+    }
+    if (replaced > 0) perSheet.push(name + ': ' + replaced);
+  }
+
+  var msg = 'Replaced URLs by sheet:\n  ' + (perSheet.length ? perSheet.join('\n  ') : '(none)');
+  var unmatchedKeys = Object.keys(unmatched);
+  if (unmatchedKeys.length > 0) {
+    msg += '\n\nYouTube URLs NOT in mapping (' + unmatchedKeys.length + ' distinct):';
+    for (var u = 0; u < unmatchedKeys.length; u++) {
+      msg += '\n  ' + unmatched[unmatchedKeys[u]] + '× ' + unmatchedKeys[u];
+    }
+  }
+  SpreadsheetApp.getUi().alert('Replace Video URLs', msg, SpreadsheetApp.getUi().ButtonSet.OK);
+}
+// ═══════════════════════════════════════════════════════════════
+// END ONE-TIME MIGRATION
+// ═══════════════════════════════════════════════════════════════
+
 function pickFromRow(rowVals, idx, header) {
   return idx[header] != null ? rowVals[idx[header]] : '';
 }
@@ -815,10 +888,20 @@ function rebuildCombinedData() {
   var skipped = [];
   var archiveCount = 0;
 
-  // video_name comes from whatever the source row already has populated:
-  // Archive rows have it; labeler-sheet rows don't (labeler tool only stores
-  // URLs). Empty values are filled in by the notebooks via Drive API at
-  // load time, so Apps Script doesn't need to touch Drive.
+  // video_name: archive rows have it populated; labeler-sheet rows don't
+  // (labeler tool only stores URLs). For empty values, resolve filename from
+  // Drive via file_id, cached per unique file_id so each video costs exactly
+  // one DriveApp call per rebuild regardless of how many rows reference it.
+  var nameCache = {};
+  function resolveVideoName(vfile) {
+    var fid = extractFileId(String(vfile));
+    if (!fid) return '';
+    if (nameCache[fid] === undefined) {
+      try { nameCache[fid] = DriveApp.getFileById(fid).getName(); }
+      catch (e) { nameCache[fid] = ''; }
+    }
+    return nameCache[fid];
+  }
 
   // Archive — frozen historical rows. No `reviewed` filter; everything is
   // canonical. Stamp UUIDs in place on any row missing one so the archive
@@ -840,6 +923,7 @@ function rebuildCombinedData() {
       var aVideoFile = pickFromRow(aRow, aIdx, 'video_file');
       if (!aVideoFile) continue;
       var aVideoName = String(pickFromRow(aRow, aIdx, 'video_name') || '').trim();
+      if (!aVideoName) aVideoName = resolveVideoName(aVideoFile);
       rows.push([
         pickFromRow(aRow, aIdx, 'id'),
         aVideoName,
@@ -895,6 +979,7 @@ function rebuildCombinedData() {
 
       var lVideoFile = pickFromRow(rowVals, idx, 'video_file');
       var lVideoName = String(pickFromRow(rowVals, idx, 'video_name') || '').trim();
+      if (!lVideoName) lVideoName = resolveVideoName(lVideoFile);
       rows.push([
         pickFromRow(rowVals, idx, 'id'),
         lVideoName,
@@ -930,6 +1015,7 @@ function rebuildCombinedData() {
 
   var msg = 'Wrote ' + rows.length + ' rows ('
             + dupesDropped + ' duplicates dropped).\n'
+            + 'Resolved ' + Object.keys(nameCache).length + ' video_name(s) via Drive.\n'
             + 'Backup → ' + COMBINED_BACKUP_NAME + '.';
   if (skipped.length > 0) msg += '\n\nSkipped:\n  ' + skipped.join('\n  ');
   SpreadsheetApp.getUi().alert('Rebuild Combined Data', msg, SpreadsheetApp.getUi().ButtonSet.OK);
