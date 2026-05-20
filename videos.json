@@ -7,7 +7,7 @@
         {
           "round": 0,
           "n_frames": 504,
-          "fps": 30.000001907348633,
+          "fps": 30.0,
           "actual_start_sec": 0.0
         }
       ]
@@ -19,32 +19,98 @@
         {
           "round": 0,
           "n_frames": 1309,
-          "fps": 29.970027923583984,
+          "fps": 29.97,
           "actual_start_sec": 202.495
         },
         {
           "round": 1,
           "n_frames": 1568,
-          "fps": 29.970027923583984,
+          "fps": 29.97,
           "actual_start_sec": 330.554
         },
         {
           "round": 2,
           "n_frames": 1675,
-          "fps": 29.970027923583984,
+          "fps": 29.97,
           "actual_start_sec": 384.623
         },
         {
           "round": 3,
           "n_frames": 1777,
-          "fps": 29.970027923583984,
+          "fps": 29.97,
           "actual_start_sec": 502.09
         },
         {
           "round": 4,
           "n_frames": 1432,
-          "fps": 29.970027923583984,
+          "fps": 29.97,
           "actual_start_sec": 563.704
+        }
+      ]
+    },
+    {
+      "stem": "10 Min Complete Shadow Boxing Workout ｜ Become A Better Boxer",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1947,
+          "fps": 60.0,
+          "actual_start_sec": 16.5
+        },
+        {
+          "round": 1,
+          "n_frames": 1616,
+          "fps": 60.0,
+          "actual_start_sec": 56.584
+        },
+        {
+          "round": 2,
+          "n_frames": 1311,
+          "fps": 60.0,
+          "actual_start_sec": 175.613
+        },
+        {
+          "round": 3,
+          "n_frames": 938,
+          "fps": 60.0,
+          "actual_start_sec": 225.588
+        },
+        {
+          "round": 4,
+          "n_frames": 1250,
+          "fps": 60.0,
+          "actual_start_sec": 343.097
+        },
+        {
+          "round": 5,
+          "n_frames": 1048,
+          "fps": 60.0,
+          "actual_start_sec": 424.496
+        },
+        {
+          "round": 6,
+          "n_frames": 1435,
+          "fps": 60.0,
+          "actual_start_sec": 503.988
+        },
+        {
+          "round": 7,
+          "n_frames": 1053,
+          "fps": 60.0,
+          "actual_start_sec": 554.944
+        },
+        {
+          "round": 8,
+          "n_frames": 1055,
+          "fps": 60.0,
+          "actual_start_sec": 594.194
+        },
+        {
+          "round": 9,
+          "n_frames": 971,
+          "fps": 60.0,
+          "actual_start_sec": 629.413
         }
       ]
     },
@@ -55,19 +121,19 @@
         {
           "round": 0,
           "n_frames": 938,
-          "fps": 29.998449325561523,
+          "fps": 29.998,
           "actual_start_sec": 146.014
         },
         {
           "round": 1,
           "n_frames": 936,
-          "fps": 29.998449325561523,
+          "fps": 29.998,
           "actual_start_sec": 177.598
         },
         {
           "round": 2,
           "n_frames": 1237,
-          "fps": 29.998449325561523,
+          "fps": 29.998,
           "actual_start_sec": 211.265
         }
       ]
@@ -79,14 +145,26 @@
         {
           "round": 0,
           "n_frames": 16371,
-          "fps": 29.999998092651367,
+          "fps": 30.0,
           "actual_start_sec": 17.73
         },
         {
           "round": 1,
           "n_frames": 945,
-          "fps": 29.999998092651367,
+          "fps": 30.0,
           "actual_start_sec": 588.5
+        }
+      ]
+    },
+    {
+      "stem": "13 Shadowboxing Body Shots",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 6930,
+          "fps": 30.0,
+          "actual_start_sec": 0.0
         }
       ]
     },
@@ -97,14 +175,356 @@
         {
           "round": 0,
           "n_frames": 3840,
-          "fps": 29.99756622314453,
+          "fps": 29.998,
           "actual_start_sec": 0.0
         },
         {
           "round": 1,
           "n_frames": 3112,
-          "fps": 29.99756622314453,
+          "fps": 29.998,
           "actual_start_sec": 183.404
+        }
+      ]
+    },
+    {
+      "stem": "15 MINUTE FAT BURNING BOXING BAG WORKOUT [FOLLOW ALONG]",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 418,
+          "fps": 23.976,
+          "actual_start_sec": 328.516
+        },
+        {
+          "round": 1,
+          "n_frames": 633,
+          "fps": 23.976,
+          "actual_start_sec": 346.249
+        },
+        {
+          "round": 2,
+          "n_frames": 694,
+          "fps": 23.976,
+          "actual_start_sec": 401.941
+        },
+        {
+          "round": 3,
+          "n_frames": 722,
+          "fps": 23.976,
+          "actual_start_sec": 431.721
+        },
+        {
+          "round": 4,
+          "n_frames": 722,
+          "fps": 23.976,
+          "actual_start_sec": 462.02
+        },
+        {
+          "round": 5,
+          "n_frames": 703,
+          "fps": 23.976,
+          "actual_start_sec": 492.52
+        },
+        {
+          "round": 6,
+          "n_frames": 690,
+          "fps": 23.976,
+          "actual_start_sec": 551.353
+        },
+        {
+          "round": 7,
+          "n_frames": 760,
+          "fps": 23.976,
+          "actual_start_sec": 580.986
+        },
+        {
+          "round": 8,
+          "n_frames": 701,
+          "fps": 23.976,
+          "actual_start_sec": 612.852
+        },
+        {
+          "round": 9,
+          "n_frames": 662,
+          "fps": 23.976,
+          "actual_start_sec": 644.882
+        },
+        {
+          "round": 10,
+          "n_frames": 768,
+          "fps": 23.976,
+          "actual_start_sec": 701.539
+        },
+        {
+          "round": 11,
+          "n_frames": 613,
+          "fps": 23.976,
+          "actual_start_sec": 736.454
+        },
+        {
+          "round": 12,
+          "n_frames": 691,
+          "fps": 23.976,
+          "actual_start_sec": 763.647
+        },
+        {
+          "round": 13,
+          "n_frames": 672,
+          "fps": 23.976,
+          "actual_start_sec": 792.343
+        },
+        {
+          "round": 14,
+          "n_frames": 639,
+          "fps": 23.976,
+          "actual_start_sec": 851.422
+        },
+        {
+          "round": 15,
+          "n_frames": 643,
+          "fps": 23.976,
+          "actual_start_sec": 885.029
+        },
+        {
+          "round": 16,
+          "n_frames": 701,
+          "fps": 23.976,
+          "actual_start_sec": 912.974
+        },
+        {
+          "round": 17,
+          "n_frames": 675,
+          "fps": 23.976,
+          "actual_start_sec": 943.588
+        },
+        {
+          "round": 18,
+          "n_frames": 793,
+          "fps": 23.976,
+          "actual_start_sec": 970.288
+        }
+      ]
+    },
+    {
+      "stem": "15 Mins Beginner Boxing Fitness HIIT Bag Workout (Follow Along)",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 956,
+          "fps": 30.0,
+          "actual_start_sec": 257.499
+        },
+        {
+          "round": 1,
+          "n_frames": 951,
+          "fps": 30.0,
+          "actual_start_sec": 350.358
+        },
+        {
+          "round": 2,
+          "n_frames": 1749,
+          "fps": 30.0,
+          "actual_start_sec": 501.09
+        },
+        {
+          "round": 3,
+          "n_frames": 1204,
+          "fps": 30.0,
+          "actual_start_sec": 743.387
+        },
+        {
+          "round": 4,
+          "n_frames": 1191,
+          "fps": 30.0,
+          "actual_start_sec": 832.873
+        }
+      ]
+    },
+    {
+      "stem": "15 Minute Shadowboxing Workout for Beginners with Justin Blackwell ｜ Get Fit ｜ Livestrong.com",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 239,
+          "fps": 23.976,
+          "actual_start_sec": 328.202
+        }
+      ]
+    },
+    {
+      "stem": "15 Minutes Heavy Bag Cardio Lower Body Workout Follow Along",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1458,
+          "fps": 23.976,
+          "actual_start_sec": 503.161
+        },
+        {
+          "round": 1,
+          "n_frames": 1465,
+          "fps": 23.976,
+          "actual_start_sec": 593.727
+        },
+        {
+          "round": 2,
+          "n_frames": 1615,
+          "fps": 23.976,
+          "actual_start_sec": 739.962
+        },
+        {
+          "round": 3,
+          "n_frames": 1359,
+          "fps": 23.976,
+          "actual_start_sec": 840.061
+        }
+      ]
+    },
+    {
+      "stem": "15 mins Home Boxing Heavy Bag Workout (Follow Along)",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1457,
+          "fps": 23.976,
+          "actual_start_sec": 251.893
+        },
+        {
+          "round": 1,
+          "n_frames": 1469,
+          "fps": 23.976,
+          "actual_start_sec": 343.059
+        },
+        {
+          "round": 2,
+          "n_frames": 1418,
+          "fps": 23.976,
+          "actual_start_sec": 494.658
+        },
+        {
+          "round": 3,
+          "n_frames": 1343,
+          "fps": 23.976,
+          "actual_start_sec": 583.691
+        }
+      ]
+    },
+    {
+      "stem": "20 Minute Boxing Footwork Heavy bag Workout - Follow along",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 5190,
+          "fps": 59.939,
+          "actual_start_sec": 4.618
+        },
+        {
+          "round": 1,
+          "n_frames": 9271,
+          "fps": 59.939,
+          "actual_start_sec": 98.651
+        },
+        {
+          "round": 2,
+          "n_frames": 7191,
+          "fps": 59.939,
+          "actual_start_sec": 275.841
+        },
+        {
+          "round": 3,
+          "n_frames": 1178,
+          "fps": 59.939,
+          "actual_start_sec": 423.216
+        },
+        {
+          "round": 4,
+          "n_frames": 4777,
+          "fps": 59.939,
+          "actual_start_sec": 453.829
+        }
+      ]
+    },
+    {
+      "stem": "20 Minute Punching Bag Workout For A Total Body Workout!",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 3013,
+          "fps": 29.97,
+          "actual_start_sec": 429.46
+        },
+        {
+          "round": 1,
+          "n_frames": 1349,
+          "fps": 29.97,
+          "actual_start_sec": 595.06
+        }
+      ]
+    },
+    {
+      "stem": "20 Minute Shadowboxing for Beginners ｜ Trainer of the Month Club ｜ Well+Good",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1407,
+          "fps": 23.976024627685547,
+          "actual_start_sec": 518.5
+        },
+        {
+          "round": 1,
+          "n_frames": 2086,
+          "fps": 23.976024627685547,
+          "actual_start_sec": 798.459
+        },
+        {
+          "round": 2,
+          "n_frames": 696,
+          "fps": 23.976024627685547,
+          "actual_start_sec": 1151.893
+        }
+      ]
+    },
+    {
+      "stem": "2f3b13e1-d4c7-44ae-abe2-6245b771f240",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 458,
+          "fps": 30.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "3 BODY SHOT COMBOS YOU NEED TO TRY ｜ Boxing Training",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 349,
+          "fps": 23.976,
+          "actual_start_sec": 18.5
+        }
+      ]
+    },
+    {
+      "stem": "3 Basic Boxing Combos For Southpaws #boxing #combos #viral",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 255,
+          "fps": 30.0,
+          "actual_start_sec": 0.0
         }
       ]
     },
@@ -115,14 +535,62 @@
         {
           "round": 0,
           "n_frames": 1764,
-          "fps": 29.970029830932617,
+          "fps": 29.97,
           "actual_start_sec": 754.429
         },
         {
           "round": 1,
           "n_frames": 1700,
-          "fps": 29.970029830932617,
+          "fps": 29.97,
           "actual_start_sec": 1235.882
+        }
+      ]
+    },
+    {
+      "stem": "30 Minute Boxing HIIT Workout with a Heavy Bag [Round 2] 2022_h264",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 5859,
+          "fps": 24.0,
+          "actual_start_sec": 122.38
+        },
+        {
+          "round": 1,
+          "n_frames": 1762,
+          "fps": 24.0,
+          "actual_start_sec": 386.58
+        },
+        {
+          "round": 2,
+          "n_frames": 574,
+          "fps": 24.0,
+          "actual_start_sec": 524.42
+        },
+        {
+          "round": 3,
+          "n_frames": 574,
+          "fps": 24.0,
+          "actual_start_sec": 629.38
+        },
+        {
+          "round": 4,
+          "n_frames": 815,
+          "fps": 24.0,
+          "actual_start_sec": 742.58
+        },
+        {
+          "round": 5,
+          "n_frames": 1899,
+          "fps": 24.0,
+          "actual_start_sec": 808.21
+        },
+        {
+          "round": 6,
+          "n_frames": 1131,
+          "fps": 24.0,
+          "actual_start_sec": 918.12
         }
       ]
     },
@@ -133,25 +601,25 @@
         {
           "round": 0,
           "n_frames": 1952,
-          "fps": 29.96898078918457,
+          "fps": 29.969,
           "actual_start_sec": 299.95
         },
         {
           "round": 1,
           "n_frames": 1865,
-          "fps": 29.96898078918457,
+          "fps": 29.969,
           "actual_start_sec": 500.61
         },
         {
           "round": 2,
           "n_frames": 1259,
-          "fps": 29.96898078918457,
+          "fps": 29.969,
           "actual_start_sec": 868.14
         },
         {
           "round": 3,
           "n_frames": 2284,
-          "fps": 29.96898078918457,
+          "fps": 29.969,
           "actual_start_sec": 1229.916
         }
       ]
@@ -187,26 +655,122 @@
       ]
     },
     {
+      "stem": "30 Minutes FULL Boxing Workout ｜ Follow Along",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 3798,
+          "fps": 29.968942642211914,
+          "actual_start_sec": 307.98
+        }
+      ]
+    },
+    {
+      "stem": "4 EFFECTIVE BOXING COMBOS BEGINNER BOXERS SHOULD LEARN! 🥊 #boxing #boxingtraining #boxingworkout",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 971,
+          "fps": 60.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
       "stem": "4 Round Boxing Workout At-Home with Coach PJ",
       "heldOut": false,
       "rounds": [
         {
           "round": 0,
           "n_frames": 755,
-          "fps": 23.976024627685547,
+          "fps": 23.976,
           "actual_start_sec": 517.05
         },
         {
           "round": 1,
           "n_frames": 727,
-          "fps": 23.976024627685547,
+          "fps": 23.976,
           "actual_start_sec": 757.2
         },
         {
           "round": 2,
           "n_frames": 1180,
-          "fps": 23.976024627685547,
+          "fps": 23.976,
           "actual_start_sec": 997.39
+        }
+      ]
+    },
+    {
+      "stem": "4 Set-ups for the Shovel Hook ｜ Land More Body Shots",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 702,
+          "fps": 59.94,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "5 Min Shadow Boxing Workout (Follow Along)",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1231,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 6.475
+        },
+        {
+          "round": 1,
+          "n_frames": 1064,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 53.422
+        },
+        {
+          "round": 2,
+          "n_frames": 1341,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 98.367
+        },
+        {
+          "round": 3,
+          "n_frames": 1537,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 146.316
+        },
+        {
+          "round": 4,
+          "n_frames": 673,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 202.0
+        }
+      ]
+    },
+    {
+      "stem": "Basic Boxing Combos To MASTER! Part 1",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 414,
+          "fps": 30.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "Basic boxing combo🥊 #boxing #kickboxing #mma #training #usa #martialarts",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 208,
+          "fps": 30.0,
+          "actual_start_sec": 0.0
         }
       ]
     },
@@ -307,6 +871,132 @@
       ]
     },
     {
+      "stem": "Beginner Shadow Boxing Workout In 5 Minutes ｜ Working The Jab (Follow Along)",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1853,
+          "fps": 59.999996185302734,
+          "actual_start_sec": 33.406
+        }
+      ]
+    },
+    {
+      "stem": "Beginners Boxing Combos To Improve Your Shadow Boxing🥊 #boxing #beginners #combo",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 423,
+          "fps": 60.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "Boxing app workout",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 2913,
+          "fps": 60.000003814697266,
+          "actual_start_sec": 0.0
+        },
+        {
+          "round": 1,
+          "n_frames": 4345,
+          "fps": 60.000003814697266,
+          "actual_start_sec": 114.468
+        },
+        {
+          "round": 2,
+          "n_frames": 4051,
+          "fps": 60.000003814697266,
+          "actual_start_sec": 496.3
+        }
+      ]
+    },
+    {
+      "stem": "Boxing combos ✔️🥊 #boxingtraining #boxing #boxingcombos #shadowboxing #shadowbox #boxingcombos",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 270,
+          "fps": 30.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "Dmitry Bivol silky shadow boxing skills #dmitrybivol #bivol #boxing",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 420,
+          "fps": 30.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "Do This 5 Minute Shadow Boxing Workout For A Strong Left Hook",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 941,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 45.714
+        },
+        {
+          "round": 1,
+          "n_frames": 1224,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 75.678
+        },
+        {
+          "round": 2,
+          "n_frames": 670,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 115.485
+        },
+        {
+          "round": 3,
+          "n_frames": 1049,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 137.307
+        },
+        {
+          "round": 4,
+          "n_frames": 1233,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 171.708
+        },
+        {
+          "round": 5,
+          "n_frames": 796,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 212.883
+        },
+        {
+          "round": 6,
+          "n_frames": 825,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 239.443
+        },
+        {
+          "round": 7,
+          "n_frames": 1808,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 265.569
+        }
+      ]
+    },
+    {
       "stem": "Exercise- Hook and uppercuts (shadow boxing)",
       "heldOut": false,
       "rounds": [
@@ -325,32 +1015,326 @@
       ]
     },
     {
+      "stem": "Follow Along 15 Minute Punching Bag Routine： Heavy Bag BOXING Workout Leg Exercises included",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1441,
+          "fps": 29.97,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "Follow Along 20-Minute Shadow Boxing Workout",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 3771,
+          "fps": 30.0,
+          "actual_start_sec": 21.5
+        },
+        {
+          "round": 1,
+          "n_frames": 5565,
+          "fps": 30.0,
+          "actual_start_sec": 151.87
+        }
+      ]
+    },
+    {
       "stem": "Follow Along Heavy Bag Workout ｜ 10 minutes",
       "heldOut": false,
       "rounds": [
         {
           "round": 0,
           "n_frames": 3733,
-          "fps": 59.9400634765625,
+          "fps": 59.94,
           "actual_start_sec": 380.441
         },
         {
           "round": 1,
           "n_frames": 3729,
-          "fps": 59.9400634765625,
+          "fps": 59.94,
           "actual_start_sec": 459.97
         },
         {
           "round": 2,
           "n_frames": 3686,
-          "fps": 59.9400634765625,
+          "fps": 59.94,
           "actual_start_sec": 620.461
         },
         {
           "round": 3,
           "n_frames": 3784,
-          "fps": 59.9400634765625,
+          "fps": 59.94,
           "actual_start_sec": 700.722
+        }
+      ]
+    },
+    {
+      "stem": "Full POWER Bag Work ｜ Follow Along Session",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1220,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 91.288
+        },
+        {
+          "round": 1,
+          "n_frames": 7297,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 221.543
+        },
+        {
+          "round": 2,
+          "n_frames": 829,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 744.376
+        },
+        {
+          "round": 3,
+          "n_frames": 1771,
+          "fps": 29.970029830932617,
+          "actual_start_sec": 957.286
+        }
+      ]
+    },
+    {
+      "stem": "HOOKS 🪝 & FOOTWORK 🥊. Shadow Boxing Drill (female boxing) #boxingworkout #shadowboxing #shorts",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 424,
+          "fps": 30.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "Heavy Bag Workout #2 ｜ 3 PUNCH COMBOS  ｜ FOLLOW ALONG Less than 10mins",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 258,
+          "fps": 29.965,
+          "actual_start_sec": 32.682
+        },
+        {
+          "round": 1,
+          "n_frames": 287,
+          "fps": 29.965,
+          "actual_start_sec": 42.338
+        },
+        {
+          "round": 2,
+          "n_frames": 264,
+          "fps": 29.965,
+          "actual_start_sec": 52.571
+        },
+        {
+          "round": 3,
+          "n_frames": 289,
+          "fps": 29.965,
+          "actual_start_sec": 62.621
+        },
+        {
+          "round": 4,
+          "n_frames": 309,
+          "fps": 29.965,
+          "actual_start_sec": 72.981
+        },
+        {
+          "round": 5,
+          "n_frames": 259,
+          "fps": 29.965,
+          "actual_start_sec": 83.881
+        },
+        {
+          "round": 6,
+          "n_frames": 275,
+          "fps": 29.965,
+          "actual_start_sec": 94.081
+        },
+        {
+          "round": 7,
+          "n_frames": 255,
+          "fps": 29.965,
+          "actual_start_sec": 104.181
+        },
+        {
+          "round": 8,
+          "n_frames": 277,
+          "fps": 29.965,
+          "actual_start_sec": 184.067
+        },
+        {
+          "round": 9,
+          "n_frames": 291,
+          "fps": 29.965,
+          "actual_start_sec": 194.133
+        },
+        {
+          "round": 10,
+          "n_frames": 314,
+          "fps": 29.965,
+          "actual_start_sec": 203.865
+        },
+        {
+          "round": 11,
+          "n_frames": 316,
+          "fps": 29.965,
+          "actual_start_sec": 214.999
+        },
+        {
+          "round": 12,
+          "n_frames": 332,
+          "fps": 29.965,
+          "actual_start_sec": 226.665
+        },
+        {
+          "round": 13,
+          "n_frames": 286,
+          "fps": 29.965,
+          "actual_start_sec": 238.831
+        },
+        {
+          "round": 14,
+          "n_frames": 308,
+          "fps": 29.965,
+          "actual_start_sec": 249.098
+        },
+        {
+          "round": 15,
+          "n_frames": 403,
+          "fps": 29.965,
+          "actual_start_sec": 260.264
+        },
+        {
+          "round": 16,
+          "n_frames": 262,
+          "fps": 29.965,
+          "actual_start_sec": 333.938
+        },
+        {
+          "round": 17,
+          "n_frames": 296,
+          "fps": 29.965,
+          "actual_start_sec": 343.371
+        },
+        {
+          "round": 18,
+          "n_frames": 294,
+          "fps": 29.965,
+          "actual_start_sec": 353.904
+        },
+        {
+          "round": 19,
+          "n_frames": 289,
+          "fps": 29.965,
+          "actual_start_sec": 365.238
+        },
+        {
+          "round": 20,
+          "n_frames": 300,
+          "fps": 29.965,
+          "actual_start_sec": 376.104
+        },
+        {
+          "round": 21,
+          "n_frames": 314,
+          "fps": 29.965,
+          "actual_start_sec": 386.537
+        },
+        {
+          "round": 22,
+          "n_frames": 301,
+          "fps": 29.965,
+          "actual_start_sec": 398.47
+        },
+        {
+          "round": 23,
+          "n_frames": 530,
+          "fps": 29.965,
+          "actual_start_sec": 409.77
+        }
+      ]
+    },
+    {
+      "stem": "Heavy Bag Workout #3 ｜ 4 PUNCH COMBOS  ｜ FOLLOW ALONG Less than 10mins",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1376,
+          "fps": 29.97,
+          "actual_start_sec": 99.766
+        },
+        {
+          "round": 1,
+          "n_frames": 2741,
+          "fps": 29.97,
+          "actual_start_sec": 204.585
+        },
+        {
+          "round": 2,
+          "n_frames": 2707,
+          "fps": 29.97,
+          "actual_start_sec": 355.785
+        }
+      ]
+    },
+    {
+      "stem": "Heavy Bag Workout ｜ 10 Minute Follow Along Boxing Workout [Ik2coTPVOVI]",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 328,
+          "fps": 59.94,
+          "actual_start_sec": 0.0
+        },
+        {
+          "round": 1,
+          "n_frames": 2531,
+          "fps": 59.94,
+          "actual_start_sec": 35.303
+        },
+        {
+          "round": 2,
+          "n_frames": 3308,
+          "fps": 59.94,
+          "actual_start_sec": 120.6
+        },
+        {
+          "round": 3,
+          "n_frames": 1143,
+          "fps": 59.94,
+          "actual_start_sec": 355.32
+        }
+      ]
+    },
+    {
+      "stem": "Heavy Bag Workout ｜ 15 Minute Follow Along Boxing Workout",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1988,
+          "fps": 23.976,
+          "actual_start_sec": 201.493
+        },
+        {
+          "round": 1,
+          "n_frames": 945,
+          "fps": 23.976,
+          "actual_start_sec": 442.523
         }
       ]
     },
@@ -391,14 +1375,212 @@
       ]
     },
     {
+      "stem": "Heavy Bag Workout ｜ Follow along Boxing Workout",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 5288,
+          "fps": 29.97,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "High Intensity Fat Burning Heavy Bag Workout (20-Minute Follow Along)",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 3197,
+          "fps": 30.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "How to get better at #shadowboxing",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1401,
+          "fps": 30.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "IMG_5817",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 809,
+          "fps": 29.998146057128906,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "Learn This Deadly Boxing Combo",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 442,
+          "fps": 30.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "Learn This Deadly Boxing Combo🥊💥 [zRBL7ISpYGk]",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 428,
+          "fps": 29.901,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "MUST KNOW BOXING COMBOS FOR BEGINNERS! 🥊🔥 #boxing #boxingtraining #boxingworkout #boxingdrills",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 707,
+          "fps": 60.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "Mathe Test_h264",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 3138,
+          "fps": 30.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
       "stem": "NHC Cardio Boxing Bag Work Follow Along Video 8 Minutes",
       "heldOut": false,
       "rounds": [
         {
           "round": 0,
           "n_frames": 4279,
-          "fps": 29.99633026123047,
+          "fps": 29.996,
           "actual_start_sec": 88.67
+        }
+      ]
+    },
+    {
+      "stem": "November 15, 2020",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 5419,
+          "fps": 60.0,
+          "actual_start_sec": 0.0
+        },
+        {
+          "round": 1,
+          "n_frames": 6916,
+          "fps": 60.0,
+          "actual_start_sec": 383.021
+        },
+        {
+          "round": 2,
+          "n_frames": 3605,
+          "fps": 60.0,
+          "actual_start_sec": 541.061
+        }
+      ]
+    },
+    {
+      "stem": "Quick Shadow Boxing Tutorial by Olympian [J4j3AOVWuHE]",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 480,
+          "fps": 23.976,
+          "actual_start_sec": 0.0
+        },
+        {
+          "round": 1,
+          "n_frames": 3789,
+          "fps": 23.976,
+          "actual_start_sec": 21.0
+        }
+      ]
+    },
+    {
+      "stem": "Round 2 of Elite Challenge Boxing Combos ⬇️ #boxing #boxingtraining #motivation",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 312,
+          "fps": 23.854,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "Shadow Box Workout ｜ Let me Coach You for 11 Minutes",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 5203,
+          "fps": 29.97,
+          "actual_start_sec": 157.25
+        }
+      ]
+    },
+    {
+      "stem": "Shadow Boxing Combo🥊 #boxing #boxingtraining #shadowboxing [LMhVqtK3p_Y]",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 265,
+          "fps": 30.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "Shadow Boxing Drill for Home ｜ Tom Yankello's Drill #1",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1388,
+          "fps": 30.0,
+          "actual_start_sec": 5.5
+        },
+        {
+          "round": 1,
+          "n_frames": 3465,
+          "fps": 30.0,
+          "actual_start_sec": 618.494
+        },
+        {
+          "round": 2,
+          "n_frames": 1095,
+          "fps": 30.0,
+          "actual_start_sec": 773.5
         }
       ]
     },
@@ -409,32 +1591,140 @@
         {
           "round": 0,
           "n_frames": 1842,
-          "fps": 59.940059661865234,
+          "fps": 59.94,
           "actual_start_sec": 177.759
         },
         {
           "round": 1,
           "n_frames": 1749,
-          "fps": 59.940059661865234,
+          "fps": 59.94,
           "actual_start_sec": 236.9
         },
         {
           "round": 2,
           "n_frames": 1994,
-          "fps": 59.940059661865234,
+          "fps": 59.94,
           "actual_start_sec": 295.551
         },
         {
           "round": 3,
           "n_frames": 1781,
-          "fps": 59.940059661865234,
+          "fps": 59.94,
           "actual_start_sec": 327.479
         },
         {
           "round": 4,
           "n_frames": 1803,
-          "fps": 59.940059661865234,
+          "fps": 59.94,
           "actual_start_sec": 597.677
+        }
+      ]
+    },
+    {
+      "stem": "Shadow Boxing Workout ｜ Let me coach you for 12 minutes",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1266,
+          "fps": 29.97,
+          "actual_start_sec": 89.788
+        },
+        {
+          "round": 1,
+          "n_frames": 5615,
+          "fps": 29.97,
+          "actual_start_sec": 220.043
+        }
+      ]
+    },
+    {
+      "stem": "Shadowboxing the RIGHT Way (Most Boxers Get This Wrong) [_NaHLrJhwLs]_h264",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1112,
+          "fps": 24.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "Tabata Bag Workout  ｜ Follow Along",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 630,
+          "fps": 29.967,
+          "actual_start_sec": 49.77
+        },
+        {
+          "round": 1,
+          "n_frames": 638,
+          "fps": 29.967,
+          "actual_start_sec": 79.4
+        },
+        {
+          "round": 2,
+          "n_frames": 645,
+          "fps": 29.967,
+          "actual_start_sec": 109.8
+        },
+        {
+          "round": 3,
+          "n_frames": 632,
+          "fps": 29.967,
+          "actual_start_sec": 139.73
+        },
+        {
+          "round": 4,
+          "n_frames": 640,
+          "fps": 29.967,
+          "actual_start_sec": 169.69
+        },
+        {
+          "round": 5,
+          "n_frames": 280,
+          "fps": 29.967,
+          "actual_start_sec": 199.87
+        }
+      ]
+    },
+    {
+      "stem": "WOW!  These Boxing Combos Are Amazing ｜ Follow Along Training",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1723,
+          "fps": 30.0,
+          "actual_start_sec": 488.495
+        },
+        {
+          "round": 1,
+          "n_frames": 4627,
+          "fps": 30.0,
+          "actual_start_sec": 638.5
+        }
+      ]
+    },
+    {
+      "stem": "{Stream For Free} Boxing Workout For Beginners 4 Rounds",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1312,
+          "fps": 23.976,
+          "actual_start_sec": 265.806
+        },
+        {
+          "round": 1,
+          "n_frames": 863,
+          "fps": 23.976,
+          "actual_start_sec": 505.961
         }
       ]
     }

@@ -57,6 +57,15 @@ body {
   white-space: nowrap;
 }
 
+/* Orientation labeler: highlight videos this labeler has already touched.
+   Chrome/Firefox honor color on <option>; Safari ignores it (the "· N
+   labeled" suffix still reads). Native macOS select widgets ignore
+   font-weight, but Chrome respects it. */
+#video-select option.labeled {
+  color: #28a745;
+  font-weight: 600;
+}
+
 
 /* Main layout */
 #main-layout {

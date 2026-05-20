@@ -27,17 +27,15 @@ const BIN_KEYS = {
 const ANGLE_LIST = [0, 45, -45, 90, -90, 135, -135, -180];
 
 Object.assign(state, {
-  knownVideos: [],          // from videos.json
-  combinedVideos: [],       // from Combined Data via listCombinedVideos
+  knownVideos: [],          // from videos.json — only source of labelable videos
   currentStem: null,
-  currentMode: null,        // 'cached' | 'free'
-  cachedVideo: null,        // videos.json entry when in cached mode
+  currentMode: null,        // 'cached' or null
+  cachedVideo: null,        // videos.json entry for current stem
   candidates: [],
   cursor: 0,
   doneKeys: new Set(),
   labelByKey: new Map(),
   videoLoaded: false,
-  fpsForFreeMode: 30,
   // stem → count of THIS labeler's existing labels for that video. Populated
   // once at startup (and whenever the labeler name changes); kept live as
   // applyKey / clearCurrent / syncFromSheet adjust the current video's count.
@@ -85,30 +83,6 @@ function pickCachedCandidates(video, bucketSec = 5, cap = 100) {
         frame: lo + Math.floor(rng() * (hi - lo + 1)),
       });
     }
-  }
-  if (candidates.length > cap) {
-    shuffle(candidates, mulberry32(seed ^ 0xC0FFEE));
-    candidates.length = cap;
-  }
-  shuffle(candidates, mulberry32(seed ^ 0xBADC0DE));
-  return candidates;
-}
-
-// Free mode: build from video.duration (no round meta). Stored frame =
-// approximate frame index at the assumed fps (30 by default; updated to
-// player.js's detected fps once metadata loads). round=0 throughout.
-function pickFreeCandidates(stem, durationSec, fps, bucketSec = 5, cap = 100) {
-  const seed = hashString(stem) >>> 0;
-  const rng = mulberry32(seed);
-  const candidates = [];
-  if (!(durationSec > 0) || !(fps > 0)) return candidates;
-  const nBuckets = Math.max(1, Math.floor(durationSec / bucketSec));
-  const secPerBucket = durationSec / nBuckets;
-  for (let b = 0; b < nBuckets; b++) {
-    const t0 = b * secPerBucket;
-    const t1 = Math.min(durationSec, (b + 1) * secPerBucket);
-    const t = t0 + rng() * (t1 - t0);
-    candidates.push({ round: 0, frame: Math.round(t * fps) });
   }
   if (candidates.length > cap) {
     shuffle(candidates, mulberry32(seed ^ 0xC0FFEE));
@@ -178,23 +152,23 @@ function tryGenerateCandidates() {
   }
 
   const known = state.knownVideos.find(v => v.stem === state.currentStem);
-  if (known) {
-    state.currentMode = 'cached';
-    state.cachedVideo = known;
-    state.candidates = pickCachedCandidates(known);
-    setModeBadge('cached · ' + state.candidates.length + ' candidates');
-  } else {
-    state.currentMode = 'free';
+  if (!known) {
+    // Free mode is intentionally gone: labels for videos without a Vision
+    // skeleton cache can't be paired with poses at train time, so we refuse
+    // to collect them. Extract the Vision cache and re-run build_videos_json.py
+    // (then push) before labeling a new video.
+    state.currentMode = null;
     state.cachedVideo = null;
-    const video = document.getElementById('video-player');
-    const duration = video ? video.duration : NaN;
-    if (!(duration > 0)) {
-      setCurrentLine('Video metadata not ready yet — waiting...');
-      return;
-    }
-    state.candidates = pickFreeCandidates(state.currentStem, duration, state.fpsForFreeMode);
-    setModeBadge('free · ' + state.candidates.length + ' candidates @ ' + state.fpsForFreeMode + 'fps');
+    state.candidates = [];
+    setModeBadge('no cache');
+    setCurrentLine('No Vision skeleton cache for "' + state.currentStem +
+      '". Extract Apple Vision pose, regenerate videos.json, and redeploy.');
+    return;
   }
+  state.currentMode = 'cached';
+  state.cachedVideo = known;
+  state.candidates = pickCachedCandidates(known);
+  setModeBadge('cached · ' + state.candidates.length + ' candidates');
   state.cursor = 0;
   state.doneKeys = new Set();
   state.labelByKey = new Map();
@@ -252,16 +226,11 @@ function seekToCurrent() {
   if (!state.candidates.length) return;
   if (state.cursor >= state.candidates.length) return;
   const c = state.candidates[state.cursor];
-  let t;
-  if (state.currentMode === 'cached') {
-    const r = (state.cachedVideo.rounds || []).find(x => (x.round ?? 0) === c.round);
-    if (!r) { setCurrentLine('No meta for round ' + c.round); return; }
-    const startSec = Number(r.actual_start_sec ?? r.start_sec ?? 0);
-    const fps = Number(r.fps);
-    t = startSec + (c.frame + 0.5) / fps;
-  } else {
-    t = (c.frame + 0.5) / state.fpsForFreeMode;
-  }
+  const r = (state.cachedVideo.rounds || []).find(x => (x.round ?? 0) === c.round);
+  if (!r) { setCurrentLine('No meta for round ' + c.round); return; }
+  const startSec = Number(r.actual_start_sec ?? r.start_sec ?? 0);
+  const fps = Number(r.fps);
+  const t = startSec + (c.frame + 0.5) / fps;
   const video = document.getElementById('video-player');
   if (video && !isNaN(video.duration) && video.duration > 0) {
     video.currentTime = Math.min(Math.max(0, t), video.duration);
@@ -271,10 +240,7 @@ function seekToCurrent() {
   if (label === undefined) labelTxt = 'unlabeled';
   else if (label === null) labelTxt = 'skipped';
   else labelTxt = (label > 0 ? '+' : '') + label + '°';
-  const where = state.currentMode === 'cached'
-    ? `round ${c.round} · frame ${c.frame}`
-    : `frame ${c.frame} (t=${t.toFixed(2)}s)`;
-  setCurrentLine(`${where} · ${labelTxt} · ${state.cursor + 1}/${state.candidates.length}`);
+  setCurrentLine(`round ${c.round} · frame ${c.frame} · ${labelTxt} · ${state.cursor + 1}/${state.candidates.length}`);
   updateButtonHighlight();
 }
 
@@ -409,17 +375,6 @@ async function loadVideosConfig() {
   }
 }
 
-async function fetchCombinedVideos() {
-  try {
-    const url = sheetUrl({ action: 'listCombinedVideos' });
-    const res = await fetch(url);
-    if (!res.ok) return [];
-    const body = await res.json();
-    if (body.status !== 'ok') return [];
-    return body.videos || [];
-  } catch { return []; }
-}
-
 // Pull every (non-deleted) orientation row for this labeler across all videos
 // and tally per-video counts. Called once at startup + on labeler-name change.
 // listOrientation with no `video` filter returns the labeler's whole history.
@@ -455,7 +410,8 @@ function buildOptionText(stem, baseText, count, candidateTotal) {
 
 // Update one option's text in place without rebuilding the whole <select>
 // (which would close it if open, lose focus, etc.). Mirrors the change into
-// state.labelCountsByVideo so subsequent re-renders are consistent.
+// state.labelCountsByVideo so subsequent re-renders are consistent. Also
+// toggles the `.labeled` class so the CSS green highlight tracks count > 0.
 function updateOptionCount(stem, count) {
   if (!stem) return;
   state.labelCountsByVideo.set(stem, count);
@@ -467,18 +423,17 @@ function updateOptionCount(stem, count) {
     const totalRaw = opt.dataset.total;
     const total = (totalRaw != null && totalRaw !== '') ? Number(totalRaw) : null;
     opt.textContent = buildOptionText(stem, baseText, count, total);
+    opt.classList.toggle('labeled', count > 0);
     return;
   }
 }
 
-// Populate the <select> with the union of:
-//   - cached videos  (videos.json)   — annotated "N rounds"
-//   - combined videos (Combined Data) — annotated "N punch labels"
-// Plus an "Other — type custom name" option that reveals the freeform
-// text input below. Cached entries win when a stem is in both. Each option
-// also gets a "· K/M labeled" (or "· N labeled") suffix when this labeler
-// has already labeled frames from that video; counts come from `counts`.
-function populateVideoSelect(cachedVideos, combinedVideos, counts) {
+// Populate the <select> with the cached videos from videos.json only.
+// Free mode is gone: a video without a Vision skeleton cache cannot be
+// labeled, because the (round, frame) saved to the Sheet must be a direct
+// index into the cache. Each option gets a "· K/M labeled" (or "· N labeled")
+// suffix when this labeler has already labeled frames from that video.
+function populateVideoSelect(cachedVideos, counts) {
   const sel = document.getElementById('video-select');
   if (!sel) return;
   sel.innerHTML = '';
@@ -487,55 +442,25 @@ function populateVideoSelect(cachedVideos, combinedVideos, counts) {
   placeholder.textContent = '— pick a video —';
   sel.appendChild(placeholder);
 
-  const seen = new Set();
-
-  // Cached group
   const cachedActive = cachedVideos.filter(v => !v.heldOut);
-  if (cachedActive.length) {
-    const grp = document.createElement('optgroup');
-    grp.label = 'Cached (with glove caches)';
-    for (const v of cachedActive.slice().sort((a, b) => a.stem.localeCompare(b.stem))) {
-      seen.add(v.stem);
-      const opt = document.createElement('option');
-      opt.value = v.stem;
-      const n = (v.rounds || []).length;
-      const baseText = n + ' round' + (n === 1 ? '' : 's');
-      const totalCandidates = pickCachedCandidates(v).length;
-      const count = counts.get(v.stem) || 0;
-      opt.dataset.stem = v.stem;
-      opt.dataset.base = baseText;
-      opt.dataset.total = String(totalCandidates);
-      opt.textContent = buildOptionText(v.stem, baseText, count, totalCandidates);
-      grp.appendChild(opt);
-    }
-    sel.appendChild(grp);
+  if (!cachedActive.length) return;
+  const grp = document.createElement('optgroup');
+  grp.label = 'Cached (with Vision skeleton)';
+  for (const v of cachedActive.slice().sort((a, b) => a.stem.localeCompare(b.stem))) {
+    const opt = document.createElement('option');
+    opt.value = v.stem;
+    const n = (v.rounds || []).length;
+    const baseText = n + ' round' + (n === 1 ? '' : 's');
+    const totalCandidates = pickCachedCandidates(v).length;
+    const count = counts.get(v.stem) || 0;
+    opt.dataset.stem = v.stem;
+    opt.dataset.base = baseText;
+    opt.dataset.total = String(totalCandidates);
+    opt.textContent = buildOptionText(v.stem, baseText, count, totalCandidates);
+    if (count > 0) opt.classList.add('labeled');
+    grp.appendChild(opt);
   }
-
-  // Combined Data group — every other video the team has touched
-  const combinedNew = combinedVideos.filter(v => !seen.has(v.stem));
-  if (combinedNew.length) {
-    const grp = document.createElement('optgroup');
-    grp.label = 'From Combined Data';
-    for (const v of combinedNew) {
-      seen.add(v.stem);
-      const opt = document.createElement('option');
-      opt.value = v.stem;
-      const baseText = v.n_labels + ' punch label' + (v.n_labels === 1 ? '' : 's');
-      const count = counts.get(v.stem) || 0;
-      opt.dataset.stem = v.stem;
-      opt.dataset.base = baseText;
-      // total unknown for free-mode (needs video.duration); leave unset.
-      opt.textContent = buildOptionText(v.stem, baseText, count, null);
-      grp.appendChild(opt);
-    }
-    sel.appendChild(grp);
-  }
-
-  // Other / custom
-  const otherOpt = document.createElement('option');
-  otherOpt.value = '__custom__';
-  otherOpt.textContent = 'Other — type custom name below';
-  sel.appendChild(otherOpt);
+  sel.appendChild(grp);
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -550,64 +475,35 @@ window.addEventListener('DOMContentLoaded', async () => {
     // The dropdown's "K labeled" suffixes are per-labeler — refresh them
     // when the name changes, then rebuild the <select> in place.
     state.labelCountsByVideo = await fetchAllLabelerCounts(labelerInput.value.trim());
-    populateVideoSelect(state.knownVideos, state.combinedVideos, state.labelCountsByVideo);
+    populateVideoSelect(state.knownVideos, state.labelCountsByVideo);
     if (state.currentStem && state.candidates.length) syncFromSheet();
   });
 
-  // Load known videos: union of cached (videos.json) + Combined Data
-  // (Sheet). Cached entries supply round meta for exact frame mapping;
-  // Combined-Data entries are dropdown-only and fall through to free mode.
-  // Also fetch this labeler's existing per-video counts so the dropdown
-  // shows what's already done.
+  // Load known videos from videos.json — the only source of labelable videos.
+  // Also fetch this labeler's existing per-video counts so the dropdown shows
+  // what's already done.
   const cfg = await loadVideosConfig();
   state.knownVideos = cfg.videos || [];
-  state.combinedVideos = await fetchCombinedVideos();
   state.labelCountsByVideo = await fetchAllLabelerCounts(labelerInput.value.trim());
-  populateVideoSelect(state.knownVideos, state.combinedVideos, state.labelCountsByVideo);
+  populateVideoSelect(state.knownVideos, state.labelCountsByVideo);
 
-  // Select + custom-name pair: when "Other" is picked, reveal the
-  // freeform text input; otherwise use the selected option's value.
+  // Dropdown is the only way in — custom names are gone with free mode.
   const selectEl = document.getElementById('video-select');
-  const customInput = document.getElementById('custom-name-input');
 
   function onVideoChoiceChanged() {
-    const picked = selectEl.value;
-    if (picked === '__custom__') {
-      customInput.style.display = '';
-      const stem = customInput.value.trim();
-      state.currentStem = stem || null;
-    } else {
-      customInput.style.display = 'none';
-      state.currentStem = picked || null;
-    }
+    state.currentStem = selectEl.value || null;
     if (!state.currentStem) { setModeBadge('no video'); return; }
     tryGenerateCandidates();
   }
 
   selectEl.addEventListener('change', onVideoChoiceChanged);
-  customInput.addEventListener('change', onVideoChoiceChanged);
-  customInput.addEventListener('input', () => {
-    // Live-update as the user types so they don't have to blur.
-    if (selectEl.value !== '__custom__') return;
-    state.currentStem = customInput.value.trim() || null;
-    if (!state.currentStem) setModeBadge('no video');
-  });
 
   // Hook into video loading. player.js fires loadedmetadata after a file
-  // picks; we use that to (a) detect the real fps for free mode and (b)
-  // regenerate candidates if we couldn't before duration was known.
+  // picks; we use that to regenerate candidates once the local .mp4 is ready.
   const video = document.getElementById('video-player');
   video.addEventListener('loadedmetadata', () => {
     state.videoLoaded = true;
-    // player.js detects fps via requestVideoFrameCallback async; give it a
-    // moment, then use whichever fps it has settled on (fallback to 30).
-    setTimeout(() => {
-      const detected = state.fpsDetected
-        ? Math.round(1 / state.frameDuration)
-        : 30;
-      state.fpsForFreeMode = detected;
-      tryGenerateCandidates();
-    }, 500);
+    tryGenerateCandidates();
   });
 
   // Numpad button clicks
