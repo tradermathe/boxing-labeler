@@ -375,10 +375,11 @@ function advanceToNextUnlabeled(fromIdx) {
   setCurrentLine('All candidates labelled for this video — pick another, or use Prev to review.');
 }
 
-// Lead-in seconds before a punch's start_sec — gives the labeler a glimpse of
-// the wind-up / stance for direction context. Tight punches (jabs ~0.4s) feel
-// too short to read direction off the punch alone.
-const PUNCH_LEAD_IN_SEC = 0.3;
+// Lead-in / trail-out seconds around the labelled punch window. Set both to
+// 0 for "pure punch only, nothing else"; bump up if labelers want stance
+// context before the punch starts.
+const PUNCH_LEAD_IN_SEC = 0;
+const PUNCH_TRAIL_OUT_SEC = 0;
 
 function seekToCurrent() {
   if (!state.candidates.length) return;
@@ -398,10 +399,10 @@ function seekToCurrent() {
     t = startSec + (c.frame + 0.5) / fps;
     state.loopWindow = null;   // frame mode never loops
   } else {
-    // Punch mode — loop the punch window so the labeler can watch it
-    // multiple times without scrubbing. Lead-in gives stance context.
+    // Punch mode — loop the labelled punch window. Pure window by default;
+    // PUNCH_LEAD_IN_SEC / PUNCH_TRAIL_OUT_SEC widen it if needed.
     const start = Math.max(0, c.start_sec - PUNCH_LEAD_IN_SEC);
-    const end   = c.end_sec;
+    const end   = c.end_sec + PUNCH_TRAIL_OUT_SEC;
     state.loopWindow = { start, end };
     t = start;
   }
