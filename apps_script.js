@@ -204,6 +204,13 @@ function doGet(e) {
     return doGetOrientation(p, labeler, action);
   }
 
+  // Punch-direction labeler (mode of the orientation page). Per-punch
+  // facing labels keyed by punch_uuid; feeds 07_punch_directions.py.
+  if (action === 'listPunchesForVideo' || action === 'listPunchDirections' ||
+      action === 'savePunchDirection'  || action === 'deletePunchDirection') {
+    return doGetPunchDirections(p, labeler, action);
+  }
+
   var sheetName;
   if (labeler === 'combined') {
     sheetName = 'Combined Data';
@@ -1276,4 +1283,169 @@ function doGetOrientation(p, labeler, action) {
   }
 
   return jsonOut({ status: 'error', message: 'unknown orientation action: ' + action });
+}
+
+// ============================================================
+// Punch Direction labeling — second mode of the orientation labeler.
+//
+// Frame mode (existing) labels facing direction at 5s-bucket frames.
+// Punch mode (new) labels facing direction once per punch (keyed by
+// punch_uuid from Combined Data). Used to test whether the inter-ankle
+// arrow predicts "where the enemy is" — see boxing_ai/orientation_model/
+// 07_punch_directions.py.
+// ============================================================
+
+var PUNCH_DIR_SHEET_NAME = 'Punch Directions';
+var PUNCH_DIR_HEADERS = ['ts', 'labeler', 'punch_uuid', 'video', 'label', 'deleted'];
+var PUNCH_DIR_VALID_BINS = ORIENTATION_VALID_BINS;   // reuse the 8-bin convention
+
+function getOrCreatePunchDirectionSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(PUNCH_DIR_SHEET_NAME);
+  if (!sh) {
+    sh = ss.insertSheet(PUNCH_DIR_SHEET_NAME);
+    sh.appendRow(PUNCH_DIR_HEADERS);
+    sh.setFrozenRows(1);
+  } else if (sh.getLastRow() === 0) {
+    sh.appendRow(PUNCH_DIR_HEADERS);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function punchDirHeaderIndex(headerRow) {
+  var idx = {};
+  for (var i = 0; i < headerRow.length; i++) idx[String(headerRow[i])] = i;
+  return idx;
+}
+
+// Round-marker labels in Combined Data — never labelable as punches.
+var NON_PUNCH_LABELS = ['round_start', 'round_end', 'rest_start', 'rest_end'];
+function isPunchLabel(lbl) {
+  if (lbl === null || lbl === undefined || lbl === '') return false;
+  var s = String(lbl).toLowerCase();
+  return NON_PUNCH_LABELS.indexOf(s) === -1;
+}
+
+function doGetPunchDirections(p, labeler, action) {
+  // === LIST every punch (from Combined Data) for a given video, with
+  //     stance + punch_type + start/end seconds so the labeler can seek. ===
+  // `video` here is the video_name (filename, with or without extension).
+  // We also accept a stem match so the orientation labeler — which uses
+  // stems from videos.json — can pass its stem directly.
+  if (action === 'listPunchesForVideo') {
+    var vid = String(p.video || '').trim();
+    if (!vid) return jsonOut({ status: 'error', message: 'video required' });
+    var cd = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Combined Data');
+    if (!cd) return jsonOut({ status: 'ok', punches: [] });
+    var cdData = cd.getDataRange().getValues();
+    if (cdData.length <= 1) return jsonOut({ status: 'ok', punches: [] });
+    var cdIdx = punchDirHeaderIndex(cdData[0]);
+    var requiredCols = ['video_name', 'label', 'start_sec', 'end_sec', 'punch_uuid'];
+    for (var ci = 0; ci < requiredCols.length; ci++) {
+      if (cdIdx[requiredCols[ci]] === undefined) {
+        return jsonOut({ status: 'error',
+                         message: 'Combined Data missing column: ' + requiredCols[ci] });
+      }
+    }
+    var vidLc = vid.toLowerCase();
+    var punches = [];
+    for (var i = 1; i < cdData.length; i++) {
+      var row = cdData[i];
+      var vn = String(row[cdIdx.video_name] || '').trim();
+      if (!vn) continue;
+      // Match: exact OR extension-stripped name == passed stem.
+      var vnLc = vn.toLowerCase();
+      var stemLc = vnLc.replace(/\.(mp4|mov|webm|m4v|avi)$/i, '');
+      if (vnLc !== vidLc && stemLc !== vidLc) continue;
+      var lbl = row[cdIdx.label];
+      if (!isPunchLabel(lbl)) continue;
+      var uuid = String(row[cdIdx.punch_uuid] || '').trim();
+      if (!uuid) continue;
+      punches.push({
+        punch_uuid: uuid,
+        video_name: vn,
+        label: String(lbl),
+        stance: cdIdx.stance !== undefined ? String(row[cdIdx.stance] || '') : '',
+        start_sec: row[cdIdx.start_sec],
+        end_sec: row[cdIdx.end_sec],
+        id: cdIdx.id !== undefined ? row[cdIdx.id] : '',
+      });
+    }
+    return jsonOut({ status: 'ok', punches: punches });
+  }
+
+  var sh = getOrCreatePunchDirectionSheet();
+  var data = sh.getDataRange().getValues();
+  var idx = punchDirHeaderIndex(data[0]);
+
+  // === LIST direction labels (optionally filtered by labeler / video) ===
+  if (action === 'listPunchDirections') {
+    var video = p.video || '';
+    var filterLabeler = p.labeler || '';
+    var rows = [];
+    for (var li = 1; li < data.length; li++) {
+      var lr = data[li];
+      if (String(lr[idx.deleted]) === '1') continue;
+      if (video && lr[idx.video] !== video) continue;
+      if (filterLabeler && lr[idx.labeler] !== filterLabeler) continue;
+      rows.push({
+        ts: lr[idx.ts],
+        labeler: lr[idx.labeler],
+        punch_uuid: lr[idx.punch_uuid],
+        video: lr[idx.video],
+        label: lr[idx.label] === '' ? null : Number(lr[idx.label]),
+      });
+    }
+    return jsonOut({ status: 'ok', rows: rows });
+  }
+
+  // === SAVE a label keyed by (labeler, punch_uuid). Supersedes prior. ===
+  if (action === 'savePunchDirection') {
+    var required = ['labeler', 'punch_uuid', 'video'];
+    for (var k = 0; k < required.length; k++) {
+      if (p[required[k]] === undefined || p[required[k]] === '') {
+        return jsonOut({ status: 'error', message: 'missing field: ' + required[k] });
+      }
+    }
+    var lbl = p.label;
+    if (lbl === undefined || lbl === '' || lbl === 'null') {
+      lbl = '';
+    } else if (PUNCH_DIR_VALID_BINS.indexOf(Number(lbl)) === -1) {
+      return jsonOut({ status: 'error', message: 'invalid label: ' + lbl });
+    } else {
+      lbl = Number(lbl);
+      if (lbl === 180) lbl = -180;
+    }
+    for (var i2 = 1; i2 < data.length; i2++) {
+      if (String(data[i2][idx.deleted]) === '1') continue;
+      if (data[i2][idx.labeler] !== p.labeler) continue;
+      if (data[i2][idx.punch_uuid] !== p.punch_uuid) continue;
+      sh.getRange(i2 + 1, idx.deleted + 1).setValue('1');
+    }
+    sh.appendRow([
+      new Date().toISOString(),
+      p.labeler,
+      p.punch_uuid,
+      p.video,
+      lbl,
+      '',
+    ]);
+    return jsonOut({ status: 'ok' });
+  }
+
+  // === DELETE: mark every current row for (labeler, punch_uuid) deleted ===
+  if (action === 'deletePunchDirection') {
+    var found = 0;
+    for (var i3 = 1; i3 < data.length; i3++) {
+      if (String(data[i3][idx.deleted]) === '1') continue;
+      if (data[i3][idx.labeler] !== p.labeler) continue;
+      if (data[i3][idx.punch_uuid] !== p.punch_uuid) continue;
+      sh.getRange(i3 + 1, idx.deleted + 1).setValue('1');
+      found++;
+    }
+    return jsonOut({ status: 'ok', deleted: found });
+  }
+
+  return jsonOut({ status: 'error', message: 'unknown punch-direction action: ' + action });
 }
