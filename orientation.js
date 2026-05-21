@@ -375,9 +375,17 @@ function advanceToNextUnlabeled(fromIdx) {
   setCurrentLine('All candidates labelled for this video — pick another, or use Prev to review.');
 }
 
+// Lead-in seconds before a punch's start_sec — gives the labeler a glimpse of
+// the wind-up / stance for direction context. Tight punches (jabs ~0.4s) feel
+// too short to read direction off the punch alone.
+const PUNCH_LEAD_IN_SEC = 0.3;
+
 function seekToCurrent() {
   if (!state.candidates.length) return;
-  if (state.cursor >= state.candidates.length) return;
+  if (state.cursor >= state.candidates.length) {
+    state.loopWindow = null;   // off the end → no loop
+    return;
+  }
   const c = state.candidates[state.cursor];
   const video = document.getElementById('video-player');
 
@@ -388,14 +396,26 @@ function seekToCurrent() {
     const startSec = Number(r.actual_start_sec ?? r.start_sec ?? 0);
     const fps = Number(r.fps);
     t = startSec + (c.frame + 0.5) / fps;
+    state.loopWindow = null;   // frame mode never loops
   } else {
-    // Punch mode — seek to the middle of the window so the labeler sees
-    // the punch at peak commitment rather than the wind-up frame.
-    t = 0.5 * (c.start_sec + c.end_sec);
+    // Punch mode — loop the punch window so the labeler can watch it
+    // multiple times without scrubbing. Lead-in gives stance context.
+    const start = Math.max(0, c.start_sec - PUNCH_LEAD_IN_SEC);
+    const end   = c.end_sec;
+    state.loopWindow = { start, end };
+    t = start;
   }
 
   if (video && !isNaN(video.duration) && video.duration > 0 && t != null) {
     video.currentTime = Math.min(Math.max(0, t), video.duration);
+    // Auto-play in punch mode so the loop runs without the labeler hitting
+    // Space every time. Some browsers block autoplay before any user input —
+    // catch the rejection silently; the labeler can press Play once and from
+    // then on auto-play works.
+    if (state.mode === 'punch' && video.paused) {
+      const pp = video.play();
+      if (pp && typeof pp.catch === 'function') pp.catch(() => {});
+    }
   }
   const label = state.labelByKey.get(keyFor(c));
   let labelTxt;
@@ -680,6 +700,10 @@ window.addEventListener('DOMContentLoaded', async () => {
       if (btn.dataset.mode === state.mode) return;
       state.mode = btn.dataset.mode;
       try { localStorage.setItem('orient_mode', state.mode); } catch {}
+      // Clear any active loop so frame-mode playback isn't snapped around.
+      // tryGenerateCandidates → seekToCurrent will re-set it if we're going
+      // INTO punch mode.
+      state.loopWindow = null;
       syncModeButtons();
       await refreshCountsAndDropdown(labelerInput.value.trim());
       if (state.currentStem) tryGenerateCandidates();
@@ -703,6 +727,18 @@ window.addEventListener('DOMContentLoaded', async () => {
   video.addEventListener('loadedmetadata', () => {
     state.videoLoaded = true;
     tryGenerateCandidates();
+  });
+
+  // Loop the current punch window in punch mode. Snap back to loop.start
+  // when playback runs past loop.end. Manual scrubbing backward is allowed
+  // (don't snap if user is intentionally looking before the window) — only
+  // forward overrun triggers the loop. 50ms epsilon dodges float jitter.
+  video.addEventListener('timeupdate', () => {
+    const lw = state.loopWindow;
+    if (!lw) return;
+    if (video.currentTime > lw.end + 0.05) {
+      video.currentTime = lw.start;
+    }
   });
 
   // Numpad button clicks
