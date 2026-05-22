@@ -1296,7 +1296,11 @@ function doGetOrientation(p, labeler, action) {
 // ============================================================
 
 var PUNCH_DIR_SHEET_NAME = 'Punch Directions';
-var PUNCH_DIR_HEADERS = ['ts', 'labeler', 'punch_uuid', 'video', 'label', 'deleted'];
+// `label_secondary` is the optional second bin for "soft" labels expressed
+// as a 50/50 split between two bins (e.g., a punch that's between +45° and
+// +90° is labelled label=45, label_secondary=90 → analysis uses 67.5° as
+// the continuous GT angle). Blank means single-bin / 100% confident.
+var PUNCH_DIR_HEADERS = ['ts', 'labeler', 'punch_uuid', 'video', 'label', 'deleted', 'label_secondary'];
 var PUNCH_DIR_VALID_BINS = ORIENTATION_VALID_BINS;   // reuse the 8-bin convention
 
 function getOrCreatePunchDirectionSheet() {
@@ -1306,9 +1310,20 @@ function getOrCreatePunchDirectionSheet() {
     sh = ss.insertSheet(PUNCH_DIR_SHEET_NAME);
     sh.appendRow(PUNCH_DIR_HEADERS);
     sh.setFrozenRows(1);
-  } else if (sh.getLastRow() === 0) {
+    return sh;
+  }
+  if (sh.getLastRow() === 0) {
     sh.appendRow(PUNCH_DIR_HEADERS);
     sh.setFrozenRows(1);
+    return sh;
+  }
+  // Auto-migrate: if `label_secondary` column is missing, add it at the end
+  // so the 2600+ existing rows stay untouched (they get a blank cell which
+  // the analysis treats as "no secondary, 100% confident").
+  var headerRow = sh.getRange(1, 1, 1, Math.max(1, sh.getLastColumn())).getValues()[0];
+  var hasSecondary = headerRow.some(function (h) { return String(h) === 'label_secondary'; });
+  if (!hasSecondary) {
+    sh.getRange(1, headerRow.length + 1).setValue('label_secondary');
   }
   return sh;
 }
@@ -1384,23 +1399,29 @@ function doGetPunchDirections(p, labeler, action) {
     var video = p.video || '';
     var filterLabeler = p.labeler || '';
     var rows = [];
+    var hasSecondaryCol = idx.label_secondary !== undefined;
     for (var li = 1; li < data.length; li++) {
       var lr = data[li];
       if (String(lr[idx.deleted]) === '1') continue;
       if (video && lr[idx.video] !== video) continue;
       if (filterLabeler && lr[idx.labeler] !== filterLabeler) continue;
+      var sec = hasSecondaryCol ? lr[idx.label_secondary] : '';
       rows.push({
         ts: lr[idx.ts],
         labeler: lr[idx.labeler],
         punch_uuid: lr[idx.punch_uuid],
         video: lr[idx.video],
         label: lr[idx.label] === '' ? null : Number(lr[idx.label]),
+        label_secondary: (sec === '' || sec == null) ? null : Number(sec),
       });
     }
     return jsonOut({ status: 'ok', rows: rows });
   }
 
   // === SAVE a label keyed by (labeler, punch_uuid). Supersedes prior. ===
+  // Optional `label_secondary` param: when set, this is a "soft" label that
+  // the analysis treats as a 50/50 split between (label, label_secondary).
+  // Blank/missing = single-bin / 100% confident.
   if (action === 'savePunchDirection') {
     var required = ['labeler', 'punch_uuid', 'video'];
     for (var k = 0; k < required.length; k++) {
@@ -1408,29 +1429,41 @@ function doGetPunchDirections(p, labeler, action) {
         return jsonOut({ status: 'error', message: 'missing field: ' + required[k] });
       }
     }
-    var lbl = p.label;
-    if (lbl === undefined || lbl === '' || lbl === 'null') {
-      lbl = '';
-    } else if (PUNCH_DIR_VALID_BINS.indexOf(Number(lbl)) === -1) {
-      return jsonOut({ status: 'error', message: 'invalid label: ' + lbl });
-    } else {
-      lbl = Number(lbl);
-      if (lbl === 180) lbl = -180;
+    function _coerceLabel(v) {
+      if (v === undefined || v === '' || v === 'null') return '';
+      if (PUNCH_DIR_VALID_BINS.indexOf(Number(v)) === -1) return null; // invalid
+      var n = Number(v);
+      if (n === 180) n = -180;
+      return n;
     }
+    var lbl = _coerceLabel(p.label);
+    if (lbl === null) return jsonOut({ status: 'error', message: 'invalid label: ' + p.label });
+    var lbl2 = _coerceLabel(p.label_secondary);
+    if (lbl2 === null) return jsonOut({ status: 'error', message: 'invalid label_secondary: ' + p.label_secondary });
+    // Soft labels only make sense when both bins are present and different.
+    if (lbl2 !== '' && (lbl === '' || lbl === lbl2)) lbl2 = '';
+
     for (var i2 = 1; i2 < data.length; i2++) {
       if (String(data[i2][idx.deleted]) === '1') continue;
       if (data[i2][idx.labeler] !== p.labeler) continue;
       if (data[i2][idx.punch_uuid] !== p.punch_uuid) continue;
       sh.getRange(i2 + 1, idx.deleted + 1).setValue('1');
     }
-    sh.appendRow([
-      new Date().toISOString(),
-      p.labeler,
-      p.punch_uuid,
-      p.video,
-      lbl,
-      '',
-    ]);
+    // Build the row by header position so additions/reorderings don't break.
+    var newRow = [];
+    var headerRow = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+    for (var c = 0; c < headerRow.length; c++) {
+      var col = String(headerRow[c]);
+      if (col === 'ts') newRow.push(new Date().toISOString());
+      else if (col === 'labeler') newRow.push(p.labeler);
+      else if (col === 'punch_uuid') newRow.push(p.punch_uuid);
+      else if (col === 'video') newRow.push(p.video);
+      else if (col === 'label') newRow.push(lbl);
+      else if (col === 'label_secondary') newRow.push(lbl2);
+      else if (col === 'deleted') newRow.push('');
+      else newRow.push('');
+    }
+    sh.appendRow(newRow);
     return jsonOut({ status: 'ok' });
   }
 
