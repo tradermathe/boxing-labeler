@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cue Labeler</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Page-specific. Shared shell (top bar, video player, seek bar,
+       toasts) comes from style.css + player.js. We just style the
+       cue-specific sidebar bits. */
+    #cue-sidebar {
+      width: 320px;
+      min-width: 280px;
+      padding: 14px;
+      background: #16213e;
+      border-left: 1px solid #0f3460;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+    #cue-sidebar h3 {
+      margin: 0;
+      font-size: 14px;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 1.4px;
+    }
+    #buffer-card {
+      background: #1a1a2e;
+      border: 1px solid #533483;
+      border-radius: 6px;
+      padding: 16px;
+      text-align: center;
+    }
+    #buffer-card .bc-eyebrow {
+      font-size: 11px;
+      color: #777;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    #buffer-text {
+      font-size: 28px;
+      font-family: ui-monospace, monospace;
+      color: #e94560;
+      letter-spacing: 2px;
+      min-height: 34px;
+    }
+    #buffer-time {
+      font-size: 12px;
+      color: #888;
+      margin-top: 6px;
+      font-family: ui-monospace, monospace;
+    }
+    .cue-ref {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    .cue-ref .ref-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 6px 10px;
+      background: #1a1a2e;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .cue-ref .ref-key {
+      font-family: ui-monospace, monospace;
+      color: #e94560;
+      font-weight: bold;
+    }
+    .cue-ref .ref-name {
+      color: #aaa;
+      text-align: right;
+    }
+    .cue-ref .ref-row.span2 {
+      grid-column: span 2;
+    }
+    #event-list {
+      flex: 1;
+      min-height: 120px;
+      max-height: 300px;
+      overflow-y: auto;
+      background: #1a1a2e;
+      border-radius: 4px;
+      padding: 6px;
+    }
+    .event-row {
+      display: grid;
+      grid-template-columns: 72px 1fr 24px;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      margin-bottom: 2px;
+      border-radius: 3px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .event-row:hover { background: #2b3a5e; }
+    .event-row .er-time {
+      color: #888;
+      font-family: ui-monospace, monospace;
+    }
+    .event-row .er-cue {
+      color: #e0e0e0;
+      font-family: ui-monospace, monospace;
+      font-weight: 600;
+    }
+    .event-row .er-del {
+      color: #555;
+      text-align: center;
+      font-size: 14px;
+    }
+    .event-row .er-del:hover { color: #e94560; }
+    .empty-events {
+      color: #555;
+      font-size: 12px;
+      text-align: center;
+      padding: 16px;
+    }
+    .submit-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      background: #e94560;
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+    }
+    .btn-primary:hover { background: #d63a55; }
+    .btn-primary:disabled { background: #555; cursor: not-allowed; }
+    .btn-secondary {
+      background: #1a1a2e;
+      color: #aaa;
+      border: 1px solid #444;
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .btn-secondary:hover { background: #2b3a5e; }
+    #status-line {
+      font-size: 12px;
+      color: #888;
+      min-height: 18px;
+    }
+    .help-block {
+      font-size: 11px;
+      color: #666;
+      line-height: 1.5;
+    }
+    .help-block code {
+      background: #0f3460;
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: #e94560;
+      font-family: ui-monospace, monospace;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Top bar -->
+    <div id="top-bar">
+      <div id="video-loader">
+        <button id="btn-pick-file" onclick="document.getElementById('video-file').click()">Open Video File</button>
+        <input type="file" id="video-file" accept="video/*" style="display:none">
+        <span id="video-name">No video loaded</span>
+        <span id="labeler-badge" style="background:#0f3460; color:#e94560; padding:2px 10px; border-radius:10px; font-size:13px; font-weight:bold; display:none;"></span>
+      </div>
+      <div style="font-size:12px; color:#666; margin-right:12px">
+        <a href="index.html" style="color:#0f3460; text-decoration:none; padding:4px 10px; border:1px solid #0f3460; border-radius:4px">&larr; Punch labeler</a>
+      </div>
+    </div>
+    <input type="hidden" id="script-url">
+
+    <!-- Drive URL + metadata row -->
+    <div id="drive-link-bar" style="padding:4px 16px; background:#121a30; border-bottom:1px solid #0f3460; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <label for="drive-link" style="font-size:13px; color:#aaa; white-space:nowrap;">Drive Link:</label>
+      <input type="text" id="drive-link" placeholder="Paste Google Drive video link (for metadata)" style="flex:1; min-width:200px; background:#1a1a2e; border:1px solid #0f3460; color:#e0e0e0; padding:6px 10px; border-radius:4px; font-size:13px;">
+      <span id="status-line"></span>
+    </div>
+
+    <!-- Main layout -->
+    <div id="main-layout">
+      <!-- Center: video + seek bar -->
+      <div id="video-area" style="flex:1; display:flex; flex-direction:column;">
+        <div id="video-wrap" style="flex:1; background:#000; position:relative; display:flex; align-items:center; justify-content:center;">
+          <video id="video-player" controls style="max-width:100%; max-height:100%;"></video>
+        </div>
+        <!-- Compact seek bar + time -->
+        <div id="seek-bar-wrap" style="background:#16213e; padding:6px 12px; border-top:1px solid #0f3460; display:flex; align-items:center; gap:10px;">
+          <span id="time-display" style="font-family:ui-monospace,monospace; font-size:12px; color:#aaa; min-width:130px;">0:00.000 / 0:00.000</span>
+          <input type="range" id="seek-bar" min="0" max="100" step="0.01" value="0" style="flex:1;">
+          <span id="rate-display" style="font-size:12px; color:#888;">1×</span>
+        </div>
+      </div>
+
+      <!-- Right sidebar: cue ref + buffer + events list -->
+      <div id="cue-sidebar">
+        <div id="buffer-card">
+          <div class="bc-eyebrow">CURRENT BUFFER</div>
+          <div id="buffer-text">—</div>
+          <div id="buffer-time">video paused: —</div>
+        </div>
+
+        <h3>Cue keys</h3>
+        <div class="cue-ref">
+          <div class="ref-row"><span class="ref-key">1</span><span class="ref-name">jab</span></div>
+          <div class="ref-row"><span class="ref-key">2</span><span class="ref-name">cross</span></div>
+          <div class="ref-row"><span class="ref-key">3</span><span class="ref-name">lead hook</span></div>
+          <div class="ref-row"><span class="ref-key">4</span><span class="ref-name">rear hook</span></div>
+          <div class="ref-row"><span class="ref-key">5</span><span class="ref-name">lead upper</span></div>
+          <div class="ref-row"><span class="ref-key">6</span><span class="ref-name">rear upper</span></div>
+          <div class="ref-row span2"><span class="ref-key">B</span><span class="ref-name">mark last digit as body</span></div>
+          <div class="ref-row span2"><span class="ref-key">Space</span><span class="ref-name">pause / commit buffer + play</span></div>
+          <div class="ref-row span2"><span class="ref-key">Backspace</span><span class="ref-name">remove last buffer character</span></div>
+          <div class="ref-row span2"><span class="ref-key">Z</span><span class="ref-name">undo last submitted event</span></div>
+          <div class="ref-row span2"><span class="ref-key">←/→</span><span class="ref-name">seek -1s / +1s</span></div>
+        </div>
+
+        <div class="help-block">
+          Single tap a digit while playing &rarr; video auto-pauses, buffer starts. Add more
+          digits to compose a combo (<code>1</code>&nbsp;then&nbsp;<code>2</code> while still paused
+          = combo <code>1-2</code>). Hit <code>B</code> after a digit to mark it as body.
+          <code>Space</code> commits the buffer at the paused time and resumes.
+          For two separate cues, commit between them (Space &rarr; play &rarr; digit pauses again).
+        </div>
+
+        <h3>Events <span id="event-count" style="color:#666; font-weight:normal;">0</span></h3>
+        <div id="event-list"><div class="empty-events">No events yet.</div></div>
+
+        <div class="submit-row">
+          <button id="btn-submit" class="btn-primary" disabled>Submit to sheet</button>
+          <button id="btn-download" class="btn-secondary">Download JSON</button>
+        </div>
+        <div class="submit-row">
+          <button id="btn-clear" class="btn-secondary" style="flex:1;">Clear events</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="player.js"></script>
+  <script src="cue.js"></script>
+</body>
+</html>
