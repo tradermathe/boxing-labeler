@@ -211,9 +211,19 @@ function doGet(e) {
     return doGetPunchDirections(p, labeler, action);
   }
 
+  // 22.5°-bin punch-direction labeler — separate sheet, 16 bins. Candidate
+  // listing reuses listPunchesForVideo above (the punch_dir_16 page filters
+  // to straights client-side); only the label sheet differs.
+  if (action === 'listPunchDirections16' || action === 'savePunchDirection16' ||
+      action === 'deletePunchDirection16') {
+    return doGetPunchDirections16(p, labeler, action);
+  }
+
   var sheetName;
   if (labeler === 'combined') {
     sheetName = 'Combined Data';
+  } else if (labeler === 'archive') {
+    sheetName = COMBINED_ARCHIVE_NAME;
   } else if (/^\d+$/.test(labeler)) {
     sheetName = 'Labeled Data Software ' + labeler;
   } else {
@@ -1481,4 +1491,116 @@ function doGetPunchDirections(p, labeler, action) {
   }
 
   return jsonOut({ status: 'error', message: 'unknown punch-direction action: ' + action });
+}
+
+// ── 22.5° punch-direction labeler ─────────────────────────────────────────
+// Same per-(labeler, punch_uuid) model as Punch Directions, but `label` is
+// one of 16 bins (22.5° steps) rather than 8. Lives in its own sheet so the
+// two labeling efforts never collide. No `label_secondary` — the finer bins
+// make the soft-label hack unnecessary. Candidate listing reuses the existing
+// listPunchesForVideo handler (the page filters to straight punches itself).
+var PUNCH_DIR16_SHEET_NAME = 'Punch Directions 16';
+var PUNCH_DIR16_HEADERS = ['ts', 'labeler', 'punch_uuid', 'video', 'label', 'deleted'];
+var PUNCH_DIR16_VALID_BINS = [
+  0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180,
+  -22.5, -45, -67.5, -90, -112.5, -135, -157.5, -180,
+];
+
+function getOrCreatePunchDirection16Sheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(PUNCH_DIR16_SHEET_NAME);
+  if (!sh) {
+    sh = ss.insertSheet(PUNCH_DIR16_SHEET_NAME);
+    sh.appendRow(PUNCH_DIR16_HEADERS);
+    sh.setFrozenRows(1);
+    return sh;
+  }
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(PUNCH_DIR16_HEADERS);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function doGetPunchDirections16(p, labeler, action) {
+  var sh = getOrCreatePunchDirection16Sheet();
+  var data = sh.getDataRange().getValues();
+  var idx = punchDirHeaderIndex(data[0]);
+
+  // === LIST direction labels (optionally filtered by labeler / video) ===
+  if (action === 'listPunchDirections16') {
+    var video = p.video || '';
+    var filterLabeler = p.labeler || '';
+    var rows = [];
+    for (var li = 1; li < data.length; li++) {
+      var lr = data[li];
+      if (String(lr[idx.deleted]) === '1') continue;
+      if (video && lr[idx.video] !== video) continue;
+      if (filterLabeler && lr[idx.labeler] !== filterLabeler) continue;
+      rows.push({
+        ts: lr[idx.ts],
+        labeler: lr[idx.labeler],
+        punch_uuid: lr[idx.punch_uuid],
+        video: lr[idx.video],
+        label: lr[idx.label] === '' ? null : Number(lr[idx.label]),
+      });
+    }
+    return jsonOut({ status: 'ok', rows: rows });
+  }
+
+  // === SAVE a label keyed by (labeler, punch_uuid). Supersedes prior. ===
+  // Blank/missing label = "skip" (unclear), stored as an empty cell.
+  if (action === 'savePunchDirection16') {
+    var required = ['labeler', 'punch_uuid', 'video'];
+    for (var k = 0; k < required.length; k++) {
+      if (p[required[k]] === undefined || p[required[k]] === '') {
+        return jsonOut({ status: 'error', message: 'missing field: ' + required[k] });
+      }
+    }
+    var lbl;
+    if (p.label === undefined || p.label === '' || p.label === 'null') {
+      lbl = '';   // skip / unclear
+    } else if (PUNCH_DIR16_VALID_BINS.indexOf(Number(p.label)) === -1) {
+      return jsonOut({ status: 'error', message: 'invalid label: ' + p.label });
+    } else {
+      lbl = Number(p.label);
+      if (lbl === 180) lbl = -180;   // collapse the single straight-back bin
+    }
+
+    for (var i2 = 1; i2 < data.length; i2++) {
+      if (String(data[i2][idx.deleted]) === '1') continue;
+      if (data[i2][idx.labeler] !== p.labeler) continue;
+      if (data[i2][idx.punch_uuid] !== p.punch_uuid) continue;
+      sh.getRange(i2 + 1, idx.deleted + 1).setValue('1');
+    }
+    var newRow = [];
+    var headerRow = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+    for (var c = 0; c < headerRow.length; c++) {
+      var col = String(headerRow[c]);
+      if (col === 'ts') newRow.push(new Date().toISOString());
+      else if (col === 'labeler') newRow.push(p.labeler);
+      else if (col === 'punch_uuid') newRow.push(p.punch_uuid);
+      else if (col === 'video') newRow.push(p.video);
+      else if (col === 'label') newRow.push(lbl);
+      else if (col === 'deleted') newRow.push('');
+      else newRow.push('');
+    }
+    sh.appendRow(newRow);
+    return jsonOut({ status: 'ok' });
+  }
+
+  // === DELETE: mark every current row for (labeler, punch_uuid) deleted ===
+  if (action === 'deletePunchDirection16') {
+    var found = 0;
+    for (var i3 = 1; i3 < data.length; i3++) {
+      if (String(data[i3][idx.deleted]) === '1') continue;
+      if (data[i3][idx.labeler] !== p.labeler) continue;
+      if (data[i3][idx.punch_uuid] !== p.punch_uuid) continue;
+      sh.getRange(i3 + 1, idx.deleted + 1).setValue('1');
+      found++;
+    }
+    return jsonOut({ status: 'ok', deleted: found });
+  }
+
+  return jsonOut({ status: 'error', message: 'unknown punch-direction-16 action: ' + action });
 }
