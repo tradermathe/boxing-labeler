@@ -353,7 +353,7 @@ function applyLabel(store, isSkip) {
   updateOptionCount(state.currentStem, state.doneKeys.size);
   setStatus('saving ' + (isSkip ? 'skip' : formatLabel(labelVal)) + '… (' + state.pendingSaves + ' pending)');
 
-  advanceToNextUnlabeled(state.cursor + 1);
+  gotoNext();
 
   savePunchDirection16({ labeler, video: state.currentStem, punch_uuid: c.punch_uuid, label: labelVal }).then(() => {
     state.pendingSaves = Math.max(0, (state.pendingSaves || 1) - 1);
@@ -395,6 +395,23 @@ function gotoPrev() {
   if (!state.candidates.length) return;
   state.cursor = Math.max(0, state.cursor - 1);
   seekToCurrent();
+}
+
+// Sequential next — moves to the following punch whether or not it's labelled.
+function gotoNext() {
+  if (!state.candidates.length) return;
+  state.cursor = Math.min(state.candidates.length - 1, state.cursor + 1);
+  seekToCurrent();
+}
+
+function gotoFirst() {
+  if (!state.candidates.length) return;
+  state.cursor = 0;
+  seekToCurrent();
+}
+
+function gotoNextUnlabeled() {
+  advanceToNextUnlabeled(state.cursor + 1);
 }
 
 function redrawProgress() {
@@ -536,14 +553,20 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (video.currentTime > lw.end + 0.05) video.currentTime = lw.start;
   });
 
+  document.getElementById('btn-first').addEventListener('click', gotoFirst);
   document.getElementById('btn-prev').addEventListener('click', gotoPrev);
+  document.getElementById('btn-next').addEventListener('click', gotoNext);
+  document.getElementById('btn-next-unlabeled').addEventListener('click', gotoNextUnlabeled);
   document.getElementById('btn-clear').addEventListener('click', clearCurrent);
 
   document.addEventListener('keydown', (e) => {
     const tag = e.target?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA') return;
     if (e.key in KEY_BINS) { e.preventDefault(); const m = KEY_BINS[e.key]; applyLabel(m.store, m.skip); return; }
+    if (e.key === 'n' || e.key === 'N') { e.preventDefault(); gotoNext(); return; }
     if (e.key === 'p' || e.key === 'P') { e.preventDefault(); gotoPrev(); return; }
+    if (e.key === 'f' || e.key === 'F') { e.preventDefault(); gotoFirst(); return; }
+    if (e.key === 'u' || e.key === 'U') { e.preventDefault(); gotoNextUnlabeled(); return; }
     if (e.key === 'c' || e.key === 'C') { e.preventDefault(); clearCurrent(); return; }
   });
 
