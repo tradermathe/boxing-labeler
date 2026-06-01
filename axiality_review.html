@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Axiality Review · GT vs model</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Read-only review panel — mirrors the labeler chrome but shows the model's
+       held-out (out-of-fold) prediction next to the ground-truth bucket. */
+    #review-panel {
+      padding: 12px;
+      background: #16213e;
+      border-left: 1px solid #0f3460;
+      width: 360px;
+      overflow-y: auto;
+    }
+    #review-panel h3 {
+      margin: 12px 0 4px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #888;
+    }
+    #review-current {
+      font-family: ui-monospace, monospace;
+      font-size: 13px;
+      padding: 8px;
+      background: #1a1a2e;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      line-height: 1.5;
+    }
+    /* Verdict badge */
+    #verdict {
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 6px 0 10px;
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+    }
+    #verdict.exact { background: #173a22; border-color: #5fd97a; color: #5fd97a; }
+    #verdict.pm1   { background: #3a3115; border-color: #f5b945; color: #f5b945; }
+    #verdict.wrong { background: #3a1820; border-color: #e85a5a; color: #e85a5a; }
+    /* GT vs prediction rows */
+    .cmp-row {
+      display: flex; align-items: baseline; gap: 8px;
+      font-family: ui-monospace, monospace; font-size: 13px;
+      padding: 5px 8px; border-radius: 4px; margin-bottom: 4px; background: #1a1a2e;
+    }
+    .cmp-label { width: 52px; color: #888; font-size: 11px; text-transform: uppercase; }
+    .cmp-bucket { font-weight: 700; }
+    .cmp-gt .cmp-bucket   { color: #5fd97a; }
+    .cmp-pred .cmp-bucket { color: #c75b39; }
+    .cmp-aux { color: #6a7aa0; font-size: 11px; margin-left: auto; }
+    /* 5-cell axiality strip (sideways -> axial) */
+    #bucket-strip { display: flex; gap: 3px; margin: 8px 0; }
+    .bk-cell {
+      flex: 1; text-align: center; font-size: 9px; line-height: 1.2;
+      padding: 6px 2px; border-radius: 4px; background: #1a1a2e;
+      border: 1px solid #243254; color: #6a7aa0; position: relative;
+    }
+    .bk-cell .bk-name { font-weight: 600; }
+    .bk-cell.gt   { border-color: #5fd97a; box-shadow: inset 0 0 0 1px #5fd97a; color: #cfe8d4; }
+    .bk-cell.pred { background: #3a241c; }
+    .bk-cell.pred::after {
+      content: ''; position: absolute; left: 50%; bottom: 3px; transform: translateX(-50%);
+      width: 7px; height: 7px; border-radius: 50%; background: #c75b39;
+    }
+    .bk-cell.gt.pred { color: #fff; }
+    /* nav */
+    .review-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .review-btn {
+      flex: 1; background: #0f3460; color: #fff; border: none;
+      padding: 7px 6px; border-radius: 4px; cursor: pointer; font-size: 12px;
+      font-family: inherit;
+    }
+    .review-btn.secondary { background: #2a2f45; }
+    .review-btn.mistake { background: #5a2630; }
+    .review-btn:hover { filter: brightness(1.2); }
+    .toggle-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #aaa; margin: 6px 0; }
+    /* per-video stats */
+    .stat-grid {
+      display: grid; grid-template-columns: auto 1fr; gap: 2px 10px;
+      font-family: ui-monospace, monospace; font-size: 12px; color: #cfd6e6;
+    }
+    .stat-grid .k { color: #888; }
+    .review-bar {
+      height: 14px; background: #1a1a2e; border: 1px solid #0f3460; border-radius: 4px;
+      overflow: hidden; position: relative; margin: 6px 0;
+    }
+    .review-bar > span { position: absolute; top: 0; bottom: 0; left: 0; }
+    .review-bar .b-exact { background: #5fd97a; }
+    .review-bar .b-pm1   { background: #f5b945; }
+    #review-status { font-size: 12px; color: #888; margin-top: 8px; min-height: 16px; }
+    #review-status.ok { color: #5fd97a; }
+    #review-status.err { color: #e85a5a; }
+    /* skeleton overlay sits directly on the video, under the corner tags */
+    #skeleton-overlay {
+      position: absolute; top: 0; left: 0; pointer-events: none; z-index: 8;
+    }
+    #overall-readout {
+      font-size: 11px; color: #9aa7c7; font-family: ui-monospace, monospace;
+      white-space: nowrap;
+    }
+    .legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; vertical-align: middle; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Top bar -->
+    <div id="top-bar">
+      <div id="video-loader">
+        <button id="btn-pick-file" onclick="document.getElementById('video-file').click()">Open Video File</button>
+        <input type="file" id="video-file" accept="video/*" style="display:none">
+        <span id="video-name">No video loaded</span>
+      </div>
+      <div style="font-size:12px; color:#666; margin-right:12px">
+        <a href="punch_dir_16.html" style="color:#0f3460; text-decoration:none; padding:4px 10px; border:1px solid #0f3460; border-radius:4px">&larr; 22.5° labeler</a>
+      </div>
+    </div>
+
+    <!-- Setup bar — video picker + overall accuracy -->
+    <div id="drive-link-bar" style="padding:4px 16px; background:#121a30; border-bottom:1px solid #0f3460; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <label for="video-select" style="font-size:13px; color:#aaa; white-space:nowrap;">Video:</label>
+      <select id="video-select"
+              style="flex:1; min-width:280px; max-width:520px; background:#1a1a2e; border:1px solid #0f3460; color:#e0e0e0; padding:6px 10px; border-radius:4px; font-size:13px;">
+        <option value="">— pick a video —</option>
+      </select>
+      <span id="overall-readout">—</span>
+    </div>
+
+    <!-- Main layout: video player center + review sidebar right -->
+    <div id="main-layout">
+      <div id="video-container">
+        <div id="video-viewport">
+          <video id="video-player" preload="auto"></video>
+          <canvas id="skeleton-overlay"></canvas>
+          <div id="video-dim-overlay"></div>
+          <div id="video-overlay"></div>
+          <video id="thumb-video" preload="auto" muted style="display:none"></video>
+        </div>
+        <div id="video-controls">
+          <div id="timeline-minimap" style="display:none">
+            <div id="minimap-segments"></div>
+            <div id="minimap-viewport"></div>
+            <div id="minimap-playhead"></div>
+          </div>
+          <div id="seek-bar-wrapper">
+            <div id="timeline-ticks"></div>
+            <div id="seek-bar-overlay"></div>
+            <input type="range" id="seek-bar" min="0" max="1000" value="0">
+            <div id="seek-thumbnail">
+              <canvas id="thumb-canvas" width="192" height="108"></canvas>
+              <span id="thumb-time"></span>
+            </div>
+          </div>
+          <div id="controls-row">
+            <button id="btn-play" onclick="togglePlay()">Play</button>
+            <button id="btn-mute" onclick="toggleMute()">&#128266;</button>
+            <button onclick="stepFrames(-2)" title="Back 2 frames">&laquo;</button>
+            <button onclick="stepFrames(-1)" title="Back 1 frame">&lsaquo;</button>
+            <button onclick="stepFrames(1)" title="Forward 1 frame">&rsaquo;</button>
+            <button onclick="stepFrames(2)" title="Forward 2 frames">&raquo;</button>
+            <div id="speed-controls">
+              <label>Speed:</label>
+              <button onclick="setSpeed(0.25)">0.25x</button>
+              <button onclick="setSpeed(0.5)">0.5x</button>
+              <button onclick="setSpeed(1)" class="speed-active">1x</button>
+              <button onclick="setSpeed(2)">2x</button>
+            </div>
+            <span id="time-display">0:00.000 / 0:00.000</span>
+            <button id="btn-overlay" onclick="toggleOverlay()" title="Toggle corner tags (L)">Labels: ON</button>
+            <div id="zoom-controls">
+              <button id="btn-zoom-out" onclick="zoomOut()" title="Zoom out (Ctrl+-)">&#8722;</button>
+              <span id="zoom-level-display">1x</span>
+              <button id="btn-zoom-in" onclick="zoomIn()" title="Zoom in (Ctrl+=)">+</button>
+              <button id="btn-zoom-fit" onclick="zoomFit()" title="Fit all (Ctrl+0)">Fit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: review panel -->
+      <div id="review-panel">
+        <h3>Current punch</h3>
+        <div id="review-current">— pick a video to start —</div>
+
+        <div id="verdict">—</div>
+
+        <div class="cmp-row cmp-gt">
+          <span class="cmp-label">truth</span>
+          <span class="cmp-bucket" id="gt-bucket">—</span>
+          <span class="cmp-aux" id="gt-aux"></span>
+        </div>
+        <div class="cmp-row cmp-pred">
+          <span class="cmp-label">model</span>
+          <span class="cmp-bucket" id="pred-bucket">—</span>
+          <span class="cmp-aux" id="pred-aux"></span>
+        </div>
+
+        <div id="bucket-strip"></div>
+
+        <div class="review-row">
+          <button class="review-btn secondary" id="btn-first">⏮ first (F)</button>
+          <button class="review-btn secondary" id="btn-prev">‹ prev (P)</button>
+          <button class="review-btn secondary" id="btn-next">next (N) ›</button>
+        </div>
+        <div class="review-row">
+          <button class="review-btn mistake" id="btn-next-miss">next miss (M) →</button>
+          <button class="review-btn mistake" id="btn-next-wrong">next ✗≥2 (W) →</button>
+        </div>
+
+        <div class="toggle-row">
+          <label><input type="checkbox" id="chk-skeleton" checked> skeleton overlay</label>
+          <span style="margin-left:auto"><span class="legend-dot" style="background:#c75b39"></span> punching arm</span>
+        </div>
+
+        <h3>This video</h3>
+        <div class="review-bar">
+          <span class="b-pm1" id="bar-pm1"></span>
+          <span class="b-exact" id="bar-exact"></span>
+        </div>
+        <div class="stat-grid" id="video-stats">
+          <span class="k">exact</span><span id="st-exact">—</span>
+          <span class="k">±1</span><span id="st-pm1">—</span>
+          <span class="k">punches</span><span id="st-n">—</span>
+        </div>
+        <div id="review-status">—</div>
+
+        <h3>Buckets</h3>
+        <p style="font-size:11px;color:#888;line-height:1.5;margin:0">
+          Axiality = |cos(direction angle)|, snapped to 5 levels.<br>
+          <b>sideways</b> (90°, in-plane) → <b>axial</b> (0/180°, toward/away from camera).<br>
+          Model is graded on <b>±1</b> bucket — amber is still a pass, red (≥2 off) is the real miss.<br>
+          Predictions are <b>out-of-fold</b> (the video was held out when scored).
+        </p>
+      </div>
+    </div>
+
+    <div id="shortcuts-bar">
+      <strong>Shortcuts:</strong>
+      Space = Play/Pause &nbsp;|&nbsp;
+      &larr;/&rarr; = ±1 frame &nbsp;|&nbsp;
+      N = Next &nbsp;|&nbsp; P = Prev &nbsp;|&nbsp; F = First &nbsp;|&nbsp;
+      M = Next miss &nbsp;|&nbsp; W = Next ✗≥2 &nbsp;|&nbsp; S = Toggle skeleton
+    </div>
+  </div>
+
+  <script src="player.js"></script>
+  <script src="axiality_review.js"></script>
+</body>
+</html>
