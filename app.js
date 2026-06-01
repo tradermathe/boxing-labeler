@@ -20,14 +20,12 @@ const PUNCH_TYPES = [
   { id: 'rear_hook_head',        label: 'Rear Hook',           key: '4', group: 'offense' },
   { id: 'lead_uppercut_head',    label: 'Lead Uppercut',       key: '5', group: 'offense' },
   { id: 'rear_uppercut_head',    label: 'Rear Uppercut',       key: '6', group: 'offense' },
-  { id: 'lead_bodyshot',         label: 'Lead Bodyshot',       key: '7', group: 'offense' },
-  { id: 'rear_bodyshot',         label: 'Rear Bodyshot',       key: '8', group: 'offense' },
-  { id: 'jab_body',              label: 'Jab (Body)',          key: '9', group: 'offense' },
-  { id: 'cross_body',            label: 'Cross (Body)',        key: '0', group: 'offense' },
-  { id: 'lead_hook_body',        label: 'Lead Hook (Body)',    key: '',  group: 'offense' },
-  { id: 'rear_hook_body',        label: 'Rear Hook (Body)',    key: '',  group: 'offense' },
-  { id: 'lead_uppercut_body',    label: 'Lead Uppercut (Body)', key: '', group: 'offense' },
-  { id: 'rear_uppercut_body',    label: 'Rear Uppercut (Body)', key: '', group: 'offense' },
+  { id: 'jab_body',              label: 'Jab (Body)',          key: '⇧1', group: 'offense' },
+  { id: 'cross_body',            label: 'Cross (Body)',        key: '⇧2', group: 'offense' },
+  { id: 'lead_hook_body',        label: 'Lead Hook (Body)',    key: '⇧3', group: 'offense' },
+  { id: 'rear_hook_body',        label: 'Rear Hook (Body)',    key: '⇧4', group: 'offense' },
+  { id: 'lead_uppercut_body',    label: 'Lead Uppercut (Body)', key: '⇧5', group: 'offense' },
+  { id: 'rear_uppercut_body',    label: 'Rear Uppercut (Body)', key: '⇧6', group: 'offense' },
   { id: 'lead_slip',             label: 'Lead Slip',           key: 'q', group: 'defense' },
   { id: 'rear_slip',             label: 'Rear Slip',           key: 'w', group: 'defense' },
   { id: 'lead_roll',             label: 'Lead Roll',           key: 'a', group: 'defense' },
@@ -45,8 +43,6 @@ const PUNCH_COLORS = {
   rear_hook_head:     '#ff00aa',
   lead_uppercut_head: '#cc44ff',
   rear_uppercut_head: '#33cccc',
-  lead_bodyshot:      '#88dd00',
-  rear_bodyshot:      '#ffaa33',
   jab_body:           '#0088ff',
   cross_body:         '#ff6699',
   lead_hook_body:     '#aa9900',
@@ -462,7 +458,6 @@ function mapPunchType(sheetPunch) {
     'rear hook body': 'rear_hook_body', 'rear hook (body)': 'rear_hook_body',
     'lead uppercut body': 'lead_uppercut_body', 'lead uppercut (body)': 'lead_uppercut_body',
     'rear uppercut body': 'rear_uppercut_body', 'rear uppercut (body)': 'rear_uppercut_body',
-    'lead bodyshot': 'lead_bodyshot', 'rear bodyshot': 'rear_bodyshot',
     'lead slip': 'lead_slip', 'rear slip': 'rear_slip',
     'lead roll': 'lead_roll', 'rear roll': 'rear_roll',
     'pull back': 'pull_back', 'pullback': 'pull_back',
@@ -908,9 +903,15 @@ function setupKeyboardShortcuts() {
       case 'NumpadSubtract':
         if (e.ctrlKey || e.metaKey) { e.preventDefault(); zoomOut(); }
         break;
+      // Number row: plain = head punch, Shift = body punch
+      case 'Digit1': selectPunch(e.shiftKey ? 'jab_body' : 'jab_head'); break;
+      case 'Digit2': selectPunch(e.shiftKey ? 'cross_body' : 'cross_head'); break;
+      case 'Digit3': selectPunch(e.shiftKey ? 'lead_hook_body' : 'lead_hook_head'); break;
+      case 'Digit4': selectPunch(e.shiftKey ? 'rear_hook_body' : 'rear_hook_head'); break;
+      case 'Digit5': selectPunch(e.shiftKey ? 'lead_uppercut_body' : 'lead_uppercut_head'); break;
+      case 'Digit6': selectPunch(e.shiftKey ? 'rear_uppercut_body' : 'rear_uppercut_head'); break;
       case 'Digit0':
         if (e.ctrlKey || e.metaKey) { e.preventDefault(); zoomFit(); }
-        else { selectPunch('cross_body'); }
         break;
 
       case 'KeyZ':
@@ -923,17 +924,13 @@ function setupKeyboardShortcuts() {
         }
         break;
 
-      // Numpad keys
-      case 'Numpad1': selectPunch('jab_head'); break;
-      case 'Numpad2': selectPunch('cross_head'); break;
-      case 'Numpad3': selectPunch('lead_hook_head'); break;
-      case 'Numpad4': selectPunch('rear_hook_head'); break;
-      case 'Numpad5': selectPunch('lead_uppercut_head'); break;
-      case 'Numpad6': selectPunch('rear_uppercut_head'); break;
-      case 'Numpad7': selectPunch('lead_bodyshot'); break;
-      case 'Numpad8': selectPunch('rear_bodyshot'); break;
-      case 'Numpad9': selectPunch('jab_body'); break;
-      case 'Numpad0': selectPunch('cross_body'); break;
+      // Numpad: plain = head punch, Shift = body punch
+      case 'Numpad1': selectPunch(e.shiftKey ? 'jab_body' : 'jab_head'); break;
+      case 'Numpad2': selectPunch(e.shiftKey ? 'cross_body' : 'cross_head'); break;
+      case 'Numpad3': selectPunch(e.shiftKey ? 'lead_hook_body' : 'lead_hook_head'); break;
+      case 'Numpad4': selectPunch(e.shiftKey ? 'rear_hook_body' : 'rear_hook_head'); break;
+      case 'Numpad5': selectPunch(e.shiftKey ? 'lead_uppercut_body' : 'lead_uppercut_head'); break;
+      case 'Numpad6': selectPunch(e.shiftKey ? 'rear_uppercut_body' : 'rear_uppercut_head'); break;
 
       // Defense keys
       case 'KeyQ': selectPunch('lead_slip'); break;
@@ -943,22 +940,6 @@ function setupKeyboardShortcuts() {
       case 'KeyR': selectPunch('pull_back'); break;
       case 'KeyF': selectPunch('step_back'); break;
       case 'KeyU': selectPunch('unsure'); break;
-
-      default:
-        // Top row number keys via e.key
-        switch (e.key) {
-          case '1': selectPunch('jab_head'); break;
-          case '2': selectPunch('cross_head'); break;
-          case '3': selectPunch('lead_hook_head'); break;
-          case '4': selectPunch('rear_hook_head'); break;
-          case '5': selectPunch('lead_uppercut_head'); break;
-          case '6': selectPunch('rear_uppercut_head'); break;
-          case '7': selectPunch('lead_bodyshot'); break;
-          case '8': selectPunch('rear_bodyshot'); break;
-          case '9': selectPunch('jab_body'); break;
-          case '0': selectPunch('cross_body'); break;
-        }
-        break;
     }
   });
 
