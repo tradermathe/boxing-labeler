@@ -63,8 +63,9 @@ Object.assign(state, {
   cursor: 0,
   doneKeys: new Set(),
   labelByKey: new Map(),
+  coverageByUuid: new Map(),       // current video: punch_uuid -> Set<labeler> (any labeler)
   videoLoaded: false,
-  labelCountsByVideo: new Map(),   // stem -> count of this labeler's labels
+  labelCountsByVideo: new Map(),   // stem -> total punches labeled by anyone
 });
 
 function keyFor(c) {
@@ -233,6 +234,7 @@ async function tryGenerateCandidates() {
   state.cursor = 0;
   state.doneKeys = new Set();
   state.labelByKey = new Map();
+  state.coverageByUuid = new Map();
   setStatus('—');
 
   state.candidates = [];
@@ -266,16 +268,25 @@ async function syncFromSheet() {
   }
   try {
     setStatus('Loading existing labels…');
-    const rows = await fetchPunchDirections16(state.currentStem, labeler);
+    // Pull every labeler's rows for this video: the in-video UX (dial, progress,
+    // next-unlabeled) reflects only YOUR labels, but the dropdown count is the
+    // total of punches labeled by anyone (deduped by punch_uuid).
+    const rows = await fetchPunchDirections16(state.currentStem, '');
     state.doneKeys = new Set();
     state.labelByKey = new Map();
+    state.coverageByUuid = new Map();
     for (const r of rows) {
-      const k = 'p:' + r.punch_uuid;
-      state.doneKeys.add(k);
-      state.labelByKey.set(k, r.label);
+      let who = state.coverageByUuid.get(r.punch_uuid);
+      if (!who) { who = new Set(); state.coverageByUuid.set(r.punch_uuid, who); }
+      who.add(r.labeler);
+      if (r.labeler === labeler) {
+        const k = 'p:' + r.punch_uuid;
+        state.doneKeys.add(k);
+        state.labelByKey.set(k, r.label);
+      }
     }
-    setStatus(`Loaded ${rows.length} prior label(s) for "${labeler}".`, 'ok');
-    updateOptionCount(state.currentStem, state.doneKeys.size);
+    setStatus(`Loaded ${state.doneKeys.size} of your label(s) · ${state.coverageByUuid.size} labeled in total.`, 'ok');
+    updateOptionCount(state.currentStem, state.coverageByUuid.size);
     // Land on the first punch so any existing label is visible immediately;
     // use "next unlabeled" (U) to jump to where labelling left off.
     state.cursor = 0;
@@ -350,10 +361,13 @@ function applyLabel(store, isSkip) {
   // roll back on failure so the item resurfaces on the next sweep.
   state.doneKeys.add(k);
   state.labelByKey.set(k, labelVal);
+  let who = state.coverageByUuid.get(c.punch_uuid);
+  if (!who) { who = new Set(); state.coverageByUuid.set(c.punch_uuid, who); }
+  who.add(labeler);
   state.pendingSaves = (state.pendingSaves || 0) + 1;
   updateButtonHighlight();
   redrawProgress();
-  updateOptionCount(state.currentStem, state.doneKeys.size);
+  updateOptionCount(state.currentStem, state.coverageByUuid.size);
   setStatus('saving ' + (isSkip ? 'skip' : formatLabel(labelVal)) + '… (' + state.pendingSaves + ' pending)');
 
   gotoNext();
@@ -367,9 +381,11 @@ function applyLabel(store, isSkip) {
     state.pendingSaves = Math.max(0, (state.pendingSaves || 1) - 1);
     state.doneKeys.delete(k);
     state.labelByKey.delete(k);
+    const who2 = state.coverageByUuid.get(c.punch_uuid);
+    if (who2) { who2.delete(labeler); if (who2.size === 0) state.coverageByUuid.delete(c.punch_uuid); }
     redrawProgress();
     updateButtonHighlight();
-    updateOptionCount(state.currentStem, state.doneKeys.size);
+    updateOptionCount(state.currentStem, state.coverageByUuid.size);
     setStatus('Save failed for ' + k + ': ' + e.message, 'err');
   });
 }
@@ -383,9 +399,11 @@ async function clearCurrent() {
   const k = keyFor(c);
   state.doneKeys.delete(k);
   state.labelByKey.delete(k);
+  const who = state.coverageByUuid.get(c.punch_uuid);
+  if (who) { who.delete(labeler); if (who.size === 0) state.coverageByUuid.delete(c.punch_uuid); }
   updateButtonHighlight();
   redrawProgress();
-  updateOptionCount(state.currentStem, state.doneKeys.size);
+  updateOptionCount(state.currentStem, state.coverageByUuid.size);
   try {
     await deletePunchDirection16({ labeler, punch_uuid: c.punch_uuid });
     setStatus("Cleared this punch's label.", 'ok');
@@ -449,20 +467,25 @@ async function loadVideosConfig() {
   }
 }
 
-async function fetchAllLabelerCounts(labeler) {
-  const out = new Map();
-  if (!labeler) return out;
+// Total punches labeled by ANY labeler, per video (deduped by punch_uuid so a
+// punch labeled by several people still counts once). Drives the dropdown count.
+async function fetchTotalCounts() {
+  const counts = new Map();
   try {
-    const url = sheetUrl({ action: 'listPunchDirections16', labeler });
+    const url = sheetUrl({ action: 'listPunchDirections16', labeler: '' });
     const res = await fetch(url);
-    if (!res.ok) return out;
+    if (!res.ok) return counts;
     const body = await res.json();
-    if (body.status !== 'ok') return out;
+    if (body.status !== 'ok') return counts;
+    const uuidsByVideo = new Map();
     for (const r of body.rows || []) {
-      out.set(r.video, (out.get(r.video) || 0) + 1);
+      let s = uuidsByVideo.get(r.video);
+      if (!s) { s = new Set(); uuidsByVideo.set(r.video, s); }
+      s.add(r.punch_uuid);
     }
+    for (const [video, s] of uuidsByVideo) counts.set(video, s.size);
   } catch {}
-  return out;
+  return counts;
 }
 
 function buildOptionText(stem, baseText, count) {
@@ -512,8 +535,8 @@ function populateVideoSelect(cachedVideos, counts) {
   sel.appendChild(grp);
 }
 
-async function refreshCountsAndDropdown(labeler) {
-  const map = await fetchAllLabelerCounts(labeler);
+async function refreshCountsAndDropdown() {
+  const map = await fetchTotalCounts();
   state.labelCountsByVideo = map;
   populateVideoSelect(state.knownVideos, map);
 }
@@ -527,13 +550,13 @@ window.addEventListener('DOMContentLoaded', async () => {
   try { labelerInput.value = localStorage.getItem('orient_labeler_name') || ''; } catch {}
   labelerInput.addEventListener('change', async () => {
     try { localStorage.setItem('orient_labeler_name', labelerInput.value.trim()); } catch {}
-    await refreshCountsAndDropdown(labelerInput.value.trim());
+    await refreshCountsAndDropdown();
     if (state.currentStem && state.candidates.length) syncFromSheet();
   });
 
   const cfg = await loadVideosConfig();
   state.knownVideos = cfg.videos || [];
-  await refreshCountsAndDropdown(labelerInput.value.trim());
+  await refreshCountsAndDropdown();
 
   const selectEl = document.getElementById('video-select');
   selectEl.addEventListener('change', () => {
