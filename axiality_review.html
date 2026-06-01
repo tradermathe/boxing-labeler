@@ -89,6 +89,16 @@
       font-family: ui-monospace, monospace; font-size: 12px; color: #cfd6e6;
     }
     .stat-grid .k { color: #888; }
+    /* per-bucket median angular-error breakdown (all videos) */
+    .bd-grid { font-family: ui-monospace, monospace; font-size: 12px; margin: 2px 0 4px; }
+    .bd-row {
+      display: grid; grid-template-columns: 1fr auto 36px; gap: 8px; align-items: baseline;
+      padding: 2px 2px;
+    }
+    .bd-row:nth-child(odd) { background: #1a1a2e; border-radius: 3px; }
+    .bd-name { color: #9aa7c7; }
+    .bd-deg  { color: #c75b39; font-weight: 700; text-align: right; }
+    .bd-n    { color: #5a657f; text-align: right; }
     .review-bar {
       height: 14px; background: #1a1a2e; border: 1px solid #0f3460; border-radius: 4px;
       overflow: hidden; position: relative; margin: 6px 0;
@@ -226,17 +236,21 @@
           <span class="b-exact" id="bar-exact"></span>
         </div>
         <div class="stat-grid" id="video-stats">
-          <span class="k">exact</span><span id="st-exact">—</span>
-          <span class="k">±1</span><span id="st-pm1">—</span>
+          <span class="k">median err</span><span id="st-median">—</span>
+          <span class="k">≤11.25°</span><span id="st-le1125">—</span>
+          <span class="k">≤22.5°</span><span id="st-le225">—</span>
           <span class="k">punches</span><span id="st-n">—</span>
         </div>
         <div id="review-status">—</div>
+
+        <h3>By bucket · all videos</h3>
+        <div id="bucket-breakdown" class="bd-grid"></div>
 
         <h3>Buckets</h3>
         <p style="font-size:11px;color:#888;line-height:1.5;margin:0">
           Axiality = |cos(direction angle)|, snapped to 5 levels.<br>
           <b>sideways</b> (90°, in-plane) → <b>axial</b> (0/180°, toward/away from camera).<br>
-          Model is graded on <b>±1</b> bucket — amber is still a pass, red (≥2 off) is the real miss.<br>
+          Scored on <b>angular error</b> — green is ≤11.25°, amber ≤22.5°, the rest is the real miss.<br>
           Predictions are <b>out-of-fold</b> (the video was held out when scored).
         </p>
       </div>

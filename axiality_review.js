@@ -45,11 +45,23 @@ async function loadReviewData() {
   return res.json();
 }
 
-function videoAcc(punches) {
-  let ex = 0, pm1 = 0;
-  for (const p of punches) { if (p.delta === 0) ex++; if (Math.abs(p.delta) <= 1) pm1++; }
-  const n = punches.length || 1;
-  return { exact: ex / n, pm1: pm1 / n, n: punches.length };
+// Off-axis angular error (degrees) between GT and model for one punch:
+// |acos(gt_axiality) - acos(pred_axiality)| — how far the model's continuous
+// direction estimate is from ground truth (the distance the net actually trains on).
+function punchAngErr(p) {
+  const clamp = v => Math.min(1, Math.max(0, v));
+  return Math.abs(Math.acos(clamp(p.gt_axiality)) - Math.acos(clamp(p.pred_axiality))) * 180 / Math.PI;
+}
+
+// Continuous-distance summary over a set of punches: median error + pass-rates
+// at ½-step (11.25°) and one-step (22.5°) of the 22.5° label dial.
+function degStats(punches) {
+  if (!punches.length) return null;
+  const e = punches.map(punchAngErr).sort((a, b) => a - b);
+  const n = e.length;
+  const median = n % 2 ? e[(n - 1) / 2] : (e[n / 2 - 1] + e[n / 2]) / 2;
+  const le = t => e.filter(x => x <= t).length / n;
+  return { median, le1125: le(11.25), le225: le(22.5), n };
 }
 
 function populateVideoSelect() {
@@ -64,26 +76,28 @@ function populateVideoSelect() {
   grp.label = 'Scored videos · straight-punch axiality (GT vs model)';
   for (const stem of stems) {
     const punches = state.reviewData.videos[stem];
-    const a = videoAcc(punches);
+    const s = degStats(punches);
     const opt = document.createElement('option');
     opt.value = stem;
     opt.dataset.stem = stem;
-    opt.textContent = `${stem}  (${a.n} · ±1 ${(100 * a.pm1).toFixed(0)}%)`;
+    opt.textContent = `${stem}  (${s.n} · med ${s.median.toFixed(0)}°)`;
     grp.appendChild(opt);
   }
   sel.appendChild(grp);
 }
 
+function allPunches() {
+  const out = [];
+  for (const stem in state.reviewData.videos) for (const p of state.reviewData.videos[stem]) out.push(p);
+  return out;
+}
+
 function setOverallReadout() {
   const m = state.reviewData.meta;
-  const ens = (m.metrics && m.metrics['TCN_FA (ours, 3-seed ensemble)']) || null;
-  if (ens) {
-    document.getElementById('overall-readout').textContent =
-      `overall: exact ${(100 * ens.overall_exact).toFixed(1)}% · ±1 ${(100 * ens.overall_pm1).toFixed(1)}%  ·  ${m.n_punches} punches / ${m.n_videos} videos`;
-  } else {
-    document.getElementById('overall-readout').textContent =
-      `${m.n_punches} punches / ${m.n_videos} videos`;
-  }
+  const s = degStats(allPunches());
+  document.getElementById('overall-readout').textContent = s
+    ? `overall: median ${s.median.toFixed(1)}° · ≤22.5° ${(100 * s.le225).toFixed(0)}%  ·  ${m.n_punches} punches / ${m.n_videos} videos`
+    : `${m.n_punches} punches / ${m.n_videos} videos`;
 }
 
 // ─── selection ──────────────────────────────────────────────────────────────
@@ -180,12 +194,33 @@ function renderCurrent() {
 }
 
 function renderVideoStats() {
-  const a = videoAcc(state.candidates);
-  document.getElementById('st-exact').textContent = state.candidates.length ? `${(100 * a.exact).toFixed(1)}%` : '—';
-  document.getElementById('st-pm1').textContent = state.candidates.length ? `${(100 * a.pm1).toFixed(1)}%` : '—';
-  document.getElementById('st-n').textContent = state.candidates.length ? a.n : '—';
-  document.getElementById('bar-pm1').style.width = (100 * a.pm1) + '%';
-  document.getElementById('bar-exact').style.width = (100 * a.exact) + '%';
+  const s = degStats(state.candidates);
+  document.getElementById('st-median').textContent = s ? `${s.median.toFixed(1)}°` : '—';
+  document.getElementById('st-le1125').textContent = s ? `${(100 * s.le1125).toFixed(0)}%` : '—';
+  document.getElementById('st-le225').textContent = s ? `${(100 * s.le225).toFixed(0)}%` : '—';
+  document.getElementById('st-n').textContent = s ? s.n : '—';
+  document.getElementById('bar-pm1').style.width = (s ? 100 * s.le225 : 0) + '%';   // looser threshold, behind
+  document.getElementById('bar-exact').style.width = (s ? 100 * s.le1125 : 0) + '%'; // tighter threshold, in front
+}
+
+// Global per-bucket median angular error — exposes that the headline is carried
+// by the (dominant) sideways bin; the axial-side bins are far harder.
+function renderBucketBreakdown() {
+  const box = document.getElementById('bucket-breakdown');
+  if (!box) return;
+  const all = allPunches();
+  box.innerHTML = '';
+  state.bucketNames.forEach((name, k) => {
+    const ps = all.filter(p => p.gt_bucket === k);
+    const med = ps.length ? degStats(ps).median : null;
+    const row = document.createElement('div');
+    row.className = 'bd-row';
+    row.innerHTML =
+      `<span class="bd-name">${name}</span>` +
+      `<span class="bd-deg">${med == null ? '—' : med.toFixed(1) + '°'}</span>` +
+      `<span class="bd-n">${ps.length}</span>`;
+    box.appendChild(row);
+  });
 }
 
 // ─── skeleton overlay ───────────────────────────────────────────────────────
@@ -273,6 +308,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   populateVideoSelect();
   setOverallReadout();
   buildBucketStrip(-1, -1);
+  renderBucketBreakdown();
 
   const sel = document.getElementById('video-select');
   sel.addEventListener('change', () => selectVideo(sel.value || null));
