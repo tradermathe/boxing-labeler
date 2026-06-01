@@ -25,6 +25,10 @@ const ARM_COLOR = '#c75b39';       // terracotta — punching forearm/upper-arm
 const BONE_COLOR = '#49d6e0';      // cyan — everything else
 const JOINT_COLOR = '#ffffff';
 
+// Direction-angle magnitude at each bucket centre (sideways 90° → axial 0°).
+// Matches LEVELS = |cos(angle)| = [0, .383, .707, .924, 1].
+const BUCKET_DEG = [90, 67.5, 45, 22.5, 0];
+
 Object.assign(state, {
   reviewData: null,        // parsed axiality_review.json
   bucketNames: [],
@@ -146,7 +150,8 @@ function buildBucketStrip(gt, pred) {
   state.bucketNames.forEach((name, i) => {
     const cell = document.createElement('div');
     cell.className = 'bk-cell' + (i === gt ? ' gt' : '') + (i === pred ? ' pred' : '');
-    cell.innerHTML = `<div class="bk-name">${name.replace('_', '<br>')}</div>`;
+    cell.innerHTML = `<div class="bk-name">${name.replace('_', '<br>')}</div>` +
+                     `<div class="bk-deg">${BUCKET_DEG[i]}°</div>`;
     strip.appendChild(cell);
   });
 }
@@ -168,7 +173,8 @@ function renderCurrent() {
   document.getElementById('gt-bucket').textContent = names[c.gt_bucket];
   document.getElementById('gt-aux').textContent = `${c.gt_angle}° · |cos|=${c.gt_axiality.toFixed(2)}`;
   document.getElementById('pred-bucket').textContent = names[c.pred_bucket];
-  document.getElementById('pred-aux').textContent = `|cos|=${c.pred_axiality.toFixed(2)}`;
+  const predDeg = Math.acos(Math.min(1, Math.max(0, c.pred_axiality))) * 180 / Math.PI;
+  document.getElementById('pred-aux').textContent = `~${predDeg.toFixed(0)}° · |cos|=${c.pred_axiality.toFixed(2)}`;
   buildBucketStrip(c.gt_bucket, c.pred_bucket);
   setStatus('out-of-fold prediction', 'ok');
 }
