@@ -276,7 +276,10 @@ async function syncFromSheet() {
     }
     setStatus(`Loaded ${rows.length} prior label(s) for "${labeler}".`, 'ok');
     updateOptionCount(state.currentStem, state.doneKeys.size);
-    advanceToNextUnlabeled(0);
+    // Land on the first punch so any existing label is visible immediately;
+    // use "next unlabeled" (U) to jump to where labelling left off.
+    state.cursor = 0;
+    seekToCurrent();
     redrawProgress();
   } catch (e) {
     setStatus("Couldn't fetch labels: " + e.message, 'err');
