@@ -7,7 +7,7 @@
         {
           "round": 0,
           "n_frames": 504,
-          "fps": 30.0,
+          "fps": 30.000001907348633,
           "actual_start_sec": 0.0
         }
       ]
@@ -66,49 +66,49 @@
         },
         {
           "round": 2,
-          "n_frames": 1311,
+          "n_frames": 1312,
           "fps": 60.0,
           "actual_start_sec": 175.613
         },
         {
           "round": 3,
-          "n_frames": 938,
+          "n_frames": 939,
           "fps": 60.0,
           "actual_start_sec": 225.588
         },
         {
           "round": 4,
-          "n_frames": 1250,
+          "n_frames": 1251,
           "fps": 60.0,
           "actual_start_sec": 343.097
         },
         {
           "round": 5,
-          "n_frames": 1048,
+          "n_frames": 1049,
           "fps": 60.0,
           "actual_start_sec": 424.496
         },
         {
           "round": 6,
-          "n_frames": 1435,
+          "n_frames": 1436,
           "fps": 60.0,
           "actual_start_sec": 503.988
         },
         {
           "round": 7,
-          "n_frames": 1053,
+          "n_frames": 1054,
           "fps": 60.0,
           "actual_start_sec": 554.944
         },
         {
           "round": 8,
-          "n_frames": 1055,
+          "n_frames": 1056,
           "fps": 60.0,
           "actual_start_sec": 594.194
         },
         {
           "round": 9,
-          "n_frames": 971,
+          "n_frames": 972,
           "fps": 60.0,
           "actual_start_sec": 629.413
         }
@@ -135,6 +135,132 @@
           "n_frames": 1237,
           "fps": 29.998,
           "actual_start_sec": 211.265
+        }
+      ]
+    },
+    {
+      "stem": "10 Rounds 10 Combos ｜ Boxing Training ｜ jabs, hooks, crosses, uppercuts, overhands, shovel hooks",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 376,
+          "fps": 29.97,
+          "actual_start_sec": 144.314
+        },
+        {
+          "round": 1,
+          "n_frames": 702,
+          "fps": 29.97,
+          "actual_start_sec": 323.795
+        },
+        {
+          "round": 2,
+          "n_frames": 326,
+          "fps": 29.97,
+          "actual_start_sec": 651.125
+        },
+        {
+          "round": 3,
+          "n_frames": 639,
+          "fps": 29.97,
+          "actual_start_sec": 842.819
+        },
+        {
+          "round": 4,
+          "n_frames": 375,
+          "fps": 29.97,
+          "actual_start_sec": 1128.941
+        },
+        {
+          "round": 5,
+          "n_frames": 603,
+          "fps": 29.97,
+          "actual_start_sec": 1575.253
+        },
+        {
+          "round": 6,
+          "n_frames": 622,
+          "fps": 29.97,
+          "actual_start_sec": 1612.295
+        },
+        {
+          "round": 7,
+          "n_frames": 508,
+          "fps": 29.97,
+          "actual_start_sec": 1841.193
+        },
+        {
+          "round": 8,
+          "n_frames": 429,
+          "fps": 29.97,
+          "actual_start_sec": 2100.421
+        },
+        {
+          "round": 9,
+          "n_frames": 238,
+          "fps": 29.97,
+          "actual_start_sec": 2291.621
+        }
+      ]
+    },
+    {
+      "stem": "10 min FAT LOSS Shadowboxing Workout for Beginners at Home (Follow Along!) (2020)",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 467,
+          "fps": 30.0,
+          "actual_start_sec": 0.0
+        },
+        {
+          "round": 1,
+          "n_frames": 1043,
+          "fps": 30.0,
+          "actual_start_sec": 115.799
+        },
+        {
+          "round": 2,
+          "n_frames": 1638,
+          "fps": 30.0,
+          "actual_start_sec": 149.203
+        }
+      ]
+    },
+    {
+      "stem": "10 mins Shadow Boxing Workout ⧸ No Equipment (follow along)",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 602,
+          "fps": 23.976,
+          "actual_start_sec": 37.372
+        },
+        {
+          "round": 1,
+          "n_frames": 754,
+          "fps": 23.976,
+          "actual_start_sec": 158.534
+        },
+        {
+          "round": 2,
+          "n_frames": 731,
+          "fps": 23.976,
+          "actual_start_sec": 219.715
+        },
+        {
+          "round": 3,
+          "n_frames": 686,
+          "fps": 23.976,
+          "actual_start_sec": 495.812
+        },
+        {
+          "round": 4,
+          "n_frames": 745,
+          "fps": 23.976,
+          "actual_start_sec": 555.603
         }
       ]
     },
@@ -351,6 +477,30 @@
           "n_frames": 239,
           "fps": 23.976,
           "actual_start_sec": 328.202
+        },
+        {
+          "round": 1,
+          "n_frames": 1067,
+          "fps": 23.976,
+          "actual_start_sec": 488.319
+        },
+        {
+          "round": 2,
+          "n_frames": 1159,
+          "fps": 23.976,
+          "actual_start_sec": 531.361
+        },
+        {
+          "round": 3,
+          "n_frames": 922,
+          "fps": 23.976,
+          "actual_start_sec": 579.659
+        },
+        {
+          "round": 4,
+          "n_frames": 932,
+          "fps": 23.976,
+          "actual_start_sec": 625.83
         }
       ]
     },
@@ -474,20 +624,20 @@
       "rounds": [
         {
           "round": 0,
-          "n_frames": 1407,
-          "fps": 23.976024627685547,
+          "n_frames": 1408,
+          "fps": 23.976,
           "actual_start_sec": 518.5
         },
         {
           "round": 1,
-          "n_frames": 2086,
-          "fps": 23.976024627685547,
+          "n_frames": 2087,
+          "fps": 23.976,
           "actual_start_sec": 798.459
         },
         {
           "round": 2,
-          "n_frames": 696,
-          "fps": 23.976024627685547,
+          "n_frames": 697,
+          "fps": 23.976,
           "actual_start_sec": 1151.893
         }
       ]
@@ -673,7 +823,7 @@
         {
           "round": 0,
           "n_frames": 971,
-          "fps": 60.0,
+          "fps": 60.000003814697266,
           "actual_start_sec": 0.0
         }
       ]
@@ -709,7 +859,7 @@
         {
           "round": 0,
           "n_frames": 702,
-          "fps": 59.94,
+          "fps": 59.940059661865234,
           "actual_start_sec": 0.0
         }
       ]
@@ -721,32 +871,50 @@
         {
           "round": 0,
           "n_frames": 1231,
-          "fps": 29.970029830932617,
+          "fps": 29.97,
           "actual_start_sec": 6.475
         },
         {
           "round": 1,
           "n_frames": 1064,
-          "fps": 29.970029830932617,
+          "fps": 29.97,
           "actual_start_sec": 53.422
         },
         {
           "round": 2,
-          "n_frames": 1341,
-          "fps": 29.970029830932617,
+          "n_frames": 1342,
+          "fps": 29.97,
           "actual_start_sec": 98.367
         },
         {
           "round": 3,
-          "n_frames": 1537,
-          "fps": 29.970029830932617,
+          "n_frames": 1538,
+          "fps": 29.97,
           "actual_start_sec": 146.316
         },
         {
           "round": 4,
-          "n_frames": 673,
-          "fps": 29.970029830932617,
+          "n_frames": 674,
+          "fps": 29.97,
           "actual_start_sec": 202.0
+        }
+      ]
+    },
+    {
+      "stem": "BEGINNER SHADOW BOXING DRILLS",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 2144,
+          "fps": 23.976,
+          "actual_start_sec": 22.148
+        },
+        {
+          "round": 1,
+          "n_frames": 900,
+          "fps": 23.976,
+          "actual_start_sec": 127.086
         }
       ]
     },
@@ -876,9 +1044,51 @@
       "rounds": [
         {
           "round": 0,
-          "n_frames": 1853,
-          "fps": 59.999996185302734,
+          "n_frames": 1854,
+          "fps": 60.0,
           "actual_start_sec": 33.406
+        },
+        {
+          "round": 1,
+          "n_frames": 1764,
+          "fps": 60.0,
+          "actual_start_sec": 70.101
+        },
+        {
+          "round": 2,
+          "n_frames": 1507,
+          "fps": 60.0,
+          "actual_start_sec": 103.364
+        },
+        {
+          "round": 3,
+          "n_frames": 1560,
+          "fps": 60.0,
+          "actual_start_sec": 178.187
+        },
+        {
+          "round": 4,
+          "n_frames": 1508,
+          "fps": 60.0,
+          "actual_start_sec": 210.331
+        },
+        {
+          "round": 5,
+          "n_frames": 1553,
+          "fps": 60.0,
+          "actual_start_sec": 244.503
+        },
+        {
+          "round": 6,
+          "n_frames": 1377,
+          "fps": 60.0,
+          "actual_start_sec": 280.622
+        },
+        {
+          "round": 7,
+          "n_frames": 1386,
+          "fps": 60.0,
+          "actual_start_sec": 315.673
         }
       ]
     },
@@ -895,26 +1105,50 @@
       ]
     },
     {
+      "stem": "Best boxing workout app to call out combos and train at home or at the gym",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 333,
+          "fps": 24.0,
+          "actual_start_sec": 1.057
+        }
+      ]
+    },
+    {
       "stem": "Boxing app workout",
       "heldOut": false,
       "rounds": [
         {
           "round": 0,
           "n_frames": 2913,
-          "fps": 60.000003814697266,
+          "fps": 60.0,
           "actual_start_sec": 0.0
         },
         {
           "round": 1,
-          "n_frames": 4345,
-          "fps": 60.000003814697266,
+          "n_frames": 4346,
+          "fps": 60.0,
           "actual_start_sec": 114.468
         },
         {
           "round": 2,
-          "n_frames": 4051,
-          "fps": 60.000003814697266,
+          "n_frames": 4052,
+          "fps": 60.0,
           "actual_start_sec": 496.3
+        }
+      ]
+    },
+    {
+      "stem": "Boxing combo workout on the heavy bag",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 666,
+          "fps": 24.0,
+          "actual_start_sec": 0.083
         }
       ]
     },
@@ -927,6 +1161,54 @@
           "n_frames": 270,
           "fps": 30.0,
           "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "Boxing training using app ⧸ shadowboxing explosive workout with app",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1110,
+          "fps": 30.0,
+          "actual_start_sec": 98.432
+        },
+        {
+          "round": 1,
+          "n_frames": 1215,
+          "fps": 30.0,
+          "actual_start_sec": 209.631
+        },
+        {
+          "round": 2,
+          "n_frames": 1186,
+          "fps": 30.0,
+          "actual_start_sec": 319.739
+        },
+        {
+          "round": 3,
+          "n_frames": 1366,
+          "fps": 30.0,
+          "actual_start_sec": 431.262
+        },
+        {
+          "round": 4,
+          "n_frames": 1356,
+          "fps": 30.0,
+          "actual_start_sec": 542.371
+        }
+      ]
+    },
+    {
+      "stem": "Boxing training with the best workout app",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 566,
+          "fps": 24.0,
+          "actual_start_sec": 1.413
         }
       ]
     },
@@ -949,49 +1231,49 @@
         {
           "round": 0,
           "n_frames": 941,
-          "fps": 29.970029830932617,
+          "fps": 29.97,
           "actual_start_sec": 45.714
         },
         {
           "round": 1,
-          "n_frames": 1224,
-          "fps": 29.970029830932617,
+          "n_frames": 1225,
+          "fps": 29.97,
           "actual_start_sec": 75.678
         },
         {
           "round": 2,
-          "n_frames": 670,
-          "fps": 29.970029830932617,
+          "n_frames": 671,
+          "fps": 29.97,
           "actual_start_sec": 115.485
         },
         {
           "round": 3,
-          "n_frames": 1049,
-          "fps": 29.970029830932617,
+          "n_frames": 1050,
+          "fps": 29.97,
           "actual_start_sec": 137.307
         },
         {
           "round": 4,
-          "n_frames": 1233,
-          "fps": 29.970029830932617,
+          "n_frames": 1234,
+          "fps": 29.97,
           "actual_start_sec": 171.708
         },
         {
           "round": 5,
-          "n_frames": 796,
-          "fps": 29.970029830932617,
+          "n_frames": 797,
+          "fps": 29.97,
           "actual_start_sec": 212.883
         },
         {
           "round": 6,
-          "n_frames": 825,
-          "fps": 29.970029830932617,
+          "n_frames": 826,
+          "fps": 29.97,
           "actual_start_sec": 239.443
         },
         {
           "round": 7,
-          "n_frames": 1808,
-          "fps": 29.970029830932617,
+          "n_frames": 1809,
+          "fps": 29.97,
           "actual_start_sec": 265.569
         }
       ]
@@ -1075,32 +1357,74 @@
       ]
     },
     {
+      "stem": "Follow Along Shadow Boxing Workout At  Home",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1166,
+          "fps": 24.0,
+          "actual_start_sec": 14.917
+        },
+        {
+          "round": 1,
+          "n_frames": 220,
+          "fps": 24.0,
+          "actual_start_sec": 72.501
+        },
+        {
+          "round": 2,
+          "n_frames": 1103,
+          "fps": 24.0,
+          "actual_start_sec": 134.227
+        },
+        {
+          "round": 3,
+          "n_frames": 740,
+          "fps": 24.0,
+          "actual_start_sec": 185.085
+        }
+      ]
+    },
+    {
       "stem": "Full POWER Bag Work ｜ Follow Along Session",
       "heldOut": false,
       "rounds": [
         {
           "round": 0,
-          "n_frames": 1220,
+          "n_frames": 1221,
           "fps": 29.970029830932617,
           "actual_start_sec": 91.288
         },
         {
           "round": 1,
-          "n_frames": 7297,
+          "n_frames": 7298,
           "fps": 29.970029830932617,
           "actual_start_sec": 221.543
         },
         {
           "round": 2,
-          "n_frames": 829,
+          "n_frames": 830,
           "fps": 29.970029830932617,
           "actual_start_sec": 744.376
         },
         {
           "round": 3,
-          "n_frames": 1771,
+          "n_frames": 1772,
           "fps": 29.970029830932617,
           "actual_start_sec": 957.286
+        }
+      ]
+    },
+    {
+      "stem": "Guided shadow boxing with an app",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1379,
+          "fps": 23.976,
+          "actual_start_sec": 14.391
         }
       ]
     },
@@ -1297,7 +1621,7 @@
         {
           "round": 0,
           "n_frames": 328,
-          "fps": 59.94,
+          "fps": 59.940059661865234,
           "actual_start_sec": 0.0
         },
         {
@@ -1381,7 +1705,7 @@
         {
           "round": 0,
           "n_frames": 5288,
-          "fps": 29.97,
+          "fps": 29.970029830932617,
           "actual_start_sec": 0.0
         }
       ]
@@ -1399,6 +1723,24 @@
       ]
     },
     {
+      "stem": "How to Target the Body (Boxing 101)",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 177,
+          "fps": 23.976,
+          "actual_start_sec": 0.21
+        },
+        {
+          "round": 1,
+          "n_frames": 1512,
+          "fps": 23.976,
+          "actual_start_sec": 20.684
+        }
+      ]
+    },
+    {
       "stem": "How to get better at #shadowboxing",
       "heldOut": false,
       "rounds": [
@@ -1411,14 +1753,68 @@
       ]
     },
     {
-      "stem": "IMG_5817",
+      "stem": "Killer Heavy Bag Workout ｜ I talk you through it, so let's do it!",
       "heldOut": false,
       "rounds": [
         {
           "round": 0,
-          "n_frames": 809,
-          "fps": 29.998146057128906,
+          "n_frames": 2922,
+          "fps": 24.0,
           "actual_start_sec": 0.0
+        },
+        {
+          "round": 1,
+          "n_frames": 367,
+          "fps": 24.0,
+          "actual_start_sec": 345.628
+        },
+        {
+          "round": 2,
+          "n_frames": 349,
+          "fps": 24.0,
+          "actual_start_sec": 410.17
+        },
+        {
+          "round": 3,
+          "n_frames": 294,
+          "fps": 24.0,
+          "actual_start_sec": 466.42
+        },
+        {
+          "round": 4,
+          "n_frames": 863,
+          "fps": 24.0,
+          "actual_start_sec": 585.857
+        },
+        {
+          "round": 5,
+          "n_frames": 437,
+          "fps": 24.0,
+          "actual_start_sec": 651.005
+        },
+        {
+          "round": 6,
+          "n_frames": 353,
+          "fps": 24.0,
+          "actual_start_sec": 713.714
+        },
+        {
+          "round": 7,
+          "n_frames": 347,
+          "fps": 24.0,
+          "actual_start_sec": 828.84
+        },
+        {
+          "round": 8,
+          "n_frames": 291,
+          "fps": 24.0,
+          "actual_start_sec": 898.174
+        },
+        {
+          "round": 9,
+          "n_frames": 482,
+          "fps": 24.0,
+          "actual_start_sec": 1068.993
         }
       ]
     },
@@ -1441,7 +1837,7 @@
         {
           "round": 0,
           "n_frames": 428,
-          "fps": 29.901,
+          "fps": 29.900999069213867,
           "actual_start_sec": 0.0
         }
       ]
@@ -1488,21 +1884,33 @@
       "rounds": [
         {
           "round": 0,
-          "n_frames": 5419,
+          "n_frames": 5420,
           "fps": 60.0,
           "actual_start_sec": 0.0
         },
         {
           "round": 1,
-          "n_frames": 6916,
+          "n_frames": 6917,
           "fps": 60.0,
           "actual_start_sec": 383.021
         },
         {
           "round": 2,
-          "n_frames": 3605,
+          "n_frames": 3606,
           "fps": 60.0,
           "actual_start_sec": 541.061
+        }
+      ]
+    },
+    {
+      "stem": "Punching Bag Workout Upgrade",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 762,
+          "fps": 24.0,
+          "actual_start_sec": 0.542
         }
       ]
     },
@@ -1513,7 +1921,7 @@
         {
           "round": 0,
           "n_frames": 480,
-          "fps": 23.976,
+          "fps": 23.976024627685547,
           "actual_start_sec": 0.0
         },
         {
@@ -1531,7 +1939,7 @@
         {
           "round": 0,
           "n_frames": 312,
-          "fps": 23.854,
+          "fps": 23.85365867614746,
           "actual_start_sec": 0.0
         }
       ]
@@ -1555,7 +1963,7 @@
         {
           "round": 0,
           "n_frames": 265,
-          "fps": 30.0,
+          "fps": 29.999998092651367,
           "actual_start_sec": 0.0
         }
       ]
@@ -1566,13 +1974,13 @@
       "rounds": [
         {
           "round": 0,
-          "n_frames": 1388,
+          "n_frames": 1389,
           "fps": 30.0,
           "actual_start_sec": 5.5
         },
         {
           "round": 1,
-          "n_frames": 3465,
+          "n_frames": 3466,
           "fps": 30.0,
           "actual_start_sec": 618.494
         },
@@ -1581,6 +1989,24 @@
           "n_frames": 1095,
           "fps": 30.0,
           "actual_start_sec": 773.5
+        }
+      ]
+    },
+    {
+      "stem": "Shadow Boxing Work Out for Better Boxing",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1105,
+          "fps": 29.97,
+          "actual_start_sec": 138.775
+        },
+        {
+          "round": 1,
+          "n_frames": 464,
+          "fps": 29.97,
+          "actual_start_sec": 287.058
         }
       ]
     },
@@ -1639,12 +2065,84 @@
       ]
     },
     {
+      "stem": "Shadow boxing with an app",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 2684,
+          "fps": 29.97,
+          "actual_start_sec": 8.844
+        },
+        {
+          "round": 1,
+          "n_frames": 2626,
+          "fps": 29.97,
+          "actual_start_sec": 137.707
+        },
+        {
+          "round": 2,
+          "n_frames": 2751,
+          "fps": 29.97,
+          "actual_start_sec": 258.878
+        },
+        {
+          "round": 3,
+          "n_frames": 2533,
+          "fps": 29.97,
+          "actual_start_sec": 892.67
+        }
+      ]
+    },
+    {
+      "stem": "Shadow boxing workout with an app",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 1210,
+          "fps": 30.0,
+          "actual_start_sec": 7.273
+        },
+        {
+          "round": 1,
+          "n_frames": 581,
+          "fps": 30.0,
+          "actual_start_sec": 65.801
+        },
+        {
+          "round": 2,
+          "n_frames": 1344,
+          "fps": 30.0,
+          "actual_start_sec": 128.799
+        },
+        {
+          "round": 3,
+          "n_frames": 1523,
+          "fps": 30.0,
+          "actual_start_sec": 192.543
+        }
+      ]
+    },
+    {
       "stem": "Shadowboxing the RIGHT Way (Most Boxers Get This Wrong) [_NaHLrJhwLs]_h264",
       "heldOut": false,
       "rounds": [
         {
           "round": 0,
           "n_frames": 1112,
+          "fps": 24.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
+      "stem": "Shadowboxing workout at the boxing gym",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 529,
           "fps": 24.0,
           "actual_start_sec": 0.0
         }
@@ -1693,18 +2191,42 @@
       ]
     },
     {
+      "stem": "The Shadow Boxing App in Action.",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 617,
+          "fps": 24.0,
+          "actual_start_sec": 1.542
+        }
+      ]
+    },
+    {
+      "stem": "This boxing app is like having your own coach #boxingcoach",
+      "heldOut": false,
+      "rounds": [
+        {
+          "round": 0,
+          "n_frames": 318,
+          "fps": 24.0,
+          "actual_start_sec": 0.0
+        }
+      ]
+    },
+    {
       "stem": "WOW!  These Boxing Combos Are Amazing ｜ Follow Along Training",
       "heldOut": false,
       "rounds": [
         {
           "round": 0,
-          "n_frames": 1723,
+          "n_frames": 1724,
           "fps": 30.0,
           "actual_start_sec": 488.495
         },
         {
           "round": 1,
-          "n_frames": 4627,
+          "n_frames": 4628,
           "fps": 30.0,
           "actual_start_sec": 638.5
         }
