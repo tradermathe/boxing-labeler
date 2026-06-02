@@ -1615,14 +1615,15 @@ function doGetPunchDirections16(p, labeler, action) {
 
 // ============================================================
 // Callout labeler — one row per called-out punch / combo / defense.
-// Each row stores the onset time + the compact combo string + the
-// canonical token ids (pipe-joined). `callout.js` submits the whole
-// per-video set in one `saveCalloutEvents` GET; re-submitting the same
-// (labeler, video) supersedes the prior set so it stays idempotent.
+// Each row stores the [start_sec, end_sec] window the callout was spoken
+// over + the compact combo string + the canonical token ids (pipe-joined).
+// `callout.js` submits the whole per-video set in one `saveCalloutEvents`
+// GET; re-submitting the same (labeler, video) supersedes the prior set so
+// it stays idempotent.
 // ============================================================
 var CALLOUT_SHEET_NAME = 'Callout Events';
 var CALLOUT_HEADERS = ['ts', 'labeler', 'video_filename', 'video_id', 'video_url',
-                       'time_sec', 'callout_raw', 'callout_ids', 'submitted_at', 'deleted'];
+                       'start_sec', 'end_sec', 'callout_raw', 'callout_ids', 'submitted_at', 'deleted'];
 
 function getOrCreateCalloutSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -1661,7 +1662,8 @@ function doGetCalloutEvents(p, labeler, action) {
         video_filename: lr[idx.video_filename],
         video_id: lr[idx.video_id],
         video_url: lr[idx.video_url],
-        time_sec: Number(lr[idx.time_sec]),
+        start_sec: Number(lr[idx.start_sec]),
+        end_sec: Number(lr[idx.end_sec]),
         callout_raw: lr[idx.callout_raw],
         callout_ids: String(lr[idx.callout_ids] || '').split('|').filter(function (s) { return s; }),
         submitted_at: lr[idx.submitted_at],
@@ -1706,7 +1708,8 @@ function doGetCalloutEvents(p, labeler, action) {
         else if (col === 'video_filename') row.push(vfile);
         else if (col === 'video_id') row.push(vid);
         else if (col === 'video_url') row.push(vurl);
-        else if (col === 'time_sec') row.push(ev.time_sec);
+        else if (col === 'start_sec') row.push(ev.start_sec);
+        else if (col === 'end_sec') row.push(ev.end_sec);
         else if (col === 'callout_raw') row.push(ev.callout_raw || '');
         else if (col === 'callout_ids') row.push(ids);
         else if (col === 'submitted_at') row.push(submittedAt);

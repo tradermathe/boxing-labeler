@@ -15,25 +15,29 @@
 //   4 = rear hook    (head)
 //   5 = lead upper   (head)
 //   6 = rear upper   (head)
-//   <digit>b = same punch to the body
+//   Shift+<digit> = same punch to the body (Shift+1 = jab_body)
+//   ↓ (ArrowDown) = mark the last typed punch as a body shot (post-hoc)
 // Defenses (same keys as the punch labeler, for muscle memory):
 //   q = lead slip    w = rear slip
 //   a = lead roll    d = rear roll
 //   r = pull back    f = step back
+//   s = slip         g = roll     (no direction — some apps just call "slip"/"roll")
+//   p = pivot        (footwork)
+//   b = block        (slip/roll/block/pivot are callout-only — no executed-punch equivalent)
 //
-// Combo semantics: a sequence of tokens entered while the video stays
-// paused = ONE event (e.g. `1-2b-lslip-2` = jab, cross_body, lead_slip,
-// cross). Letting the video resume between two presses produces TWO
-// separate events.
-//
-// Time stored per event = video.currentTime at the moment the buffer
-// was first opened (i.e. the callout audio's onset, before the boxer's
-// reaction lag).
+// Segment semantics (like the punch labeler): Enter opens a callout and
+// stamps start_sec; you then type the combo tokens (e.g. `1-2b-lslip`)
+// while it's being called; a second Enter stamps end_sec and commits ONE
+// event spanning [start_sec, end_sec]. Playback is independent of
+// recording — Space toggles play/pause, arrows seek, all mid-callout.
 //
 // Storage:
 //   - localStorage on every keystroke (so a refresh doesn't lose work)
-//   - On Submit: GET the Apps Script `saveCalloutEvents` action, falls
-//     back to a JSON download if the script doesn't recognise it.
+//   - Auto-save: every commit / undo / delete GETs the Apps Script
+//     `saveCalloutEvents` action (debounced). Re-sending the whole
+//     per-video set supersedes the prior rows, so it stays idempotent;
+//     deleting down to zero clears the remote rows. Gated on a labeler
+//     name + a known video.
 // ============================================================
 
 // Punch vocab: digit -> head/body canonical ids + display label.
@@ -48,29 +52,49 @@ const PUNCH = {
 
 // Defense vocab: key -> compact display code + canonical id (matches the
 // punch labeler's PUNCH_TYPES ids so the data joins across both tools).
+// `slip`/`roll` (no direction), `block`, and `pivot` have no punch-labeler equivalent —
+// they're callout-only (a coach instruction, never an executed punch), so they
+// get their own ids. The direction-less slip/roll exist because some guided
+// apps just call "slip" / "roll" without specifying lead vs rear.
 const DEFENSE = {
   q: { id: 'lead_slip', code: 'lslip', label: 'lead slip' },
   w: { id: 'rear_slip', code: 'rslip', label: 'rear slip' },
+  s: { id: 'slip',      code: 'slip',  label: 'slip' },
   a: { id: 'lead_roll', code: 'lroll', label: 'lead roll' },
   d: { id: 'rear_roll', code: 'rroll', label: 'rear roll' },
+  g: { id: 'roll',      code: 'roll',  label: 'roll' },
   r: { id: 'pull_back', code: 'pull',  label: 'pull back' },
   f: { id: 'step_back', code: 'step',  label: 'step back' },
+  p: { id: 'pivot',     code: 'pivot', label: 'pivot' },
+  b: { id: 'block',     code: 'block', label: 'block' },
+};
+
+// KeyboardEvent.code -> token, so Shift+digit reads the digit (not the
+// shifted symbol "!") and letters survive non-US layouts. Mirrors app.js.
+const DIGIT_CODES = {
+  Digit1: '1', Digit2: '2', Digit3: '3', Digit4: '4', Digit5: '5', Digit6: '6',
+  Numpad1: '1', Numpad2: '2', Numpad3: '3', Numpad4: '4', Numpad5: '5', Numpad6: '6',
+};
+const DEFENSE_CODES = {
+  KeyQ: 'q', KeyW: 'w', KeyS: 's', KeyA: 'a', KeyD: 'd', KeyG: 'g', KeyR: 'r', KeyF: 'f', KeyB: 'b', KeyP: 'p',
 };
 
 Object.assign(state, {
-  // [{ time_sec, callout_raw: "1-2b", callout_ids: ["jab_head","cross_body"] }]
+  // [{ start_sec, end_sec, callout_raw: "1-2b", callout_ids: ["jab_head","cross_body"] }]
   calloutEvents: [],
   // Composing buffer of typed tokens, each either
   //   { kind: 'punch', digit: '1'-'6', body: bool }
-  //   { kind: 'defense', key: 'q'|'w'|'a'|'d'|'r'|'f' }
-  // Empty when not composing. `pausedTime` is the time of the first token
-  // in the current buffer — that's what we save when the buffer commits.
+  //   { kind: 'defense', key: 'q'|'w'|'a'|'d'|'r'|'f'|'b' }
+  // `recording` is true between the start-Enter and the end-Enter; `startSec`
+  // is the video time captured at the start-Enter. Tokens only register while
+  // recording; the second Enter stamps end_sec and commits the event.
   buffer: [],
-  pausedTime: null,
+  recording: false,
+  startSec: null,
   videoFileName: '',
 });
 
-const LS_KEY = 'callout_labeler_events_v1';
+const LS_KEY = 'callout_labeler_events_v2';   // v2: start_sec/end_sec segments
 const LS_META_KEY = 'callout_labeler_meta_v1';
 
 // ── Token helpers ─────────────────────────────────────────────────────────────
@@ -90,10 +114,9 @@ function tokenId(item) {
 
 // ── Init ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  setupPlayer();                  // from player.js — wires file picker, seek bar
-  attachVideoListeners();
+  setupPlayer();                  // from player.js — wires file picker, seek bar, zoom
   setupKeyboard();
-  setupButtons();
+  setupInputs();
   restoreFromStorage();
   updateBufferCard();
   renderEventList();
@@ -104,43 +127,9 @@ window.addEventListener('DOMContentLoaded', () => {
   try { labelerInput.value = localStorage.getItem('orient_labeler_name') || ''; } catch {}
   labelerInput.addEventListener('change', () => {
     try { localStorage.setItem('orient_labeler_name', labelerInput.value.trim()); } catch {}
+    if (state.calloutEvents.length > 0) autoSave();   // re-stamp once a name exists
   });
 });
-
-function attachVideoListeners() {
-  const video = document.getElementById('video-player');
-  const seekBar = document.getElementById('seek-bar');
-  const timeDisplay = document.getElementById('time-display');
-
-  // Local seek-bar wiring — player.js's setupSeekBar bails on this page
-  // because it expects #seek-bar-wrapper + thumbnail nodes we don't ship.
-  const renderTime = () => {
-    if (!timeDisplay) return;
-    timeDisplay.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration || 0)}`;
-    if (seekBar && video.duration > 0) {
-      seekBar.value = ((video.currentTime / video.duration) * 100).toFixed(2);
-    }
-  };
-  if (seekBar) {
-    seekBar.addEventListener('input', () => {
-      if (video.duration > 0) {
-        video.currentTime = (Number(seekBar.value) / 100) * video.duration;
-      }
-    });
-  }
-
-  video.addEventListener('loadedmetadata', renderTime);
-  video.addEventListener('timeupdate', renderTime);
-  // Keep our notion of pausedTime fresh when the user clicks pause via
-  // the native controls (not via a token press).
-  video.addEventListener('pause', () => {
-    // If the buffer is empty AND the pause was user-initiated, capture
-    // the time so the next token press uses *this* moment, not the
-    // moment of the first token. Better matches the callout's audio onset.
-    if (state.buffer.length === 0) state.pausedTime = video.currentTime;
-    updateBufferCard();
-  });
-}
 
 // ── Keyboard state machine ──────────────────────────────────────────────────
 function setupKeyboard() {
@@ -150,143 +139,152 @@ function setupKeyboard() {
     const video = document.getElementById('video-player');
     if (!video) return;
 
-    const k = e.key;
-    // Digits 1-6 ⇒ append a punch token (auto-pause if playing).
-    if (/^[1-6]$/.test(k)) {
+    // Enter ⇒ start the callout (1st press) / stamp end + commit (2nd press).
+    if (e.key === 'Enter') {
       e.preventDefault();
-      pauseForBuffer(video);
-      state.buffer.push({ kind: 'punch', digit: k, body: false });
+      if (state.recording) endRecording(video);
+      else startRecording(video);
+      return;
+    }
+    // Digits 1-6 ⇒ append a punch token; Shift = body. Only while recording.
+    const digit = DIGIT_CODES[e.code];
+    if (digit) {
+      e.preventDefault();
+      if (!state.recording) { setStatus('Press Enter to start a callout first.'); return; }
+      state.buffer.push({ kind: 'punch', digit, body: e.shiftKey });
       updateBufferCard();
       saveToStorage();
       return;
     }
-    // B (or b) ⇒ toggle body on the most-recent punch token.
-    if (k === 'b' || k === 'B') {
+    // Defense keys (q/w/a/d/r/f) + block (b) ⇒ append a defense token.
+    const defKey = DEFENSE_CODES[e.code];
+    if (defKey) {
       e.preventDefault();
-      const last = state.buffer[state.buffer.length - 1];
-      if (last && last.kind === 'punch') {
-        last.body = !last.body;
-        updateBufferCard();
-        saveToStorage();
-      }
-      return;
-    }
-    // Defense keys (q/w/a/d/r/f) ⇒ append a defense token (auto-pause).
-    if (DEFENSE[k.toLowerCase()]) {
-      e.preventDefault();
-      pauseForBuffer(video);
-      state.buffer.push({ kind: 'defense', key: k.toLowerCase() });
+      if (!state.recording) { setStatus('Press Enter to start a callout first.'); return; }
+      state.buffer.push({ kind: 'defense', key: defKey });
       updateBufferCard();
       saveToStorage();
       return;
     }
-    // Space ⇒ commit-if-buffer + resume, else just toggle play/pause.
-    if (k === ' ' || k === 'Spacebar') {
+    // Space ⇒ play/pause toggle (independent of recording).
+    if (e.code === 'Space') {
       e.preventDefault();
-      if (state.buffer.length > 0 && video.paused) {
-        commitBuffer();
-        video.play().catch(() => {});
-      } else if (video.paused) {
-        // Empty buffer, just resume.
-        video.play().catch(() => {});
-      } else {
-        video.pause();
-        state.pausedTime = video.currentTime;
-        updateBufferCard();
-      }
+      if (video.paused) video.play().catch(() => {});
+      else video.pause();
       return;
     }
     // Backspace ⇒ remove last buffer token.
-    if (k === 'Backspace') {
+    if (e.key === 'Backspace') {
       e.preventDefault();
       if (state.buffer.length > 0) {
-        const last = state.buffer[state.buffer.length - 1];
-        if (last.kind === 'punch' && last.body) {
-          // First Backspace strips the body modifier, second removes the token.
-          last.body = false;
-        } else {
-          state.buffer.pop();
-        }
-        if (state.buffer.length === 0) state.pausedTime = null;
+        state.buffer.pop();
         updateBufferCard();
         saveToStorage();
       }
       return;
     }
     // z / Z ⇒ undo last committed event.
-    if (k === 'z' || k === 'Z') {
+    if (e.key === 'z' || e.key === 'Z') {
       e.preventDefault();
       if (state.calloutEvents.length > 0) {
         const removed = state.calloutEvents.pop();
         saveToStorage();
         renderEventList();
-        setStatus(`Undid: ${removed.callout_raw} @ ${formatTime(removed.time_sec)}`);
+        repaintTimeline();
+        autoSave();
+        setStatus(`Undid: ${removed.callout_raw} @ ${formatTime(removed.start_sec)}`);
       }
       return;
     }
     // Arrow keys ⇒ seek ±1s.
-    if (k === 'ArrowLeft') {
+    if (e.key === 'ArrowLeft') {
       e.preventDefault();
       video.currentTime = Math.max(0, video.currentTime - 1);
       return;
     }
-    if (k === 'ArrowRight') {
+    if (e.key === 'ArrowRight') {
       e.preventDefault();
       video.currentTime = Math.min(video.duration || 0, video.currentTime + 1);
       return;
     }
-    // Esc ⇒ clear current buffer.
-    if (k === 'Escape') {
+    // Down arrow ⇒ mark the most recent punch token as a body shot. Lets you
+    // tap the digit fast, then flag body after the fact (instead of Shift+digit).
+    if (e.key === 'ArrowDown') {
       e.preventDefault();
-      state.buffer = [];
-      state.pausedTime = null;
-      updateBufferCard();
-      saveToStorage();
+      if (!state.recording) { setStatus('Press Enter to start a callout first.'); return; }
+      for (let i = state.buffer.length - 1; i >= 0; i--) {
+        if (state.buffer[i].kind === 'punch') {
+          state.buffer[i].body = true;
+          updateBufferCard();
+          saveToStorage();
+          return;
+        }
+      }
+      setStatus('No punch in the buffer to mark as body.');
+      return;
+    }
+    // Esc ⇒ cancel the in-progress callout.
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      if (state.recording || state.buffer.length > 0) {
+        state.recording = false;
+        state.startSec = null;
+        state.buffer = [];
+        updateBufferCard();
+        saveToStorage();
+        setStatus('Callout cancelled.');
+      }
       return;
     }
   });
 }
 
-// Pause the video (if playing) and anchor pausedTime to the buffer's first
-// token, so every token in a combo shares the onset timestamp.
-function pauseForBuffer(video) {
-  if (!video.paused) {
-    video.pause();
-    state.pausedTime = video.currentTime;
-  }
-  if (state.buffer.length === 0 && state.pausedTime == null) {
-    state.pausedTime = video.currentTime;
-  }
+// First Enter: open a callout, stamp its start time. Playback keeps running.
+function startRecording(video) {
+  state.recording = true;
+  state.startSec = video.currentTime;
+  state.buffer = [];
+  updateBufferCard();
+  saveToStorage();
+  setStatus(`Callout started @ ${formatTime(state.startSec)} — type tokens, Enter to end.`);
 }
 
-function commitBuffer() {
-  if (state.buffer.length === 0) return;
-  const time = state.pausedTime ?? document.getElementById('video-player').currentTime;
+// Second Enter: stamp end time and commit one [start, end] event. An empty
+// buffer means a stray/double Enter — discard rather than store a blank callout.
+function endRecording(video) {
+  if (state.buffer.length === 0) {
+    state.recording = false;
+    state.startSec = null;
+    updateBufferCard();
+    saveToStorage();
+    setStatus('Callout cancelled (no tokens).');
+    return;
+  }
   state.calloutEvents.push({
-    time_sec: Number(time.toFixed(3)),
+    start_sec: Number(state.startSec.toFixed(3)),
+    end_sec: Number(video.currentTime.toFixed(3)),
     callout_raw: state.buffer.map(tokenCode).join('-'),
     callout_ids: state.buffer.map(tokenId),
   });
+  state.recording = false;
+  state.startSec = null;
   state.buffer = [];
-  state.pausedTime = null;
   updateBufferCard();
   renderEventList();
+  repaintTimeline();
   saveToStorage();
+  autoSave();
 }
 
 // ── Buffer + event list rendering ───────────────────────────────────────────
 function updateBufferCard() {
   const bufEl = document.getElementById('buffer-text');
   const timeEl = document.getElementById('buffer-time');
-  if (state.buffer.length === 0) {
-    bufEl.textContent = '—';
+  bufEl.textContent = state.buffer.map(tokenCode).join('-');
+  if (state.recording) {
+    timeEl.textContent = `recording from ${formatTime(state.startSec)}`;
   } else {
-    bufEl.textContent = state.buffer.map(tokenCode).join('-');
-  }
-  if (state.pausedTime != null) {
-    timeEl.textContent = `video paused: ${formatTime(state.pausedTime)}`;
-  } else {
-    timeEl.textContent = 'video paused: —';
+    timeEl.textContent = 'press Enter to start';
   }
 }
 
@@ -296,10 +294,8 @@ function renderEventList() {
   countEl.textContent = String(state.calloutEvents.length);
   if (state.calloutEvents.length === 0) {
     listEl.innerHTML = '<div class="empty-events">No events yet.</div>';
-    document.getElementById('btn-submit').disabled = true;
     return;
   }
-  document.getElementById('btn-submit').disabled = false;
   listEl.innerHTML = '';
   // Show in reverse (newest first) so the labeler sees what they just did.
   for (let i = state.calloutEvents.length - 1; i >= 0; i--) {
@@ -307,21 +303,106 @@ function renderEventList() {
     const row = document.createElement('div');
     row.className = 'event-row';
     row.innerHTML = `
-      <span class="er-time">${formatTime(ev.time_sec)}</span>
+      <span class="er-time">${formatTime(ev.start_sec)}–${formatTime(ev.end_sec)}</span>
       <span class="er-cue">${ev.callout_raw}</span>
       <span class="er-del" title="Delete this event">✕</span>
     `;
     row.querySelector('.er-time').addEventListener('click', () => {
       const v = document.getElementById('video-player');
-      if (v) v.currentTime = ev.time_sec;
+      if (v) v.currentTime = ev.start_sec;
     });
     row.querySelector('.er-del').addEventListener('click', (e) => {
       e.stopPropagation();
       state.calloutEvents.splice(i, 1);
       saveToStorage();
       renderEventList();
+      repaintTimeline();
+      autoSave();
     });
     listEl.appendChild(row);
+  }
+}
+
+// ── Timeline overlay (hooks player.js calls on metadata / zoom / timeupdate) ──
+// Mirrors the punch labeler: one segment per committed callout on the seek bar
+// + minimap, plus a chip on the video while the playhead is inside a callout.
+// Combos have no single punch type, so everything uses the one accent color and
+// the raw combo string is the label/tooltip.
+const CALLOUT_COLOR = '#e94560';
+
+function repaintTimeline() {
+  renderTimelineOverlay();
+  updateVideoOverlay();
+}
+
+function renderTimelineOverlay() {
+  const overlay = document.getElementById('seek-bar-overlay');
+  const video = document.getElementById('video-player');
+  if (!overlay || !video) return;
+  const duration = video.duration;
+  overlay.innerHTML = '';
+  if (!duration || duration <= 0) return;
+
+  for (const ev of state.calloutEvents) {
+    const lPct = timeToViewportPct(ev.start_sec, duration);
+    const rPct = timeToViewportPct(ev.end_sec, duration);
+    if (rPct < 0 || lPct > 100) continue;        // off-screen at this zoom
+    const seg = document.createElement('div');
+    seg.className = 'seek-segment';
+    seg.style.left = Math.max(0, lPct) + '%';
+    seg.style.width = Math.max(Math.min(100, rPct) - Math.max(0, lPct), 0.15) + '%';
+    seg.style.backgroundColor = CALLOUT_COLOR;
+    seg.title = ev.callout_raw;
+    overlay.appendChild(seg);
+  }
+
+  renderCalloutMinimap();
+  updateMinimapChrome();   // player.js — viewport indicator + playhead
+  renderTimeTicks();       // player.js — major/minor ticks
+}
+
+function renderCalloutMinimap() {
+  const video = document.getElementById('video-player');
+  const segContainer = document.getElementById('minimap-segments');
+  if (!video || !segContainer) return;
+  const duration = video.duration;
+  segContainer.innerHTML = '';
+  if (!duration || duration <= 0) return;
+
+  for (const ev of state.calloutEvents) {
+    const seg = document.createElement('div');
+    seg.style.position = 'absolute';
+    seg.style.top = '0';
+    seg.style.height = '100%';
+    seg.style.borderRadius = '1px';
+    seg.style.left = (ev.start_sec / duration) * 100 + '%';
+    seg.style.width = Math.max(((ev.end_sec - ev.start_sec) / duration) * 100, 0.3) + '%';
+    seg.style.backgroundColor = CALLOUT_COLOR;
+    seg.style.opacity = '0.7';
+    segContainer.appendChild(seg);
+  }
+}
+
+function updateVideoOverlay() {
+  const overlay = document.getElementById('video-overlay');
+  const video = document.getElementById('video-player');
+  if (!overlay || !video) return;
+  const t = video.currentTime;
+
+  const active = state.calloutEvents.filter(ev => t >= ev.start_sec && t <= ev.end_sec);
+  // Only rebuild the DOM when the active set actually changes (player.js calls
+  // this on every timeupdate).
+  const key = active.map(ev => `${ev.start_sec}:${ev.callout_raw}`).join(',');
+  if (overlay.dataset.activeKey === key) return;
+  overlay.dataset.activeKey = key;
+
+  overlay.innerHTML = '';
+  for (const ev of active) {
+    const tag = document.createElement('div');
+    tag.className = 'video-overlay-tag';
+    tag.style.borderLeftColor = CALLOUT_COLOR;
+    tag.textContent = ev.callout_raw;
+    overlay.appendChild(tag);
   }
 }
 
@@ -331,7 +412,8 @@ function saveToStorage() {
     localStorage.setItem(LS_KEY, JSON.stringify({
       events: state.calloutEvents,
       buffer: state.buffer,
-      pausedTime: state.pausedTime,
+      recording: state.recording,
+      startSec: state.startSec,
     }));
     localStorage.setItem(LS_META_KEY, JSON.stringify({
       driveLink: document.getElementById('drive-link').value,
@@ -350,7 +432,8 @@ function restoreFromStorage() {
       const parsed = JSON.parse(raw);
       state.calloutEvents = parsed.events || [];
       state.buffer = parsed.buffer || [];
-      state.pausedTime = parsed.pausedTime ?? null;
+      state.recording = parsed.recording || false;
+      state.startSec = parsed.startSec ?? null;
     }
     const meta = localStorage.getItem(LS_META_KEY);
     if (meta) {
@@ -366,29 +449,24 @@ function restoreFromStorage() {
   }
 }
 
-// ── Submit + download ───────────────────────────────────────────────────────
-function setupButtons() {
-  document.getElementById('btn-submit').addEventListener('click', onSubmit);
-  document.getElementById('btn-download').addEventListener('click', onDownload);
-  document.getElementById('btn-clear').addEventListener('click', () => {
-    if (!confirm('Clear all events for this video? (already-submitted events will not be removed from the Sheet)')) return;
-    state.calloutEvents = [];
-    state.buffer = [];
-    state.pausedTime = null;
-    saveToStorage();
-    renderEventList();
-    updateBufferCard();
-    setStatus('Cleared.');
-  });
-  // Track video file picker to remember the name.
+// ── Inputs (video picker + drive link) ───────────────────────────────────────
+function setupInputs() {
+  // Track the video file picker to remember the name. player.js also listens on
+  // this input (it loads the video + sets state.videoName); we keep a separate
+  // state.videoFileName for the payload + localStorage.
   document.getElementById('video-file').addEventListener('change', (e) => {
     const f = e.target.files?.[0];
     if (!f) return;
     state.videoFileName = f.name;
     saveToStorage();
   });
-  // Track drive link changes.
-  document.getElementById('drive-link').addEventListener('input', saveToStorage);
+  // Drive link: persist locally on each keystroke; re-stamp the sheet on blur
+  // (change) once there are committed events.
+  const driveLink = document.getElementById('drive-link');
+  driveLink.addEventListener('input', saveToStorage);
+  driveLink.addEventListener('change', () => {
+    if (state.calloutEvents.length > 0) autoSave();
+  });
 }
 
 function getLabeler() {
@@ -419,54 +497,44 @@ function extractDriveFileId(url) {
   return '';
 }
 
-async function onSubmit() {
-  if (state.calloutEvents.length === 0) return;
+// ── Auto-save ─────────────────────────────────────────────────────────────
+// Re-send the whole per-video set (debounced) after every commit / undo /
+// delete. The backend supersedes this (labeler, video) set on each save, so
+// repeated sends never duplicate rows — and deleting down to zero clears the
+// remote rows for this video. Requires a labeler name + a known video.
+let _saveTimer = null;
+function autoSave() {
+  if (_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(doAutoSave, 800);
+}
+
+async function doAutoSave() {
   if (!getLabeler()) {
-    setStatus('Type your name first.');
-    document.getElementById('labeler-input').focus();
+    setStatus('Type your name to enable auto-save.');
     return;
   }
   const payload = buildPayload();
-  if (!payload.video_url && !payload.video_filename) {
-    if (!confirm('No Drive URL or video file recorded — submit anyway?')) return;
+  if (!payload.video_filename && !payload.video_id) {
+    setStatus('Load a video (or paste its Drive link) to enable auto-save.');
+    return;
   }
-  setStatus(`Submitting ${state.calloutEvents.length} events…`);
-  const url = sheetUrl({
-    action: 'saveCalloutEvents',
-    payload: JSON.stringify(payload),
-  });
+  const n = payload.events.length;
+  setStatus(n > 0 ? `Saving ${n} callouts…` : 'Clearing callouts…');
+  const url = sheetUrl({ action: 'saveCalloutEvents', payload: JSON.stringify(payload) });
   try {
     const resp = await fetch(url, { method: 'GET' });
     const text = await resp.text();
     let parsed = null;
     try { parsed = JSON.parse(text); } catch { /* not JSON */ }
     if (parsed && parsed.status === 'ok') {
-      setStatus(`Submitted ${state.calloutEvents.length} events.`);
-      showToast(`Saved ${state.calloutEvents.length} callouts`, 'info');
-      // Don't auto-clear — the labeler may want to keep going on the
-      // same video. They can use Clear when done.
+      setStatus(n > 0 ? `Saved ${n} callouts ✓` : 'Callouts cleared ✓');
     } else {
-      const msg = parsed?.message || text.slice(0, 200);
-      setStatus(`Submit failed: ${msg}. Falling back to JSON download.`);
-      onDownload();
+      const msg = parsed?.message || text.slice(0, 160);
+      setStatus(`Auto-save failed: ${msg}`);
     }
   } catch (err) {
-    setStatus(`Submit error: ${err.message}. Falling back to JSON download.`);
-    onDownload();
+    setStatus(`Auto-save error: ${err.message}`);
   }
-}
-
-function onDownload() {
-  const payload = buildPayload();
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  const stem = state.videoFileName.replace(/\.[^.]+$/, '') || payload.video_id || 'callout_events';
-  a.href = URL.createObjectURL(blob);
-  a.download = `${stem}_callouts.json`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setStatus(`Downloaded ${state.calloutEvents.length} events.`);
 }
 
 function setStatus(text) {

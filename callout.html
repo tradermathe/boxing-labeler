@@ -91,7 +91,7 @@
     }
     .event-row {
       display: grid;
-      grid-template-columns: 72px 1fr 24px;
+      grid-template-columns: 124px 1fr 20px;
       align-items: center;
       gap: 6px;
       padding: 4px 8px;
@@ -123,34 +123,6 @@
       text-align: center;
       padding: 16px;
     }
-    .submit-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .btn-primary {
-      background: #e94560;
-      color: white;
-      border: none;
-      padding: 10px 14px;
-      border-radius: 4px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      flex: 1;
-    }
-    .btn-primary:hover { background: #d63a55; }
-    .btn-primary:disabled { background: #555; cursor: not-allowed; }
-    .btn-secondary {
-      background: #1a1a2e;
-      color: #aaa;
-      border: 1px solid #444;
-      padding: 10px 14px;
-      border-radius: 4px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .btn-secondary:hover { background: #2b3a5e; }
     #status-line {
       font-size: 12px;
       color: #888;
@@ -197,19 +169,56 @@
 
     <!-- Main layout -->
     <div id="main-layout">
-      <!-- Center: video + seek bar. Reuses the shared #video-container /
-           #video-viewport from style.css so portrait clips size the same
-           way as the other labelers; our compact seek bar stands in for the
-           punch labeler's heavier #video-controls. -->
+      <!-- Center: video + full timeline controls, reused verbatim from the
+           punch labeler (index.html) so callouts render as segments on the
+           seek bar + minimap. player.js wires it all (seek/zoom/ticks/thumb);
+           callout.js supplies the renderTimelineOverlay/updateVideoOverlay
+           hooks that paint the callout segments + in-video chips. -->
       <div id="video-container">
         <div id="video-viewport">
-          <video id="video-player" controls></video>
+          <video id="video-player" preload="auto"></video>
+          <div id="video-dim-overlay"></div>
+          <div id="video-overlay"></div>
+          <video id="thumb-video" preload="auto" muted style="display:none"></video>
         </div>
-        <!-- Compact seek bar + time (width:100% to span the centered container) -->
-        <div id="seek-bar-wrap" style="background:#16213e; padding:6px 12px; border-top:1px solid #0f3460; display:flex; align-items:center; gap:10px; width:100%;">
-          <span id="time-display" style="font-family:ui-monospace,monospace; font-size:12px; color:#aaa; min-width:130px;">0:00.000 / 0:00.000</span>
-          <input type="range" id="seek-bar" min="0" max="100" step="0.01" value="0" style="flex:1;">
-          <span id="rate-display" style="font-size:12px; color:#888;">1×</span>
+        <div id="video-controls">
+          <div id="timeline-minimap" style="display:none">
+            <div id="minimap-segments"></div>
+            <div id="minimap-viewport"></div>
+            <div id="minimap-playhead"></div>
+          </div>
+          <div id="seek-bar-wrapper">
+            <div id="timeline-ticks"></div>
+            <div id="seek-bar-overlay"></div>
+            <input type="range" id="seek-bar" min="0" max="1000" value="0">
+            <div id="seek-thumbnail">
+              <canvas id="thumb-canvas" width="192" height="108"></canvas>
+              <span id="thumb-time"></span>
+            </div>
+          </div>
+          <div id="controls-row">
+            <button id="btn-play" onclick="togglePlay()">Play</button>
+            <button id="btn-mute" onclick="toggleMute()">&#128266;</button>
+            <button onclick="stepFrames(-2)" title="Back 2 frames">&laquo;</button>
+            <button onclick="stepFrames(-1)" title="Back 1 frame">&lsaquo;</button>
+            <button onclick="stepFrames(1)" title="Forward 1 frame">&rsaquo;</button>
+            <button onclick="stepFrames(2)" title="Forward 2 frames">&raquo;</button>
+            <div id="speed-controls">
+              <label>Speed:</label>
+              <button onclick="setSpeed(0.25)">0.25x</button>
+              <button onclick="setSpeed(0.5)">0.5x</button>
+              <button onclick="setSpeed(1)" class="speed-active">1x</button>
+              <button onclick="setSpeed(2)">2x</button>
+            </div>
+            <span id="time-display">0:00.000 / 0:00.000</span>
+            <button id="btn-overlay" onclick="toggleOverlay()" title="Toggle label overlays (L)">Labels: ON</button>
+            <div id="zoom-controls">
+              <button id="btn-zoom-out" onclick="zoomOut()" title="Zoom out (Ctrl+-)">&#8722;</button>
+              <span id="zoom-level-display">1x</span>
+              <button id="btn-zoom-in" onclick="zoomIn()" title="Zoom in (Ctrl+=)">+</button>
+              <button id="btn-zoom-fit" onclick="zoomFit()" title="Fit all (Ctrl+0)">Fit</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -217,8 +226,8 @@
       <div id="cue-sidebar">
         <div id="buffer-card">
           <div class="bc-eyebrow">CURRENT BUFFER</div>
-          <div id="buffer-text">—</div>
-          <div id="buffer-time">video paused: —</div>
+          <div id="buffer-text"></div>
+          <div id="buffer-time">press Enter to start</div>
         </div>
 
         <h3>Callout keys</h3>
@@ -229,37 +238,35 @@
           <div class="ref-row"><span class="ref-key">4</span><span class="ref-name">rear hook</span></div>
           <div class="ref-row"><span class="ref-key">5</span><span class="ref-name">lead upper</span></div>
           <div class="ref-row"><span class="ref-key">6</span><span class="ref-name">rear upper</span></div>
+          <div class="ref-row span2"><span class="ref-key">⇧ + 1-6</span><span class="ref-name">body version (⇧1 = jab body)</span></div>
+          <div class="ref-row span2"><span class="ref-key">↓</span><span class="ref-name">mark last punch to body</span></div>
           <div class="ref-row"><span class="ref-key">Q</span><span class="ref-name">lead slip</span></div>
           <div class="ref-row"><span class="ref-key">W</span><span class="ref-name">rear slip</span></div>
           <div class="ref-row"><span class="ref-key">A</span><span class="ref-name">lead roll</span></div>
           <div class="ref-row"><span class="ref-key">D</span><span class="ref-name">rear roll</span></div>
+          <div class="ref-row"><span class="ref-key">S</span><span class="ref-name">slip</span></div>
+          <div class="ref-row"><span class="ref-key">G</span><span class="ref-name">roll</span></div>
           <div class="ref-row"><span class="ref-key">R</span><span class="ref-name">pull back</span></div>
           <div class="ref-row"><span class="ref-key">F</span><span class="ref-name">step back</span></div>
-          <div class="ref-row span2"><span class="ref-key">B</span><span class="ref-name">mark last punch as body</span></div>
-          <div class="ref-row span2"><span class="ref-key">Space</span><span class="ref-name">pause / commit buffer + play</span></div>
-          <div class="ref-row span2"><span class="ref-key">Backspace</span><span class="ref-name">remove last buffer character</span></div>
-          <div class="ref-row span2"><span class="ref-key">Z</span><span class="ref-name">undo last submitted event</span></div>
+          <div class="ref-row span2"><span class="ref-key">P</span><span class="ref-name">pivot</span></div>
+          <div class="ref-row span2"><span class="ref-key">B</span><span class="ref-name">block</span></div>
+          <div class="ref-row span2"><span class="ref-key">Enter</span><span class="ref-name">start callout / end + save</span></div>
+          <div class="ref-row span2"><span class="ref-key">Space</span><span class="ref-name">play / pause</span></div>
+          <div class="ref-row span2"><span class="ref-key">Backspace</span><span class="ref-name">remove last token</span></div>
+          <div class="ref-row span2"><span class="ref-key">Z</span><span class="ref-name">undo last saved callout</span></div>
           <div class="ref-row span2"><span class="ref-key">←/→</span><span class="ref-name">seek -1s / +1s</span></div>
         </div>
 
         <div class="help-block">
-          Tap a digit or defense key while playing &rarr; video auto-pauses, buffer starts. Add more
-          tokens to compose a combo (<code>1</code>&nbsp;then&nbsp;<code>2</code> while still paused
-          = combo <code>1-2</code>). Hit <code>B</code> after a digit to mark that punch as a body shot.
-          <code>Space</code> commits the buffer at the paused time and resumes.
-          For two separate callouts, commit between them (Space &rarr; play &rarr; key pauses again).
+          Press <code>Enter</code> when a callout begins &rarr; the buffer opens and the start time is
+          stamped. Tap digits <code>1</code>-<code>6</code> (hold <code>⇧</code> for body, e.g.
+          <code>⇧1</code> = jab to body) and defense keys to compose the combo as it's called. Press
+          <code>Enter</code> again when it finishes &rarr; the end time is stamped and the callout is saved.
+          <code>Space</code> toggles play/pause; recording runs independently of playback.
         </div>
 
         <h3>Events <span id="event-count" style="color:#666; font-weight:normal;">0</span></h3>
         <div id="event-list"><div class="empty-events">No events yet.</div></div>
-
-        <div class="submit-row">
-          <button id="btn-submit" class="btn-primary" disabled>Submit to sheet</button>
-          <button id="btn-download" class="btn-secondary">Download JSON</button>
-        </div>
-        <div class="submit-row">
-          <button id="btn-clear" class="btn-secondary" style="flex:1;">Clear events</button>
-        </div>
       </div>
     </div>
   </div>
