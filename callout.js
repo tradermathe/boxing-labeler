@@ -97,12 +97,14 @@ window.addEventListener('DOMContentLoaded', () => {
   restoreFromStorage();
   updateBufferCard();
   renderEventList();
-  setStatus(LABELER_ID ? `Labeler: ${LABELER_ID}` : 'Tip: add ?labeler=YOURNAME to the URL');
-  if (LABELER_ID) {
-    const badge = document.getElementById('labeler-badge');
-    badge.textContent = LABELER_ID;
-    badge.style.display = 'inline-block';
-  }
+
+  // Labeler name: a persisted text input (shared localStorage key with the
+  // orientation/direction labelers, so a labeler types their name once).
+  const labelerInput = document.getElementById('labeler-input');
+  try { labelerInput.value = localStorage.getItem('orient_labeler_name') || ''; } catch {}
+  labelerInput.addEventListener('change', () => {
+    try { localStorage.setItem('orient_labeler_name', labelerInput.value.trim()); } catch {}
+  });
 });
 
 function attachVideoListeners() {
@@ -389,6 +391,11 @@ function setupButtons() {
   document.getElementById('drive-link').addEventListener('input', saveToStorage);
 }
 
+function getLabeler() {
+  const el = document.getElementById('labeler-input');
+  return el ? el.value.trim() : '';
+}
+
 function buildPayload() {
   const driveUrl = document.getElementById('drive-link').value.trim();
   return {
@@ -396,7 +403,7 @@ function buildPayload() {
     video_url: driveUrl,
     video_id: extractDriveFileId(driveUrl),
     video_filename: state.videoFileName,
-    labeler: LABELER_ID || 'anon',
+    labeler: getLabeler(),
     submitted_at: new Date().toISOString(),
     n_events: state.calloutEvents.length,
     events: state.calloutEvents,
@@ -414,6 +421,11 @@ function extractDriveFileId(url) {
 
 async function onSubmit() {
   if (state.calloutEvents.length === 0) return;
+  if (!getLabeler()) {
+    setStatus('Type your name first.');
+    document.getElementById('labeler-input').focus();
+    return;
+  }
   const payload = buildPayload();
   if (!payload.video_url && !payload.video_filename) {
     if (!confirm('No Drive URL or video file recorded — submit anyway?')) return;
