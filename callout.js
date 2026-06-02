@@ -132,6 +132,11 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── Keyboard state machine ──────────────────────────────────────────────────
+// Arrow-hold acceleration state (mirrors app.js): after holding an arrow for
+// ACCEL_DELAY ms, each repeat steps ACCEL_MULTIPLIER frames instead of one.
+let _arrowHoldStart = null;
+let _arrowHeldKey = null;
+
 function setupKeyboard() {
   document.addEventListener('keydown', (e) => {
     // Ignore when typing in inputs.
@@ -196,15 +201,18 @@ function setupKeyboard() {
       }
       return;
     }
-    // Arrow keys ⇒ seek ±1s.
-    if (e.key === 'ArrowLeft') {
+    // Arrow keys ⇒ frame-step like the punch labeler: one frame per tap,
+    // accelerating to ACCEL_MULTIPLIER frames after holding ACCEL_DELAY ms.
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
-      video.currentTime = Math.max(0, video.currentTime - 1);
-      return;
-    }
-    if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      video.currentTime = Math.min(video.duration || 0, video.currentTime + 1);
+      const dir = e.key === 'ArrowLeft' ? -1 : 1;
+      if (_arrowHeldKey !== e.key) {
+        _arrowHeldKey = e.key;
+        _arrowHoldStart = Date.now();
+      }
+      const held = Date.now() - _arrowHoldStart;
+      const mult = held >= ACCEL_DELAY ? ACCEL_MULTIPLIER : 1;
+      stepFrames(dir * mult);
       return;
     }
     // Down arrow ⇒ mark the most recent punch token as a body shot. Lets you
@@ -235,6 +243,14 @@ function setupKeyboard() {
         setStatus('Callout cancelled.');
       }
       return;
+    }
+  });
+
+  // Reset arrow-hold acceleration when the key is released.
+  document.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      _arrowHeldKey = null;
+      _arrowHoldStart = null;
     }
   });
 }
