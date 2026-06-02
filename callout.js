@@ -574,6 +574,22 @@ function setupWaveform() {
     else startRecording(video, t);
   });
 
+  // Ctrl + scroll ⇒ zoom the shared timeline viewport, anchored on the cursor,
+  // so you can magnify a specific stretch of the loudness curve. The seek bar,
+  // ticks and callout segments share this viewport and zoom with it. (Mirrors
+  // the seek bar's alt-scroll zoom; onZoomChanged repaints the strip.)
+  wrapper.addEventListener('wheel', (e) => {
+    if (!e.ctrlKey || !video.duration) return;
+    e.preventDefault();
+    const rect = wrapper.getBoundingClientRect();
+    const pct = Math.max(0, Math.min((e.clientX - rect.left) / rect.width, 1));
+    const vp = getViewport();
+    const anchorNorm = vp.start + pct * (vp.end - vp.start);
+    const factor = e.deltaY < 0 ? 1.4 : 1 / 1.4;
+    setZoom(state.zoomLevel * factor, anchorNorm);
+    onZoomChanged();
+  }, { passive: false });
+
   // Keep the strip sharp when the layout width changes.
   if (window.ResizeObserver) new ResizeObserver(() => renderWaveform()).observe(wrapper);
 }
