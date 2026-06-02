@@ -1,12 +1,14 @@
 // ============================================================
-// cue.js — Cue Labeler
+// callout.js — Callout Labeler
 //
-// Labels when a guided-mode coach app calls out a punch / combo in
-// a user-recorded video. Combined with the user's per-frame pose
-// trace, every cue event becomes a weak label for the ST-GCN punch
-// classifier — closing the YouTube → real-iPhone-user domain gap.
+// Labels the punch / combo / defense a coach app *calls out* in a
+// video (these are third-party guided-workout videos pushed to
+// YouTube — same corpus as the punch labeler, just annotated for the
+// instruction rather than the executed punch). Combined with the
+// per-frame pose trace, every callout becomes a weak label for the
+// ST-GCN punch classifier — extra supervision the pose alone can't give.
 //
-// Vocabulary (numeric, matching most guided apps):
+// Vocabulary (numeric for punches, matching most guided apps):
 //   1 = jab          (lead head)
 //   2 = cross        (rear head)
 //   3 = lead hook    (head)
@@ -14,35 +16,77 @@
 //   5 = lead upper   (head)
 //   6 = rear upper   (head)
 //   <digit>b = same punch to the body
+// Defenses (same keys as the punch labeler, for muscle memory):
+//   q = lead slip    w = rear slip
+//   a = lead roll    d = rear roll
+//   r = pull back    f = step back
 //
-// Combo semantics: a sequence of digits + body modifiers entered while
-// the video stays paused = ONE event (e.g. `1-2b` = jab + cross_body).
-// Letting the video resume between two digit presses produces TWO
+// Combo semantics: a sequence of tokens entered while the video stays
+// paused = ONE event (e.g. `1-2b-lslip-2` = jab, cross_body, lead_slip,
+// cross). Letting the video resume between two presses produces TWO
 // separate events.
 //
 // Time stored per event = video.currentTime at the moment the buffer
-// was first opened (i.e. the cue audio's onset, before the user's
+// was first opened (i.e. the callout audio's onset, before the boxer's
 // reaction lag).
 //
 // Storage:
 //   - localStorage on every keystroke (so a refresh doesn't lose work)
-//   - On Submit: POST to Apps Script `saveCueEvents` action, falls
+//   - On Submit: GET the Apps Script `saveCalloutEvents` action, falls
 //     back to a JSON download if the script doesn't recognise it.
 // ============================================================
 
+// Punch vocab: digit -> head/body canonical ids + display label.
+const PUNCH = {
+  '1': { id: 'jab_head',           bodyId: 'jab_body',           label: 'jab' },
+  '2': { id: 'cross_head',         bodyId: 'cross_body',         label: 'cross' },
+  '3': { id: 'lead_hook_head',     bodyId: 'lead_hook_body',     label: 'lead hook' },
+  '4': { id: 'rear_hook_head',     bodyId: 'rear_hook_body',     label: 'rear hook' },
+  '5': { id: 'lead_uppercut_head', bodyId: 'lead_uppercut_body', label: 'lead upper' },
+  '6': { id: 'rear_uppercut_head', bodyId: 'rear_uppercut_body', label: 'rear upper' },
+};
+
+// Defense vocab: key -> compact display code + canonical id (matches the
+// punch labeler's PUNCH_TYPES ids so the data joins across both tools).
+const DEFENSE = {
+  q: { id: 'lead_slip', code: 'lslip', label: 'lead slip' },
+  w: { id: 'rear_slip', code: 'rslip', label: 'rear slip' },
+  a: { id: 'lead_roll', code: 'lroll', label: 'lead roll' },
+  d: { id: 'rear_roll', code: 'rroll', label: 'rear roll' },
+  r: { id: 'pull_back', code: 'pull',  label: 'pull back' },
+  f: { id: 'step_back', code: 'step',  label: 'step back' },
+};
+
 Object.assign(state, {
-  // [{ time_sec, cue_raw: "1-2b", cue_codes: ["1","2b"] }]
-  cueEvents: [],
-  // Composing buffer: array of `{ digit: "1"-"6", body: bool }`. Empty
-  // when not composing. `pausedTime` is the time of the first digit in
-  // the current buffer — that's what we save when the buffer commits.
+  // [{ time_sec, callout_raw: "1-2b", callout_ids: ["jab_head","cross_body"] }]
+  calloutEvents: [],
+  // Composing buffer of typed tokens, each either
+  //   { kind: 'punch', digit: '1'-'6', body: bool }
+  //   { kind: 'defense', key: 'q'|'w'|'a'|'d'|'r'|'f' }
+  // Empty when not composing. `pausedTime` is the time of the first token
+  // in the current buffer — that's what we save when the buffer commits.
   buffer: [],
   pausedTime: null,
   videoFileName: '',
 });
 
-const LS_KEY = 'cue_labeler_events_v1';
-const LS_META_KEY = 'cue_labeler_meta_v1';
+const LS_KEY = 'callout_labeler_events_v1';
+const LS_META_KEY = 'callout_labeler_meta_v1';
+
+// ── Token helpers ─────────────────────────────────────────────────────────────
+// Compact code for the buffer/raw display (e.g. "1", "2b", "lslip").
+function tokenCode(item) {
+  if (item.kind === 'punch') return item.digit + (item.body ? 'b' : '');
+  return DEFENSE[item.key].code;
+}
+// Canonical id for downstream join (e.g. "jab_head", "cross_body", "lead_slip").
+function tokenId(item) {
+  if (item.kind === 'punch') {
+    const p = PUNCH[item.digit];
+    return item.body ? p.bodyId : p.id;
+  }
+  return DEFENSE[item.key].id;
+}
 
 // ── Init ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
@@ -86,11 +130,11 @@ function attachVideoListeners() {
   video.addEventListener('loadedmetadata', renderTime);
   video.addEventListener('timeupdate', renderTime);
   // Keep our notion of pausedTime fresh when the user clicks pause via
-  // the native controls (not via a digit press).
+  // the native controls (not via a token press).
   video.addEventListener('pause', () => {
     // If the buffer is empty AND the pause was user-initiated, capture
-    // the time so the next digit press uses *this* moment, not the
-    // moment of the first digit. Better matches the cue's audio onset.
+    // the time so the next token press uses *this* moment, not the
+    // moment of the first token. Better matches the callout's audio onset.
     if (state.buffer.length === 0) state.pausedTime = video.currentTime;
     updateBufferCard();
   });
@@ -105,30 +149,33 @@ function setupKeyboard() {
     if (!video) return;
 
     const k = e.key;
-    // Digits 1-6 ⇒ append to buffer (auto-pause if playing).
+    // Digits 1-6 ⇒ append a punch token (auto-pause if playing).
     if (/^[1-6]$/.test(k)) {
       e.preventDefault();
-      if (!video.paused) {
-        video.pause();
-        state.pausedTime = video.currentTime;
-      }
-      if (state.buffer.length === 0 && state.pausedTime == null) {
-        state.pausedTime = video.currentTime;
-      }
-      state.buffer.push({ digit: k, body: false });
+      pauseForBuffer(video);
+      state.buffer.push({ kind: 'punch', digit: k, body: false });
       updateBufferCard();
       saveToStorage();
       return;
     }
-    // B (or b) ⇒ toggle body on the most-recent digit.
+    // B (or b) ⇒ toggle body on the most-recent punch token.
     if (k === 'b' || k === 'B') {
       e.preventDefault();
       const last = state.buffer[state.buffer.length - 1];
-      if (last) {
+      if (last && last.kind === 'punch') {
         last.body = !last.body;
         updateBufferCard();
         saveToStorage();
       }
+      return;
+    }
+    // Defense keys (q/w/a/d/r/f) ⇒ append a defense token (auto-pause).
+    if (DEFENSE[k.toLowerCase()]) {
+      e.preventDefault();
+      pauseForBuffer(video);
+      state.buffer.push({ kind: 'defense', key: k.toLowerCase() });
+      updateBufferCard();
+      saveToStorage();
       return;
     }
     // Space ⇒ commit-if-buffer + resume, else just toggle play/pause.
@@ -147,13 +194,13 @@ function setupKeyboard() {
       }
       return;
     }
-    // Backspace ⇒ remove last buffer character.
+    // Backspace ⇒ remove last buffer token.
     if (k === 'Backspace') {
       e.preventDefault();
       if (state.buffer.length > 0) {
         const last = state.buffer[state.buffer.length - 1];
-        if (last.body) {
-          // First Backspace strips the body modifier, second removes the digit.
+        if (last.kind === 'punch' && last.body) {
+          // First Backspace strips the body modifier, second removes the token.
           last.body = false;
         } else {
           state.buffer.pop();
@@ -167,11 +214,11 @@ function setupKeyboard() {
     // z / Z ⇒ undo last committed event.
     if (k === 'z' || k === 'Z') {
       e.preventDefault();
-      if (state.cueEvents.length > 0) {
-        const removed = state.cueEvents.pop();
+      if (state.calloutEvents.length > 0) {
+        const removed = state.calloutEvents.pop();
         saveToStorage();
         renderEventList();
-        setStatus(`Undid: ${removed.cue_raw} @ ${formatTime(removed.time_sec)}`);
+        setStatus(`Undid: ${removed.callout_raw} @ ${formatTime(removed.time_sec)}`);
       }
       return;
     }
@@ -198,15 +245,25 @@ function setupKeyboard() {
   });
 }
 
+// Pause the video (if playing) and anchor pausedTime to the buffer's first
+// token, so every token in a combo shares the onset timestamp.
+function pauseForBuffer(video) {
+  if (!video.paused) {
+    video.pause();
+    state.pausedTime = video.currentTime;
+  }
+  if (state.buffer.length === 0 && state.pausedTime == null) {
+    state.pausedTime = video.currentTime;
+  }
+}
+
 function commitBuffer() {
   if (state.buffer.length === 0) return;
   const time = state.pausedTime ?? document.getElementById('video-player').currentTime;
-  const codes = state.buffer.map((b) => b.digit + (b.body ? 'b' : ''));
-  const raw = codes.join('-');
-  state.cueEvents.push({
+  state.calloutEvents.push({
     time_sec: Number(time.toFixed(3)),
-    cue_raw: raw,
-    cue_codes: codes,
+    callout_raw: state.buffer.map(tokenCode).join('-'),
+    callout_ids: state.buffer.map(tokenId),
   });
   state.buffer = [];
   state.pausedTime = null;
@@ -222,7 +279,7 @@ function updateBufferCard() {
   if (state.buffer.length === 0) {
     bufEl.textContent = '—';
   } else {
-    bufEl.textContent = state.buffer.map((b) => b.digit + (b.body ? 'b' : '')).join('-');
+    bufEl.textContent = state.buffer.map(tokenCode).join('-');
   }
   if (state.pausedTime != null) {
     timeEl.textContent = `video paused: ${formatTime(state.pausedTime)}`;
@@ -234,8 +291,8 @@ function updateBufferCard() {
 function renderEventList() {
   const listEl = document.getElementById('event-list');
   const countEl = document.getElementById('event-count');
-  countEl.textContent = String(state.cueEvents.length);
-  if (state.cueEvents.length === 0) {
+  countEl.textContent = String(state.calloutEvents.length);
+  if (state.calloutEvents.length === 0) {
     listEl.innerHTML = '<div class="empty-events">No events yet.</div>';
     document.getElementById('btn-submit').disabled = true;
     return;
@@ -243,13 +300,13 @@ function renderEventList() {
   document.getElementById('btn-submit').disabled = false;
   listEl.innerHTML = '';
   // Show in reverse (newest first) so the labeler sees what they just did.
-  for (let i = state.cueEvents.length - 1; i >= 0; i--) {
-    const ev = state.cueEvents[i];
+  for (let i = state.calloutEvents.length - 1; i >= 0; i--) {
+    const ev = state.calloutEvents[i];
     const row = document.createElement('div');
     row.className = 'event-row';
     row.innerHTML = `
       <span class="er-time">${formatTime(ev.time_sec)}</span>
-      <span class="er-cue">${ev.cue_raw}</span>
+      <span class="er-cue">${ev.callout_raw}</span>
       <span class="er-del" title="Delete this event">✕</span>
     `;
     row.querySelector('.er-time').addEventListener('click', () => {
@@ -258,7 +315,7 @@ function renderEventList() {
     });
     row.querySelector('.er-del').addEventListener('click', (e) => {
       e.stopPropagation();
-      state.cueEvents.splice(i, 1);
+      state.calloutEvents.splice(i, 1);
       saveToStorage();
       renderEventList();
     });
@@ -270,7 +327,7 @@ function renderEventList() {
 function saveToStorage() {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify({
-      events: state.cueEvents,
+      events: state.calloutEvents,
       buffer: state.buffer,
       pausedTime: state.pausedTime,
     }));
@@ -280,7 +337,7 @@ function saveToStorage() {
     }));
   } catch (err) {
     // localStorage might be full or disabled — non-fatal.
-    console.warn('[cue] localStorage save failed:', err);
+    console.warn('[callout] localStorage save failed:', err);
   }
 }
 
@@ -289,7 +346,7 @@ function restoreFromStorage() {
     const raw = localStorage.getItem(LS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      state.cueEvents = parsed.events || [];
+      state.calloutEvents = parsed.events || [];
       state.buffer = parsed.buffer || [];
       state.pausedTime = parsed.pausedTime ?? null;
     }
@@ -303,7 +360,7 @@ function restoreFromStorage() {
       }
     }
   } catch (err) {
-    console.warn('[cue] localStorage restore failed:', err);
+    console.warn('[callout] localStorage restore failed:', err);
   }
 }
 
@@ -313,7 +370,7 @@ function setupButtons() {
   document.getElementById('btn-download').addEventListener('click', onDownload);
   document.getElementById('btn-clear').addEventListener('click', () => {
     if (!confirm('Clear all events for this video? (already-submitted events will not be removed from the Sheet)')) return;
-    state.cueEvents = [];
+    state.calloutEvents = [];
     state.buffer = [];
     state.pausedTime = null;
     saveToStorage();
@@ -341,8 +398,8 @@ function buildPayload() {
     video_filename: state.videoFileName,
     labeler: LABELER_ID || 'anon',
     submitted_at: new Date().toISOString(),
-    n_events: state.cueEvents.length,
-    events: state.cueEvents,
+    n_events: state.calloutEvents.length,
+    events: state.calloutEvents,
   };
 }
 
@@ -356,14 +413,14 @@ function extractDriveFileId(url) {
 }
 
 async function onSubmit() {
-  if (state.cueEvents.length === 0) return;
+  if (state.calloutEvents.length === 0) return;
   const payload = buildPayload();
   if (!payload.video_url && !payload.video_filename) {
     if (!confirm('No Drive URL or video file recorded — submit anyway?')) return;
   }
-  setStatus(`Submitting ${state.cueEvents.length} events…`);
+  setStatus(`Submitting ${state.calloutEvents.length} events…`);
   const url = sheetUrl({
-    action: 'saveCueEvents',
+    action: 'saveCalloutEvents',
     payload: JSON.stringify(payload),
   });
   try {
@@ -372,8 +429,8 @@ async function onSubmit() {
     let parsed = null;
     try { parsed = JSON.parse(text); } catch { /* not JSON */ }
     if (parsed && parsed.status === 'ok') {
-      setStatus(`Submitted ${state.cueEvents.length} events.`);
-      showToast(`Saved ${state.cueEvents.length} cues`, 'info');
+      setStatus(`Submitted ${state.calloutEvents.length} events.`);
+      showToast(`Saved ${state.calloutEvents.length} callouts`, 'info');
       // Don't auto-clear — the labeler may want to keep going on the
       // same video. They can use Clear when done.
     } else {
@@ -391,13 +448,13 @@ function onDownload() {
   const payload = buildPayload();
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
-  const stem = state.videoFileName.replace(/\.[^.]+$/, '') || payload.video_id || 'cue_events';
+  const stem = state.videoFileName.replace(/\.[^.]+$/, '') || payload.video_id || 'callout_events';
   a.href = URL.createObjectURL(blob);
-  a.download = `${stem}_cues.json`;
+  a.download = `${stem}_callouts.json`;
   document.body.appendChild(a);
   a.click();
   a.remove();
-  setStatus(`Downloaded ${state.cueEvents.length} events.`);
+  setStatus(`Downloaded ${state.calloutEvents.length} events.`);
 }
 
 function setStatus(text) {

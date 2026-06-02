@@ -219,6 +219,14 @@ function doGet(e) {
     return doGetPunchDirections16(p, labeler, action);
   }
 
+  // Callout labeler — separate sheet. One row per called-out punch / combo /
+  // defense, keyed by (labeler, video). These annotate the *instruction* a
+  // coach app calls out, not the executed punch; they become weak labels for
+  // the punch classifier.
+  if (action === 'saveCalloutEvents' || action === 'listCalloutEvents') {
+    return doGetCalloutEvents(p, labeler, action);
+  }
+
   var sheetName;
   if (labeler === 'combined') {
     sheetName = 'Combined Data';
@@ -1603,4 +1611,115 @@ function doGetPunchDirections16(p, labeler, action) {
   }
 
   return jsonOut({ status: 'error', message: 'unknown punch-direction-16 action: ' + action });
+}
+
+// ============================================================
+// Callout labeler — one row per called-out punch / combo / defense.
+// Each row stores the onset time + the compact combo string + the
+// canonical token ids (pipe-joined). `callout.js` submits the whole
+// per-video set in one `saveCalloutEvents` GET; re-submitting the same
+// (labeler, video) supersedes the prior set so it stays idempotent.
+// ============================================================
+var CALLOUT_SHEET_NAME = 'Callout Events';
+var CALLOUT_HEADERS = ['ts', 'labeler', 'video_filename', 'video_id', 'video_url',
+                       'time_sec', 'callout_raw', 'callout_ids', 'submitted_at', 'deleted'];
+
+function getOrCreateCalloutSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(CALLOUT_SHEET_NAME);
+  if (!sh) {
+    sh = ss.insertSheet(CALLOUT_SHEET_NAME);
+    sh.appendRow(CALLOUT_HEADERS);
+    sh.setFrozenRows(1);
+    return sh;
+  }
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(CALLOUT_HEADERS);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function doGetCalloutEvents(p, labeler, action) {
+  var sh = getOrCreateCalloutSheet();
+  var data = sh.getDataRange().getValues();
+  var idx = punchDirHeaderIndex(data[0]);   // header-name -> column index
+
+  // === LIST events (optionally filtered by labeler and/or video) ===
+  if (action === 'listCalloutEvents') {
+    var video = p.video || '';
+    var filterLabeler = p.labeler || '';
+    var rows = [];
+    for (var li = 1; li < data.length; li++) {
+      var lr = data[li];
+      if (String(lr[idx.deleted]) === '1') continue;
+      if (filterLabeler && lr[idx.labeler] !== filterLabeler) continue;
+      if (video && lr[idx.video_filename] !== video && lr[idx.video_id] !== video) continue;
+      rows.push({
+        ts: lr[idx.ts],
+        labeler: lr[idx.labeler],
+        video_filename: lr[idx.video_filename],
+        video_id: lr[idx.video_id],
+        video_url: lr[idx.video_url],
+        time_sec: Number(lr[idx.time_sec]),
+        callout_raw: lr[idx.callout_raw],
+        callout_ids: String(lr[idx.callout_ids] || '').split('|').filter(function (s) { return s; }),
+        submitted_at: lr[idx.submitted_at],
+      });
+    }
+    return jsonOut({ status: 'ok', rows: rows });
+  }
+
+  // === SAVE the whole per-video set; supersedes this labeler's prior set ===
+  if (action === 'saveCalloutEvents') {
+    if (!p.payload) return jsonOut({ status: 'error', message: 'missing payload' });
+    var payload;
+    try { payload = JSON.parse(p.payload); }
+    catch (err) { return jsonOut({ status: 'error', message: 'bad payload JSON: ' + err.message }); }
+
+    var lbl = payload.labeler || labeler || 'anon';
+    var vfile = payload.video_filename || '';
+    var vid = payload.video_id || '';
+    var vurl = payload.video_url || '';
+    var submittedAt = payload.submitted_at || new Date().toISOString();
+    var events = payload.events || [];
+
+    // Idempotent resubmit: mark this labeler's prior rows for this video deleted.
+    for (var i = 1; i < data.length; i++) {
+      if (String(data[i][idx.deleted]) === '1') continue;
+      if (data[i][idx.labeler] !== lbl) continue;
+      if (data[i][idx.video_filename] !== vfile) continue;
+      if (data[i][idx.video_id] !== vid) continue;
+      sh.getRange(i + 1, idx.deleted + 1).setValue('1');
+    }
+
+    var headerRow = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+    var newRows = [];
+    for (var e = 0; e < events.length; e++) {
+      var ev = events[e];
+      var ids = Array.isArray(ev.callout_ids) ? ev.callout_ids.join('|') : String(ev.callout_ids || '');
+      var row = [];
+      for (var c = 0; c < headerRow.length; c++) {
+        var col = String(headerRow[c]);
+        if (col === 'ts') row.push(new Date().toISOString());
+        else if (col === 'labeler') row.push(lbl);
+        else if (col === 'video_filename') row.push(vfile);
+        else if (col === 'video_id') row.push(vid);
+        else if (col === 'video_url') row.push(vurl);
+        else if (col === 'time_sec') row.push(ev.time_sec);
+        else if (col === 'callout_raw') row.push(ev.callout_raw || '');
+        else if (col === 'callout_ids') row.push(ids);
+        else if (col === 'submitted_at') row.push(submittedAt);
+        else if (col === 'deleted') row.push('');
+        else row.push('');
+      }
+      newRows.push(row);
+    }
+    if (newRows.length > 0) {
+      sh.getRange(sh.getLastRow() + 1, 1, newRows.length, headerRow.length).setValues(newRows);
+    }
+    return jsonOut({ status: 'ok', saved: newRows.length });
+  }
+
+  return jsonOut({ status: 'error', message: 'unknown callout action: ' + action });
 }

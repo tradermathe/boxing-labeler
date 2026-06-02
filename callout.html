@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cue Labeler</title>
+  <title>Callout Labeler</title>
   <link rel="stylesheet" href="style.css">
   <style>
     /* Page-specific. Shared shell (top bar, video player, seek bar,
@@ -216,7 +216,7 @@
           <div id="buffer-time">video paused: —</div>
         </div>
 
-        <h3>Cue keys</h3>
+        <h3>Callout keys</h3>
         <div class="cue-ref">
           <div class="ref-row"><span class="ref-key">1</span><span class="ref-name">jab</span></div>
           <div class="ref-row"><span class="ref-key">2</span><span class="ref-name">cross</span></div>
@@ -224,7 +224,13 @@
           <div class="ref-row"><span class="ref-key">4</span><span class="ref-name">rear hook</span></div>
           <div class="ref-row"><span class="ref-key">5</span><span class="ref-name">lead upper</span></div>
           <div class="ref-row"><span class="ref-key">6</span><span class="ref-name">rear upper</span></div>
-          <div class="ref-row span2"><span class="ref-key">B</span><span class="ref-name">mark last digit as body</span></div>
+          <div class="ref-row"><span class="ref-key">Q</span><span class="ref-name">lead slip</span></div>
+          <div class="ref-row"><span class="ref-key">W</span><span class="ref-name">rear slip</span></div>
+          <div class="ref-row"><span class="ref-key">A</span><span class="ref-name">lead roll</span></div>
+          <div class="ref-row"><span class="ref-key">D</span><span class="ref-name">rear roll</span></div>
+          <div class="ref-row"><span class="ref-key">R</span><span class="ref-name">pull back</span></div>
+          <div class="ref-row"><span class="ref-key">F</span><span class="ref-name">step back</span></div>
+          <div class="ref-row span2"><span class="ref-key">B</span><span class="ref-name">mark last punch as body</span></div>
           <div class="ref-row span2"><span class="ref-key">Space</span><span class="ref-name">pause / commit buffer + play</span></div>
           <div class="ref-row span2"><span class="ref-key">Backspace</span><span class="ref-name">remove last buffer character</span></div>
           <div class="ref-row span2"><span class="ref-key">Z</span><span class="ref-name">undo last submitted event</span></div>
@@ -232,11 +238,11 @@
         </div>
 
         <div class="help-block">
-          Single tap a digit while playing &rarr; video auto-pauses, buffer starts. Add more
-          digits to compose a combo (<code>1</code>&nbsp;then&nbsp;<code>2</code> while still paused
-          = combo <code>1-2</code>). Hit <code>B</code> after a digit to mark it as body.
+          Tap a digit or defense key while playing &rarr; video auto-pauses, buffer starts. Add more
+          tokens to compose a combo (<code>1</code>&nbsp;then&nbsp;<code>2</code> while still paused
+          = combo <code>1-2</code>). Hit <code>B</code> after a digit to mark that punch as a body shot.
           <code>Space</code> commits the buffer at the paused time and resumes.
-          For two separate cues, commit between them (Space &rarr; play &rarr; digit pauses again).
+          For two separate callouts, commit between them (Space &rarr; play &rarr; key pauses again).
         </div>
 
         <h3>Events <span id="event-count" style="color:#666; font-weight:normal;">0</span></h3>
@@ -254,6 +260,6 @@
   </div>
 
   <script src="player.js"></script>
-  <script src="cue.js"></script>
+  <script src="callout.js"></script>
 </body>
 </html>
