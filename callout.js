@@ -256,19 +256,24 @@ function setupKeyboard() {
   });
 }
 
-// First Enter: open a callout, stamp its start time. Playback keeps running.
-function startRecording(video) {
+// Open a callout and stamp its start time. Triggered by Enter (at the playhead)
+// or a right-click on the loudness strip (at the clicked time). Playback keeps
+// running either way.
+function startRecording(video, atSec = video.currentTime) {
   state.recording = true;
-  state.startSec = video.currentTime;
+  state.startSec = atSec;
   state.buffer = [];
   updateBufferCard();
   saveToStorage();
-  setStatus(`Callout started @ ${formatTime(state.startSec)} — type tokens, Enter to end.`);
+  setStatus(`Callout started @ ${formatTime(state.startSec)} — type tokens, then right-click / Enter to end.`);
 }
 
-// Second Enter: stamp end time and commit one [start, end] event. An empty
-// buffer means a stray/double Enter — discard rather than store a blank callout.
-function endRecording(video) {
+// Close a callout: stamp the end time and commit one [start, end] event.
+// Triggered by the 2nd Enter (at the playhead) or a 2nd right-click on the
+// loudness strip (at the clicked time). An empty buffer means a stray/double
+// trigger — discard rather than store a blank callout. start/end are ordered
+// so a right-click on the offset before the onset still yields a valid window.
+function endRecording(video, atSec = video.currentTime) {
   if (state.buffer.length === 0) {
     state.recording = false;
     state.startSec = null;
@@ -278,8 +283,8 @@ function endRecording(video) {
     return;
   }
   state.calloutEvents.push({
-    start_sec: Number(state.startSec.toFixed(3)),
-    end_sec: Number(video.currentTime.toFixed(3)),
+    start_sec: Number(Math.min(state.startSec, atSec).toFixed(3)),
+    end_sec: Number(Math.max(state.startSec, atSec).toFixed(3)),
     callout_raw: state.buffer.map(tokenCode).join('-'),
     callout_ids: state.buffer.map(tokenId),
   });
@@ -428,8 +433,9 @@ function updateVideoOverlay() {
 // ── Audio loudness strip ──────────────────────────────────────────────────────
 // Decode the loaded file's audio once, downmix to mono, and draw a peak-envelope
 // strip under the seek bar. It shares the timeline's zoom viewport (so it lines
-// up with the callout segments + ticks) and is click-to-seek — letting a labeler
-// drop the playhead right on a callout's onset/offset before stamping it.
+// up with the callout segments + ticks). Left-drag scrubs the playhead; a
+// right-click marks a callout edge at the cursor — letting a labeler nail an
+// onset/offset straight off the loudness curve.
 let _audioCtx = null;
 
 async function decodeAudioForWaveform(file) {
@@ -532,14 +538,42 @@ function setupWaveform() {
   const wrapper = document.getElementById('waveform-wrapper');
   const video = document.getElementById('video-player');
   if (!wrapper || !video) return;
-  // Click-to-seek using the same viewport math as the seek bar.
-  wrapper.addEventListener('click', (e) => {
-    if (!video.duration) return;
+
+  // Viewport-aware pixel→time using the same math as the seek bar, clamped to
+  // the strip's bounds and the clip duration.
+  const timeAtClientX = (clientX) => {
     const rect = wrapper.getBoundingClientRect();
-    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
     const time = viewportPctToTime((x / rect.width) * 100, video.duration);
-    video.currentTime = Math.max(0, Math.min(video.duration, time));
+    return Math.max(0, Math.min(video.duration, time));
+  };
+
+  // Left-button hold + move ⇒ scrub the playhead along the strip.
+  let dragging = false;
+  wrapper.addEventListener('mousedown', (e) => {
+    if (e.button !== 0 || !video.duration) return;
+    dragging = true;
+    video.currentTime = timeAtClientX(e.clientX);
+    e.preventDefault();
   });
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging || !video.duration) return;
+    video.currentTime = timeAtClientX(e.clientX);
+  });
+  document.addEventListener('mouseup', () => { dragging = false; });
+
+  // Right-click ⇒ mark a callout edge at the clicked time: 1st starts it,
+  // 2nd ends + commits it (same state machine as Enter, but time-stamped at
+  // the cursor so you can nail onset/offset off the loudness curve).
+  wrapper.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    if (!video.duration) return;
+    const t = timeAtClientX(e.clientX);
+    video.currentTime = t;
+    if (state.recording) endRecording(video, t);
+    else startRecording(video, t);
+  });
+
   // Keep the strip sharp when the layout width changes.
   if (window.ResizeObserver) new ResizeObserver(() => renderWaveform()).observe(wrapper);
 }
