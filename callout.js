@@ -117,6 +117,7 @@ window.addEventListener('DOMContentLoaded', () => {
   setupPlayer();                  // from player.js — wires file picker, seek bar, zoom
   setupKeyboard();
   setupInputs();
+  setupWaveform();
   restoreFromStorage();
   updateBufferCard();
   renderEventList();
@@ -375,6 +376,7 @@ function renderTimelineOverlay() {
   renderCalloutMinimap();
   updateMinimapChrome();   // player.js — viewport indicator + playhead
   renderTimeTicks();       // player.js — major/minor ticks
+  renderWaveform();        // redraw the loudness strip for the current viewport
 }
 
 function renderCalloutMinimap() {
@@ -403,6 +405,7 @@ function updateVideoOverlay() {
   const overlay = document.getElementById('video-overlay');
   const video = document.getElementById('video-player');
   if (!overlay || !video) return;
+  updateWaveformPlayhead();   // keep the loudness-strip playhead in sync each frame
   const t = video.currentTime;
 
   const active = state.calloutEvents.filter(ev => t >= ev.start_sec && t <= ev.end_sec);
@@ -420,6 +423,125 @@ function updateVideoOverlay() {
     tag.textContent = ev.callout_raw;
     overlay.appendChild(tag);
   }
+}
+
+// ── Audio loudness strip ──────────────────────────────────────────────────────
+// Decode the loaded file's audio once, downmix to mono, and draw a peak-envelope
+// strip under the seek bar. It shares the timeline's zoom viewport (so it lines
+// up with the callout segments + ticks) and is click-to-seek — letting a labeler
+// drop the playhead right on a callout's onset/offset before stamping it.
+let _audioCtx = null;
+
+async function decodeAudioForWaveform(file) {
+  const hint = document.getElementById('waveform-hint');
+  try {
+    if (hint) { hint.style.display = 'flex'; hint.textContent = 'Decoding audio…'; }
+    _audioCtx = _audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const audio = await _audioCtx.decodeAudioData(await file.arrayBuffer());
+    // Downmix every channel to one mono track (sum / N).
+    const n = audio.length;
+    const mono = new Float32Array(n);
+    for (let ch = 0; ch < audio.numberOfChannels; ch++) {
+      const data = audio.getChannelData(ch);
+      for (let i = 0; i < n; i++) mono[i] += data[i];
+    }
+    if (audio.numberOfChannels > 1) {
+      const inv = 1 / audio.numberOfChannels;
+      for (let i = 0; i < n; i++) mono[i] *= inv;
+    }
+    state.waveMono = mono;
+    state.waveSampleRate = audio.sampleRate;
+    if (hint) hint.style.display = 'none';
+    renderWaveform();
+  } catch (err) {
+    console.warn('[callout] audio decode failed:', err);
+    state.waveMono = null;
+    if (hint) { hint.style.display = 'flex'; hint.textContent = 'No audio track'; }
+    renderWaveform();
+  }
+}
+
+// Max-abs amplitude per output column for samples [startSample, endSample).
+function waveformPeaks(mono, startSample, endSample, cols) {
+  const peaks = new Float32Array(cols);
+  const total = endSample - startSample;
+  if (total <= 0) return peaks;
+  const per = total / cols;
+  for (let x = 0; x < cols; x++) {
+    const s0 = startSample + Math.floor(x * per);
+    const s1 = Math.min(endSample, startSample + Math.floor((x + 1) * per));
+    let peak = 0;
+    for (let i = s0; i < s1; i++) { const a = Math.abs(mono[i]); if (a > peak) peak = a; }
+    peaks[x] = peak;
+  }
+  return peaks;
+}
+
+function renderWaveform() {
+  const canvas = document.getElementById('waveform-canvas');
+  const wrapper = document.getElementById('waveform-wrapper');
+  const video = document.getElementById('video-player');
+  if (!canvas || !wrapper || !video) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = wrapper.clientWidth;
+  const cssH = wrapper.clientHeight;
+  if (cssW <= 0 || cssH <= 0) return;
+  canvas.width = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssW, cssH);
+
+  const mono = state.waveMono;
+  const duration = video.duration;
+  if (!mono || !duration || duration <= 0) { updateWaveformPlayhead(); return; }
+
+  const vp = getViewport();                       // shared zoom window (0..1 of duration)
+  const sr = state.waveSampleRate;
+  const startSample = Math.max(0, Math.floor(vp.start * duration * sr));
+  const endSample = Math.min(mono.length, Math.ceil(vp.end * duration * sr));
+  const cols = Math.max(1, Math.floor(cssW));
+  const peaks = waveformPeaks(mono, startSample, endSample, cols);
+
+  const mid = cssH / 2;
+  ctx.fillStyle = 'rgba(233, 69, 96, 0.6)';
+  for (let x = 0; x < cols; x++) {
+    const h = peaks[x] * mid;                      // peak in [0,1] → half height
+    if (h > 0) ctx.fillRect(x, mid - h, 1, Math.max(h * 2, 1));
+  }
+  // Faint center baseline.
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.fillRect(0, Math.round(mid), cssW, 1);
+
+  updateWaveformPlayhead();
+}
+
+function updateWaveformPlayhead() {
+  const ph = document.getElementById('waveform-playhead');
+  const video = document.getElementById('video-player');
+  if (!ph || !video) return;
+  const duration = video.duration;
+  if (!duration || duration <= 0) { ph.style.display = 'none'; return; }
+  const pct = timeToViewportPct(video.currentTime, duration);
+  if (pct < 0 || pct > 100) { ph.style.display = 'none'; return; }
+  ph.style.display = 'block';
+  ph.style.left = pct + '%';
+}
+
+function setupWaveform() {
+  const wrapper = document.getElementById('waveform-wrapper');
+  const video = document.getElementById('video-player');
+  if (!wrapper || !video) return;
+  // Click-to-seek using the same viewport math as the seek bar.
+  wrapper.addEventListener('click', (e) => {
+    if (!video.duration) return;
+    const rect = wrapper.getBoundingClientRect();
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    const time = viewportPctToTime((x / rect.width) * 100, video.duration);
+    video.currentTime = Math.max(0, Math.min(video.duration, time));
+  });
+  // Keep the strip sharp when the layout width changes.
+  if (window.ResizeObserver) new ResizeObserver(() => renderWaveform()).observe(wrapper);
 }
 
 // ── Persistence ─────────────────────────────────────────────────────────────
@@ -475,6 +597,7 @@ function setupInputs() {
     if (!f) return;
     state.videoFileName = f.name;
     saveToStorage();
+    decodeAudioForWaveform(f);   // build the loudness strip from the file's audio
   });
   // Drive link: persist locally on each keystroke; re-stamp the sheet on blur
   // (change) once there are committed events.

@@ -140,6 +140,41 @@
       color: #e94560;
       font-family: ui-monospace, monospace;
     }
+    /* Audio loudness strip (callout.js draws the envelope into the canvas). */
+    #waveform-wrapper {
+      position: relative;
+      width: 100%;
+      height: 56px;
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    #waveform-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    #waveform-playhead {
+      position: absolute;
+      top: 0;
+      width: 1px;
+      height: 100%;
+      background: #e94560;
+      pointer-events: none;
+      z-index: 2;
+    }
+    #waveform-hint {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: #555;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -195,6 +230,11 @@
               <canvas id="thumb-canvas" width="192" height="108"></canvas>
               <span id="thumb-time"></span>
             </div>
+          </div>
+          <div id="waveform-wrapper" title="Audio loudness — click to drop the playhead on a sound's edge">
+            <canvas id="waveform-canvas"></canvas>
+            <div id="waveform-playhead"></div>
+            <div id="waveform-hint">Load a video to see its audio</div>
           </div>
           <div id="controls-row">
             <button id="btn-play" onclick="togglePlay()">Play</button>
