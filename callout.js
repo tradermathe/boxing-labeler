@@ -16,6 +16,8 @@
 //   5 = lead upper   (head)
 //   6 = rear upper   (head)
 //   Shift+<digit> = same punch to the body (Shift+1 = jab_body)
+//   c + <digit>   = vague "combo of N punches" (c then 3 ⇒ a 3-punch combo,
+//                   used when the coach calls a combo without naming the punches)
 // Defenses:
 //   s = slip         g = roll     (no direction — every slip/roll is labeled generically)
 //   r = pull back    f = step back
@@ -76,6 +78,7 @@ Object.assign(state, {
   calloutEvents: [],
   // Composing buffer of typed tokens, each either
   //   { kind: 'punch', digit: '1'-'6', body: bool }
+  //   { kind: 'combo', count: 1-9 }   (vague "combo of N punches")
   //   { kind: 'defense', key: 'q'|'w'|'a'|'d'|'r'|'f'|'b' }
   // `recording` is true between the start-Enter and the end-Enter; `startSec`
   // is the video time captured at the start-Enter. Tokens only register while
@@ -90,17 +93,19 @@ const LS_KEY = 'callout_labeler_events_v2';   // v2: start_sec/end_sec segments
 const LS_META_KEY = 'callout_labeler_meta_v1';
 
 // ── Token helpers ─────────────────────────────────────────────────────────────
-// Compact code for the buffer/raw display (e.g. "1", "2b", "slip").
+// Compact code for the buffer/raw display (e.g. "1", "2b", "slip", "c3").
 function tokenCode(item) {
   if (item.kind === 'punch') return item.digit + (item.body ? 'b' : '');
+  if (item.kind === 'combo') return 'c' + item.count;
   return DEFENSE[item.key].code;
 }
-// Canonical id for downstream join (e.g. "jab_head", "cross_body", "slip").
+// Canonical id for downstream join (e.g. "jab_head", "cross_body", "slip", "combo_3").
 function tokenId(item) {
   if (item.kind === 'punch') {
     const p = PUNCH[item.digit];
     return item.body ? p.bodyId : p.id;
   }
+  if (item.kind === 'combo') return 'combo_' + item.count;
   return DEFENSE[item.key].id;
 }
 
@@ -122,6 +127,8 @@ function parseCalloutRaw(str) {
       ids.push(body ? p.bodyId : p.id);
       continue;
     }
+    const cm = part.match(/^c([1-9])$/);       // vague "combo of N punches"
+    if (cm) { codes.push('c' + cm[1]); ids.push('combo_' + cm[1]); continue; }
     const def = Object.values(DEFENSE).find(d => d.code === part);
     if (def) { codes.push(def.code); ids.push(def.id); continue; }
     return null;   // unrecognized token ⇒ reject the whole edit
@@ -154,6 +161,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // ACCEL_DELAY ms, each repeat steps ACCEL_MULTIPLIER frames instead of one.
 let _arrowHoldStart = null;
 let _arrowHeldKey = null;
+let _comboPending = false;   // `c` was pressed; next digit is the combo count
 
 function setupKeyboard() {
   document.addEventListener('keydown', (e) => {
@@ -161,6 +169,22 @@ function setupKeyboard() {
     if (e.target.matches('input, textarea, select')) return;
     const video = document.getElementById('video-player');
     if (!video) return;
+
+    // Combo entry: `c` arms it, the NEXT digit is consumed as the punch count
+    // ("c" then "3" ⇒ a vague 3-punch combo). Must run before the digit handler
+    // so the count isn't mistaken for a punch. A non-digit cancels the arm and
+    // falls through to be handled normally.
+    if (_comboPending) {
+      _comboPending = false;
+      const n = (e.code.match(/^(?:Digit|Numpad)([1-9])$/) || [])[1];
+      if (n) {
+        e.preventDefault();
+        state.buffer.push({ kind: 'combo', count: Number(n) });
+        updateBufferCard();
+        saveToStorage();
+        return;
+      }
+    }
 
     // Enter ⇒ start the callout (1st press) / stamp end + commit (2nd press).
     if (e.key === 'Enter') {
@@ -187,6 +211,14 @@ function setupKeyboard() {
       state.buffer.push({ kind: 'defense', key: defKey });
       updateBufferCard();
       saveToStorage();
+      return;
+    }
+    // `c` ⇒ arm a combo token; the next digit (1-9) becomes the punch count.
+    if (e.code === 'KeyC') {
+      e.preventDefault();
+      if (!state.recording) { setStatus('Press Enter to start a callout first.'); return; }
+      _comboPending = true;
+      setStatus('Combo: press a number (1-9) for how many punches.');
       return;
     }
     // Space ⇒ play/pause toggle (independent of recording).
@@ -272,6 +304,7 @@ function startRecording(video, atSec = video.currentTime) {
   state.recording = true;
   state.startSec = atSec;
   state.buffer = [];
+  _comboPending = false;
   updateBufferCard();
   saveToStorage();
   setStatus(`Callout started @ ${formatTime(state.startSec)} — type tokens, then right-click / Enter to end.`);
