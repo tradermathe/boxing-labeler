@@ -21,6 +21,20 @@ function backfillCombinedIds() {
 }
 
 function doPost(e) {
+  // Large callout sets overflow GET URLs — Google rejects URLs past a few tens
+  // of KB with HTTP 400 before the script even runs — so the callout labeler
+  // sends its payload in the POST body instead. action/labeler still ride in
+  // the query string; the body is the JSON payload, surfaced as p.payload so
+  // the existing GET handler is reused unchanged.
+  var p = (e && e.parameter) ? e.parameter : {};
+  if (e && e.postData && e.postData.contents) {
+    p.payload = e.postData.contents;
+  }
+  var action = p.action || '';
+  var labeler = p.labeler || '1';
+  if (action === 'saveCalloutEvents' || action === 'listCalloutEvents') {
+    return doGetCalloutEvents(p, labeler, action);
+  }
   return ContentService
     .createTextOutput(JSON.stringify({ status: 'error', message: 'Use GET requests' }))
     .setMimeType(ContentService.MimeType.JSON);
