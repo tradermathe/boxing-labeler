@@ -275,6 +275,13 @@ function setupKeyboard() {
   });
 }
 
+// Stable per-event id so the backend can reconcile by row (update/add/delete
+// just the rows that changed) instead of rewriting the whole video's set.
+function makeEventId() {
+  if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'ev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+}
+
 // Open a callout and stamp its start time. Triggered by Enter (at the playhead)
 // or a right-click on the loudness strip (at the clicked time). Playback keeps
 // running either way.
@@ -302,6 +309,7 @@ function endRecording(video, atSec = video.currentTime) {
     return;
   }
   state.calloutEvents.push({
+    id: makeEventId(),
     start_sec: Number(Math.min(state.startSec, atSec).toFixed(3)),
     end_sec: Number(Math.max(state.startSec, atSec).toFixed(3)),
     callout_raw: state.buffer.map(tokenCode).join('-'),
@@ -348,23 +356,23 @@ function renderEventList() {
   }
 }
 
-// Read-only row: time (click ⇒ seek), cue (click ⇒ edit), ✕ (delete).
+// Read-only row: time (click ⇒ seek), cue (click ⇒ edit), ✎ (edit), ✕ (delete).
 function buildEventRow(i, ev) {
   const row = document.createElement('div');
   row.className = 'event-row';
   row.innerHTML = `
     <span class="er-time" title="Jump to start">${formatTime(ev.start_sec)}–${formatTime(ev.end_sec)}</span>
     <span class="er-cue" title="Click to edit">${ev.callout_raw}</span>
-    <span class="er-del" title="Delete this event">✕</span>
+    <span class="er-edit" title="Edit this callout">✎</span>
+    <span class="er-del" title="Delete this callout">✕</span>
   `;
   row.querySelector('.er-time').addEventListener('click', () => {
     const v = document.getElementById('video-player');
     if (v) v.currentTime = ev.start_sec;
   });
-  row.querySelector('.er-cue').addEventListener('click', () => {
-    _editingIndex = i;
-    renderEventList();
-  });
+  const edit = () => { _editingIndex = i; renderEventList(); };
+  row.querySelector('.er-cue').addEventListener('click', edit);
+  row.querySelector('.er-edit').addEventListener('click', (e) => { e.stopPropagation(); edit(); });
   row.querySelector('.er-del').addEventListener('click', (e) => {
     e.stopPropagation();
     _editingIndex = null;
@@ -720,6 +728,8 @@ function restoreFromStorage() {
     if (raw) {
       const parsed = JSON.parse(raw);
       state.calloutEvents = parsed.events || [];
+      // Backfill ids on events saved before per-event ids existed.
+      for (const ev of state.calloutEvents) if (!ev.id) ev.id = makeEventId();
       state.buffer = parsed.buffer || [];
       state.recording = parsed.recording || false;
       state.startSec = parsed.startSec ?? null;

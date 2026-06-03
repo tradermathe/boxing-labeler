@@ -1617,14 +1617,17 @@ function doGetPunchDirections16(p, labeler, action) {
 // Callout labeler — one row per called-out punch / combo / defense.
 // Each row stores the [start_sec, end_sec] window the callout was spoken
 // over + the compact combo string + the canonical token ids (pipe-joined).
-// `callout.js` submits the whole per-video set in one `saveCalloutEvents`
-// GET; re-submitting the same (labeler, video) hard-deletes the prior rows
-// and reappends the current set, so it stays idempotent and leaves no
-// superseded snapshots behind.
+// `callout.js` submits the whole per-video set in one `saveCalloutEvents` GET
+// (the client keeps localStorage as its source of truth, so re-sending the
+// whole set lets a dropped save self-heal). Each event carries a stable
+// `event_id`; the backend reconciles by id — it updates only the rows that
+// changed, appends new ones, and deletes ones the labeler removed. So a
+// typical save touches a single row instead of rewriting the whole set, and
+// no superseded snapshots accumulate.
 // ============================================================
 var CALLOUT_SHEET_NAME = 'Callout Events';
 var CALLOUT_HEADERS = ['ts', 'labeler', 'video_filename', 'video_id', 'video_url',
-                       'start_sec', 'end_sec', 'callout_raw', 'callout_ids', 'submitted_at', 'deleted'];
+                       'start_sec', 'end_sec', 'callout_raw', 'callout_ids', 'event_id', 'submitted_at', 'deleted'];
 
 function getOrCreateCalloutSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -1640,6 +1643,30 @@ function getOrCreateCalloutSheet() {
     sh.setFrozenRows(1);
   }
   return sh;
+}
+
+// Build one sheet row for a callout event, aligned to the live header order
+// (so it tolerates per-sheet column ordering and the migrated event_id column).
+function buildCalloutRow(headerRow, ev, eid, lbl, vfile, vid, vurl, submittedAt, ts) {
+  var ids = Array.isArray(ev.callout_ids) ? ev.callout_ids.join('|') : String(ev.callout_ids || '');
+  var row = [];
+  for (var c = 0; c < headerRow.length; c++) {
+    var col = String(headerRow[c]);
+    if (col === 'ts') row.push(ts);
+    else if (col === 'labeler') row.push(lbl);
+    else if (col === 'video_filename') row.push(vfile);
+    else if (col === 'video_id') row.push(vid);
+    else if (col === 'video_url') row.push(vurl);
+    else if (col === 'start_sec') row.push(ev.start_sec);
+    else if (col === 'end_sec') row.push(ev.end_sec);
+    else if (col === 'callout_raw') row.push(ev.callout_raw || '');
+    else if (col === 'callout_ids') row.push(ids);
+    else if (col === 'event_id') row.push(eid);
+    else if (col === 'submitted_at') row.push(submittedAt);
+    else if (col === 'deleted') row.push('');
+    else row.push('');
+  }
+  return row;
 }
 
 function doGetCalloutEvents(p, labeler, action) {
@@ -1673,7 +1700,8 @@ function doGetCalloutEvents(p, labeler, action) {
     return jsonOut({ status: 'ok', rows: rows });
   }
 
-  // === SAVE the whole per-video set; hard-deletes this labeler's prior rows ===
+  // === SAVE the whole per-video set; reconcile by event_id (touch only the
+  //     rows that changed, add new ones, delete the ones the labeler removed) ===
   if (action === 'saveCalloutEvents') {
     if (!p.payload) return jsonOut({ status: 'error', message: 'missing payload' });
     var payload;
@@ -1687,49 +1715,73 @@ function doGetCalloutEvents(p, labeler, action) {
     var submittedAt = payload.submitted_at || new Date().toISOString();
     var events = payload.events || [];
 
-    // Idempotent resubmit: hard-delete this labeler's prior rows for this video
-    // (live rows AND any old `deleted=1` tombstones) — we reappend the
-    // authoritative current set below, so superseded snapshots are just clutter.
-    // `data` is the snapshot we read at the top; collect matching 1-based row
-    // numbers and delete bottom-up so shifting indices don't desync the loop.
-    var toDelete = [];
+    // Self-migrate: sheets created before per-event ids lack the event_id
+    // column. Add it once, then re-read the snapshot so the indices line up.
+    if (idx.event_id === undefined) {
+      sh.insertColumnAfter(sh.getLastColumn());
+      sh.getRange(1, sh.getLastColumn()).setValue('event_id');
+      data = sh.getDataRange().getValues();
+      idx = punchDirHeaderIndex(data[0]);
+    }
+    var headerRow = data[0];
+
+    // Index this labeler's existing rows for this video by event_id (-> 1-based
+    // row number). Scan every matching row regardless of the legacy `deleted`
+    // flag, so old tombstones and pre-id rows get swept on the first resave.
+    var existingById = {};
+    var matchRows = [];   // { row: 1-based, id: string }
     for (var i = 1; i < data.length; i++) {
       if (data[i][idx.labeler] !== lbl) continue;
       if (data[i][idx.video_filename] !== vfile) continue;
       if (data[i][idx.video_id] !== vid) continue;
-      toDelete.push(i + 1);
-    }
-    for (var dRow = toDelete.length - 1; dRow >= 0; dRow--) {
-      sh.deleteRow(toDelete[dRow]);
+      var rid = String(data[i][idx.event_id] || '');
+      matchRows.push({ row: i + 1, id: rid });
+      if (rid) existingById[rid] = i + 1;
     }
 
-    var headerRow = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
-    var newRows = [];
+    // Walk the incoming set: update changed rows in place (keeping their
+    // original ts), append brand-new ones, skip unchanged ones.
+    var incomingIds = {};
+    var toAppend = [];
+    var nUpdated = 0;
     for (var e = 0; e < events.length; e++) {
       var ev = events[e];
-      var ids = Array.isArray(ev.callout_ids) ? ev.callout_ids.join('|') : String(ev.callout_ids || '');
-      var row = [];
-      for (var c = 0; c < headerRow.length; c++) {
-        var col = String(headerRow[c]);
-        if (col === 'ts') row.push(new Date().toISOString());
-        else if (col === 'labeler') row.push(lbl);
-        else if (col === 'video_filename') row.push(vfile);
-        else if (col === 'video_id') row.push(vid);
-        else if (col === 'video_url') row.push(vurl);
-        else if (col === 'start_sec') row.push(ev.start_sec);
-        else if (col === 'end_sec') row.push(ev.end_sec);
-        else if (col === 'callout_raw') row.push(ev.callout_raw || '');
-        else if (col === 'callout_ids') row.push(ids);
-        else if (col === 'submitted_at') row.push(submittedAt);
-        else if (col === 'deleted') row.push('');
-        else row.push('');
+      var eid = String(ev.id || ev.event_id || '');
+      if (!eid) eid = Utilities.getUuid();   // defensive: never reconcile a blank id
+      incomingIds[eid] = true;
+      if (existingById[eid]) {
+        var rowNum = existingById[eid];
+        var cur = data[rowNum - 1];
+        var idsJoined = Array.isArray(ev.callout_ids) ? ev.callout_ids.join('|') : String(ev.callout_ids || '');
+        var unchanged = String(cur[idx.start_sec]) === String(ev.start_sec) &&
+                        String(cur[idx.end_sec]) === String(ev.end_sec) &&
+                        String(cur[idx.callout_raw]) === String(ev.callout_raw || '') &&
+                        String(cur[idx.callout_ids]) === idsJoined;
+        if (unchanged) continue;
+        var keepTs = cur[idx.ts] || new Date().toISOString();
+        var updRow = buildCalloutRow(headerRow, ev, eid, lbl, vfile, vid, vurl, submittedAt, keepTs);
+        sh.getRange(rowNum, 1, 1, headerRow.length).setValues([updRow]);
+        nUpdated++;
+      } else {
+        toAppend.push(buildCalloutRow(headerRow, ev, eid, lbl, vfile, vid, vurl, submittedAt, new Date().toISOString()));
       }
-      newRows.push(row);
     }
-    if (newRows.length > 0) {
-      sh.getRange(sh.getLastRow() + 1, 1, newRows.length, headerRow.length).setValues(newRows);
+
+    // Delete this video's rows whose id is gone from the incoming set (removed
+    // events) plus any legacy/blank-id or tombstone rows. Updates above don't
+    // change row count, so these snapshot row numbers are still valid; delete
+    // bottom-up so they stay valid as rows shift.
+    var toDelete = [];
+    for (var m = 0; m < matchRows.length; m++) {
+      if (!matchRows[m].id || !incomingIds[matchRows[m].id]) toDelete.push(matchRows[m].row);
     }
-    return jsonOut({ status: 'ok', saved: newRows.length });
+    toDelete.sort(function (a, b) { return a - b; });
+    for (var d = toDelete.length - 1; d >= 0; d--) sh.deleteRow(toDelete[d]);
+
+    if (toAppend.length > 0) {
+      sh.getRange(sh.getLastRow() + 1, 1, toAppend.length, headerRow.length).setValues(toAppend);
+    }
+    return jsonOut({ status: 'ok', updated: nUpdated, added: toAppend.length, deleted: toDelete.length });
   }
 
   return jsonOut({ status: 'error', message: 'unknown callout action: ' + action });
