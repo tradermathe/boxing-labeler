@@ -110,13 +110,53 @@
       color: #e0e0e0;
       font-family: ui-monospace, monospace;
       font-weight: 600;
+      cursor: pointer;
     }
+    .event-row .er-cue:hover { color: #fff; text-decoration: underline; }
     .event-row .er-del {
       color: #555;
       text-align: center;
       font-size: 14px;
     }
     .event-row .er-del:hover { color: #e94560; }
+    /* Inline event editor (combo + start/end seconds). */
+    .event-row--editing {
+      display: block;
+      cursor: default;
+      background: #2b3a5e;
+    }
+    .event-row--editing:hover { background: #2b3a5e; }
+    .er-edit-cue {
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 4px;
+      padding: 3px 6px;
+      background: #12121f;
+      border: 1px solid #3a4a6e;
+      border-radius: 3px;
+      color: #e0e0e0;
+      font-family: ui-monospace, monospace;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    .er-edit-row2 { display: flex; align-items: center; gap: 4px; }
+    .er-edit-num {
+      width: 64px;
+      box-sizing: border-box;
+      padding: 3px 4px;
+      background: #12121f;
+      border: 1px solid #3a4a6e;
+      border-radius: 3px;
+      color: #e0e0e0;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+    }
+    .er-edit-cue:focus, .er-edit-num:focus { outline: none; border-color: #e94560; }
+    .er-edit-dash { color: #888; }
+    .er-save { margin-left: auto; cursor: pointer; font-size: 14px; color: #2ecc71; }
+    .er-save:hover { color: #54e08c; }
+    .er-cancel { margin-left: 6px; cursor: pointer; font-size: 14px; color: #888; }
+    .er-cancel:hover { color: #e94560; }
     .empty-events {
       color: #555;
       font-size: 12px;

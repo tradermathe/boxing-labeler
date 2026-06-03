@@ -105,6 +105,31 @@ function tokenId(item) {
   return DEFENSE[item.key].id;
 }
 
+// Inverse of tokenCode/tokenId: parse a hyphen-joined combo string
+// ("1-2b-slip") back into normalized codes + canonical ids, so an edited
+// combo stays consistent with callout_ids. Tolerates spaces and uppercase.
+// Returns { raw, ids } or null if any token is unrecognized.
+function parseCalloutRaw(str) {
+  const parts = String(str).split('-').map(s => s.trim().toLowerCase()).filter(Boolean);
+  if (parts.length === 0) return null;
+  const codes = [];
+  const ids = [];
+  for (const part of parts) {
+    const pm = part.match(/^([1-6])(b?)$/);   // punch digit, optional body 'b'
+    if (pm) {
+      const p = PUNCH[pm[1]];
+      const body = pm[2] === 'b';
+      codes.push(pm[1] + (body ? 'b' : ''));
+      ids.push(body ? p.bodyId : p.id);
+      continue;
+    }
+    const def = Object.values(DEFENSE).find(d => d.code === part);
+    if (def) { codes.push(def.code); ids.push(def.id); continue; }
+    return null;   // unrecognized token ⇒ reject the whole edit
+  }
+  return { raw: codes.join('-'), ids };
+}
+
 // ── Init ────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   setupPlayer();                  // from player.js — wires file picker, seek bar, zoom
@@ -187,6 +212,7 @@ function setupKeyboard() {
       e.preventDefault();
       if (state.calloutEvents.length > 0) {
         const removed = state.calloutEvents.pop();
+        _editingIndex = null;
         saveToStorage();
         renderEventList();
         repaintTimeline();
@@ -303,6 +329,9 @@ function updateBufferCard() {
   }
 }
 
+// Index of the event currently open in the inline editor (null = none).
+let _editingIndex = null;
+
 function renderEventList() {
   const listEl = document.getElementById('event-list');
   const countEl = document.getElementById('event-count');
@@ -315,27 +344,106 @@ function renderEventList() {
   // Show in reverse (newest first) so the labeler sees what they just did.
   for (let i = state.calloutEvents.length - 1; i >= 0; i--) {
     const ev = state.calloutEvents[i];
-    const row = document.createElement('div');
-    row.className = 'event-row';
-    row.innerHTML = `
-      <span class="er-time">${formatTime(ev.start_sec)}–${formatTime(ev.end_sec)}</span>
-      <span class="er-cue">${ev.callout_raw}</span>
-      <span class="er-del" title="Delete this event">✕</span>
-    `;
-    row.querySelector('.er-time').addEventListener('click', () => {
-      const v = document.getElementById('video-player');
-      if (v) v.currentTime = ev.start_sec;
-    });
-    row.querySelector('.er-del').addEventListener('click', (e) => {
-      e.stopPropagation();
-      state.calloutEvents.splice(i, 1);
-      saveToStorage();
-      renderEventList();
-      repaintTimeline();
-      autoSave();
-    });
-    listEl.appendChild(row);
+    listEl.appendChild(i === _editingIndex ? buildEventEditor(i, ev) : buildEventRow(i, ev));
   }
+}
+
+// Read-only row: time (click ⇒ seek), cue (click ⇒ edit), ✕ (delete).
+function buildEventRow(i, ev) {
+  const row = document.createElement('div');
+  row.className = 'event-row';
+  row.innerHTML = `
+    <span class="er-time" title="Jump to start">${formatTime(ev.start_sec)}–${formatTime(ev.end_sec)}</span>
+    <span class="er-cue" title="Click to edit">${ev.callout_raw}</span>
+    <span class="er-del" title="Delete this event">✕</span>
+  `;
+  row.querySelector('.er-time').addEventListener('click', () => {
+    const v = document.getElementById('video-player');
+    if (v) v.currentTime = ev.start_sec;
+  });
+  row.querySelector('.er-cue').addEventListener('click', () => {
+    _editingIndex = i;
+    renderEventList();
+  });
+  row.querySelector('.er-del').addEventListener('click', (e) => {
+    e.stopPropagation();
+    _editingIndex = null;
+    state.calloutEvents.splice(i, 1);
+    saveToStorage();
+    renderEventList();
+    repaintTimeline();
+    autoSave();
+  });
+  return row;
+}
+
+// Inline editor: change the combo string and/or the start/end seconds.
+// Enter (in any field) saves, Escape cancels. Save validates the combo and
+// re-derives callout_ids, clamps + orders the times, then re-stamps the sheet.
+function buildEventEditor(i, ev) {
+  const row = document.createElement('div');
+  row.className = 'event-row event-row--editing';
+
+  const cue = document.createElement('input');
+  cue.className = 'er-edit-cue';
+  cue.type = 'text';
+  cue.value = ev.callout_raw;
+  cue.title = 'Combo tokens, e.g. 1-2b-slip';
+
+  const row2 = document.createElement('div');
+  row2.className = 'er-edit-row2';
+  const start = document.createElement('input');
+  start.className = 'er-edit-num'; start.type = 'number'; start.step = '0.001';
+  start.value = ev.start_sec; start.title = 'Start (seconds)';
+  const dash = document.createElement('span');
+  dash.className = 'er-edit-dash'; dash.textContent = '–';
+  const end = document.createElement('input');
+  end.className = 'er-edit-num'; end.type = 'number'; end.step = '0.001';
+  end.value = ev.end_sec; end.title = 'End (seconds)';
+  const save = document.createElement('span');
+  save.className = 'er-save'; save.textContent = '✓'; save.title = 'Save changes';
+  const cancel = document.createElement('span');
+  cancel.className = 'er-cancel'; cancel.textContent = '✕'; cancel.title = 'Cancel';
+  row2.append(start, dash, end, save, cancel);
+  row.append(cue, row2);
+
+  const commit = () => {
+    const parsed = parseCalloutRaw(cue.value);
+    if (!parsed) {
+      setStatus('Invalid combo — use tokens like 1, 2b, slip, roll, pull, step, pivot, block.');
+      cue.focus();
+      return;
+    }
+    let s = Number(start.value), e2 = Number(end.value);
+    if (!isFinite(s) || !isFinite(e2)) { setStatus('Start/end must be numbers (seconds).'); return; }
+    const dur = document.getElementById('video-player').duration;
+    s = Math.max(0, s); e2 = Math.max(0, e2);
+    if (dur) { s = Math.min(s, dur); e2 = Math.min(e2, dur); }
+    const evt = state.calloutEvents[i];
+    evt.start_sec = Number(Math.min(s, e2).toFixed(3));
+    evt.end_sec = Number(Math.max(s, e2).toFixed(3));
+    evt.callout_raw = parsed.raw;
+    evt.callout_ids = parsed.ids;
+    _editingIndex = null;
+    saveToStorage();
+    renderEventList();
+    repaintTimeline();
+    autoSave();
+    setStatus(`Updated: ${parsed.raw} @ ${formatTime(evt.start_sec)}`);
+  };
+  const cancelEdit = () => { _editingIndex = null; renderEventList(); };
+
+  save.addEventListener('click', commit);
+  cancel.addEventListener('click', cancelEdit);
+  for (const inp of [cue, start, end]) {
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); commit(); }
+      else if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); }
+    });
+  }
+  // Focus the combo for immediate editing once it's in the DOM.
+  setTimeout(() => { cue.focus(); cue.select(); }, 0);
+  return row;
 }
 
 // ── Timeline overlay (hooks player.js calls on metadata / zoom / timeupdate) ──
