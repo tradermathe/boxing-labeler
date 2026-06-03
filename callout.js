@@ -16,7 +16,6 @@
 //   5 = lead upper   (head)
 //   6 = rear upper   (head)
 //   Shift+<digit> = same punch to the body (Shift+1 = jab_body)
-//   ↓ (ArrowDown) = mark the last typed punch as a body shot (post-hoc)
 // Defenses:
 //   s = slip         g = roll     (no direction — every slip/roll is labeled generically)
 //   r = pull back    f = step back
@@ -233,22 +232,6 @@ function setupKeyboard() {
       const held = Date.now() - _arrowHoldStart;
       const mult = held >= ACCEL_DELAY ? ACCEL_MULTIPLIER : 1;
       stepFrames(dir * mult);
-      return;
-    }
-    // Down arrow ⇒ mark the most recent punch token as a body shot. Lets you
-    // tap the digit fast, then flag body after the fact (instead of Shift+digit).
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (!state.recording) { setStatus('Press Enter to start a callout first.'); return; }
-      for (let i = state.buffer.length - 1; i >= 0; i--) {
-        if (state.buffer[i].kind === 'punch') {
-          state.buffer[i].body = true;
-          updateBufferCard();
-          saveToStorage();
-          return;
-        }
-      }
-      setStatus('No punch in the buffer to mark as body.');
       return;
     }
     // Esc ⇒ cancel the in-progress callout.
