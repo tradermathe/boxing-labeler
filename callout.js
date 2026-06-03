@@ -173,19 +173,19 @@ function setupKeyboard() {
 
     // Combo entry: `c` arms it, the NEXT digit is consumed as the punch count
     // ("c" then "3" ⇒ a vague 3-punch combo). Must run before the digit handler
-    // so the count isn't mistaken for a punch. A non-digit cancels the arm and
-    // falls through to be handled normally.
+    // so the count isn't mistaken for a punch. Any non-digit aborts the arm and
+    // is swallowed — so e.g. `c` then Enter just clears the placeholder instead
+    // of ending (and committing) the whole callout.
     if (_comboPending) {
       _comboPending = false;
+      e.preventDefault();
       const n = (e.code.match(/^(?:Digit|Numpad)([1-9])$/) || [])[1];
       if (n) {
-        e.preventDefault();
         state.buffer.push({ kind: 'combo', count: Number(n) });
-        updateBufferCard();
         saveToStorage();
-        return;
       }
-      updateBufferCard();   // non-digit cancels the arm — clear the placeholder
+      updateBufferCard();   // resolve the placeholder, or just clear it on abort
+      return;
     }
 
     // Enter ⇒ start the callout (1st press) / stamp end + commit (2nd press).
@@ -268,8 +268,9 @@ function setupKeyboard() {
       stepFrames(dir * mult);
       return;
     }
-    // Esc ⇒ cancel the in-progress callout.
-    if (e.key === 'Escape') {
+    // Esc / Delete ⇒ discard the in-progress callout (buffer + recording),
+    // without committing it. (Enter commits; this throws it away.)
+    if (e.key === 'Escape' || e.key === 'Delete') {
       e.preventDefault();
       if (state.recording || state.buffer.length > 0) {
         state.recording = false;
@@ -277,7 +278,7 @@ function setupKeyboard() {
         state.buffer = [];
         updateBufferCard();
         saveToStorage();
-        setStatus('Callout cancelled.');
+        setStatus('Callout discarded.');
       }
       return;
     }
