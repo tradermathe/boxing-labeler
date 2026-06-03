@@ -279,6 +279,9 @@ function setupKeyboard() {
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
       const dir = e.key === 'ArrowLeft' ? -1 : 1;
+      // Shift+Arrow ⇒ jump to the previous / next callout (by start time),
+      // like the punch labeler. Plain arrows frame-step.
+      if (e.shiftKey) { jumpToAdjacentCallout(dir); return; }
       if (_arrowHeldKey !== e.key) {
         _arrowHeldKey = e.key;
         _arrowHoldStart = Date.now();
@@ -311,6 +314,30 @@ function setupKeyboard() {
       _arrowHoldStart = null;
     }
   });
+}
+
+// Shift+Arrow: seek to the start of the previous / next committed callout
+// (mirrors the punch labeler's jumpToAdjacentLabel). EPS keeps it from
+// re-landing on the callout the playhead is already sitting on.
+function jumpToAdjacentCallout(dir) {
+  const video = document.getElementById('video-player');
+  if (!video) return;
+  const now = video.currentTime;
+  const EPS = 0.05;
+  const times = state.calloutEvents.map(ev => ev.start_sec).sort((a, b) => a - b);
+  if (times.length === 0) { setStatus('No callouts to jump to yet.'); return; }
+  let target = null;
+  if (dir > 0) {
+    const found = times.find(t => t > now + EPS);
+    if (found !== undefined) target = found;
+  } else {
+    for (let i = times.length - 1; i >= 0; i--) {
+      if (times[i] < now - EPS) { target = times[i]; break; }
+    }
+  }
+  if (target === null) { setStatus(dir > 0 ? 'No later callout.' : 'No earlier callout.'); return; }
+  video.currentTime = target;
+  setStatus(`Jumped to callout @ ${formatTime(target)}`);
 }
 
 // Stable per-event id so the backend can reconcile by row (update/add/delete
