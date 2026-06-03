@@ -176,6 +176,12 @@ function setupKeyboard() {
     const video = document.getElementById('video-player');
     if (!video) return;
 
+    // Let browser/OS shortcuts through. Our vocabulary is bare keys + Shift
+    // (Shift+digit = body, Shift+Enter = manual time), so any Ctrl/Cmd/Alt
+    // chord isn't ours — don't swallow it (e.g. Cmd+Shift+R hard-reload, which
+    // would otherwise hit the `R` = pull-back branch and be preventDefault'd).
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+
     // Combo entry: `c` arms it, the NEXT digit is consumed as the punch count
     // ("c" then "3" ⇒ a vague 3-punch combo). Must run before the digit handler
     // so the count isn't mistaken for a punch. Any non-digit aborts the arm and
