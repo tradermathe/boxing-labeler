@@ -951,29 +951,35 @@ function autoSave() {
 
 async function doAutoSave() {
   if (!getLabeler()) {
+    console.warn('[callout-save] BLOCKED before sending: no labeler name entered — nothing was sent to the sheet.');
     setStatus('Type your name to enable auto-save.');
     return;
   }
   const payload = buildPayload();
   if (!payload.video_filename && !payload.video_id) {
+    console.warn('[callout-save] BLOCKED before sending: no video loaded / no Drive link — nothing was sent to the sheet.');
     setStatus('Load a video (or paste its Drive link) to enable auto-save.');
     return;
   }
   const n = payload.events.length;
   setStatus(n > 0 ? `Saving ${n} callouts…` : 'Clearing callouts…');
   const url = sheetUrl({ action: 'saveCalloutEvents', payload: JSON.stringify(payload) });
+  console.log(`[callout-save] sending ${n} callouts → request URL is ${url.length} characters`);
   try {
     const resp = await fetch(url, { method: 'GET' });
     const text = await resp.text();
     let parsed = null;
     try { parsed = JSON.parse(text); } catch { /* not JSON */ }
     if (parsed && parsed.status === 'ok') {
+      console.log(`[callout-save] OK ✓ saved ${n} callouts (HTTP ${resp.status})`);
       setStatus(n > 0 ? `Saved ${n} callouts ✓` : 'Callouts cleared ✓');
     } else {
+      console.warn(`[callout-save] FAILED: server replied HTTP ${resp.status}. First 200 chars:`, text.slice(0, 200));
       const msg = parsed?.message || text.slice(0, 160);
       setStatus(`Auto-save failed: ${msg}`);
     }
   } catch (err) {
+    console.error(`[callout-save] ERROR: request never completed (URL was ${url.length} chars — too long to send, or a network problem). Message:`, err.message);
     setStatus(`Auto-save error: ${err.message}`);
   }
 }
