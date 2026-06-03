@@ -19,7 +19,7 @@
 //   c + <digit>   = vague "combo of N punches" (c then 3 ⇒ a 3-punch combo,
 //                   used when the coach calls a combo without naming the punches)
 // Defenses:
-//   s = slip         g = roll     (no direction — every slip/roll is labeled generically)
+//   s = slip         g = roll     d = duck   (no direction — labeled generically)
 //   r = pull back    f = step back
 //   p = pivot        (footwork)
 //   b = block        (all callout-only — no executed-punch equivalent)
@@ -53,10 +53,11 @@ const PUNCH = {
 // are labeled generically (no lead/rear) — coaches usually just call "slip" /
 // "roll", and the direction isn't reliable from the callout anyway. `pull_back`
 // and `step_back` reuse the punch labeler's ids so those join across tools;
-// `slip`, `roll`, `block`, `pivot` are callout-only ids.
+// `slip`, `roll`, `duck`, `block`, `pivot` are callout-only ids.
 const DEFENSE = {
   s: { id: 'slip',      code: 'slip',  label: 'slip' },
   g: { id: 'roll',      code: 'roll',  label: 'roll' },
+  d: { id: 'duck',      code: 'duck',  label: 'duck' },
   r: { id: 'pull_back', code: 'pull',  label: 'pull back' },
   f: { id: 'step_back', code: 'step',  label: 'step back' },
   p: { id: 'pivot',     code: 'pivot', label: 'pivot' },
@@ -70,7 +71,7 @@ const DIGIT_CODES = {
   Numpad1: '1', Numpad2: '2', Numpad3: '3', Numpad4: '4', Numpad5: '5', Numpad6: '6',
 };
 const DEFENSE_CODES = {
-  KeyS: 's', KeyG: 'g', KeyR: 'r', KeyF: 'f', KeyB: 'b', KeyP: 'p',
+  KeyS: 's', KeyG: 'g', KeyD: 'd', KeyR: 'r', KeyF: 'f', KeyB: 'b', KeyP: 'p',
 };
 
 Object.assign(state, {
@@ -184,6 +185,7 @@ function setupKeyboard() {
         saveToStorage();
         return;
       }
+      updateBufferCard();   // non-digit cancels the arm — clear the placeholder
     }
 
     // Enter ⇒ start the callout (1st press) / stamp end + commit (2nd press).
@@ -218,7 +220,7 @@ function setupKeyboard() {
       e.preventDefault();
       if (!state.recording) { setStatus('Press Enter to start a callout first.'); return; }
       _comboPending = true;
-      setStatus('Combo: press a number (1-9) for how many punches.');
+      updateBufferCard();   // show the "combo of … punches" placeholder
       return;
     }
     // Space ⇒ play/pause toggle (independent of recording).
@@ -342,10 +344,21 @@ function endRecording(video, atSec = video.currentTime) {
 }
 
 // ── Buffer + event list rendering ───────────────────────────────────────────
+// Human-readable token for the buffer card: same as tokenCode except a combo
+// spells out "combo of N punches" (clearer than the compact "c3"). callout_raw
+// still uses the compact tokenCode form.
+function tokenDisplay(item) {
+  if (item.kind === 'combo') return `combo of ${item.count} punches`;
+  return tokenCode(item);
+}
 function updateBufferCard() {
   const bufEl = document.getElementById('buffer-text');
   const timeEl = document.getElementById('buffer-time');
-  bufEl.textContent = state.buffer.map(tokenCode).join('-');
+  const parts = state.buffer.map(tokenDisplay);
+  // While `c` is armed (before the count digit), show a live placeholder that
+  // the next digit fills in: "combo of … punches" ⇒ "combo of 3 punches".
+  if (_comboPending) parts.push('combo of … punches');
+  bufEl.textContent = parts.join('-');
   if (state.recording) {
     timeEl.textContent = `recording from ${formatTime(state.startSec)}`;
   } else {
