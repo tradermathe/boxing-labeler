@@ -54,6 +54,17 @@
       margin-top: 6px;
       font-family: ui-monospace, monospace;
     }
+    #buffer-time-edit {
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    #bte-label {
+      font-size: 12px;
+      color: #888;
+      font-family: ui-monospace, monospace;
+    }
     .cue-ref {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -316,6 +327,10 @@
           <div class="bc-eyebrow">CURRENT BUFFER</div>
           <div id="buffer-text"></div>
           <div id="buffer-time">press Enter to start</div>
+          <div id="buffer-time-edit" style="display:none;">
+            <span id="bte-label">start time (s)</span>
+            <input id="buffer-time-input" class="er-edit-num" type="number" step="0.001" min="0">
+          </div>
         </div>
 
         <h3>Callout keys</h3>
@@ -336,6 +351,7 @@
           <div class="ref-row"><span class="ref-key">P</span><span class="ref-name">pivot</span></div>
           <div class="ref-row"><span class="ref-key">B</span><span class="ref-name">block</span></div>
           <div class="ref-row span2"><span class="ref-key">Enter</span><span class="ref-name">start callout / end + save</span></div>
+          <div class="ref-row span2"><span class="ref-key">⇧ + Enter</span><span class="ref-name">type start / end time</span></div>
           <div class="ref-row span2"><span class="ref-key">Space</span><span class="ref-name">play / pause</span></div>
           <div class="ref-row span2"><span class="ref-key">Backspace</span><span class="ref-name">remove last token</span></div>
           <div class="ref-row span2"><span class="ref-key">Esc / Del</span><span class="ref-name">discard current callout</span></div>

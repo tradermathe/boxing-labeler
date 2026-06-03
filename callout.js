@@ -27,7 +27,10 @@
 // Segment semantics (like the punch labeler): Enter opens a callout and
 // stamps start_sec; you then type the combo tokens (e.g. `1-2b-slip`)
 // while it's being called; a second Enter stamps end_sec and commits ONE
-// event spanning [start_sec, end_sec]. Playback is independent of
+// event spanning [start_sec, end_sec]. Shift+Enter is the typed-time twin of
+// Enter: it opens a numeric field to type the start (1st) / end (2nd) time
+// instead of stamping the playhead — for nudging an edge to an exact second.
+// Typed and stamped edges interoperate. Playback is independent of
 // recording — Space toggles play/pause, arrows seek, all mid-callout.
 //
 // Storage:
@@ -143,6 +146,7 @@ window.addEventListener('DOMContentLoaded', () => {
   setupKeyboard();
   setupInputs();
   setupWaveform();
+  setupManualTime();
   restoreFromStorage();
   updateBufferCard();
   renderEventList();
@@ -163,6 +167,7 @@ window.addEventListener('DOMContentLoaded', () => {
 let _arrowHoldStart = null;
 let _arrowHeldKey = null;
 let _comboPending = false;   // `c` was pressed; next digit is the combo count
+let _manualField = null;     // 'start' | 'end' while typing a time in the buffer card
 
 function setupKeyboard() {
   document.addEventListener('keydown', (e) => {
@@ -188,6 +193,15 @@ function setupKeyboard() {
       return;
     }
 
+    // Shift+Enter ⇒ type the time instead of stamping the playhead: opens a
+    // numeric field for the start time (1st) / end time (2nd). Confirm with
+    // Enter, cancel with Escape (both handled on the field itself). Checked
+    // before plain Enter, which also matches e.key === 'Enter'.
+    if (e.key === 'Enter' && e.shiftKey) {
+      e.preventDefault();
+      openManualTime(state.recording ? 'end' : 'start');
+      return;
+    }
     // Enter ⇒ start the callout (1st press) / stamp end + commit (2nd press).
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -342,6 +356,70 @@ function endRecording(video, atSec = video.currentTime) {
   repaintTimeline();
   saveToStorage();
   autoSave();
+}
+
+// ── Manual time entry (Shift+Enter) ───────────────────────────────────────────
+// The typed-time twin of the Enter flow: reveal a numeric field in the buffer
+// card to type the start (1st) / end (2nd) time instead of stamping the
+// playhead. Confirm reuses startRecording/endRecording with the typed time, so
+// ordering, clamping, commit and auto-save all match the stamped path.
+function openManualTime(which) {
+  const video = document.getElementById('video-player');
+  const editEl = document.getElementById('buffer-time-edit');
+  const labelEl = document.getElementById('bte-label');
+  const inputEl = document.getElementById('buffer-time-input');
+  const timeEl = document.getElementById('buffer-time');
+  if (!editEl || !inputEl) return;
+  _manualField = which;
+  labelEl.textContent = which === 'start' ? 'start time (s)' : 'end time (s)';
+  inputEl.value = Number((video?.currentTime || 0).toFixed(3));   // default to playhead
+  editEl.style.display = 'flex';
+  if (timeEl) timeEl.style.display = 'none';
+  setTimeout(() => { inputEl.focus(); inputEl.select(); }, 0);
+}
+
+function closeManualTime() {
+  _manualField = null;
+  const editEl = document.getElementById('buffer-time-edit');
+  const timeEl = document.getElementById('buffer-time');
+  if (editEl) editEl.style.display = 'none';
+  if (timeEl) timeEl.style.display = '';
+}
+
+// Enter in the field: clamp the typed seconds, then run the matching edge of the
+// normal recording flow (start ⇒ open the callout; end ⇒ commit it).
+function confirmManualTime() {
+  const video = document.getElementById('video-player');
+  const inputEl = document.getElementById('buffer-time-input');
+  let t = Number(inputEl.value);
+  if (!isFinite(t)) { setStatus('Enter a time in seconds, e.g. 12.5'); return; }
+  t = Math.max(0, t);
+  if (video && video.duration) t = Math.min(t, video.duration);
+  const field = _manualField;
+  closeManualTime();
+  inputEl.blur();             // hand keyboard control back to token entry
+  if (field === 'start') startRecording(video, t);
+  else endRecording(video, t);
+}
+
+// Escape in the field: close it without committing. For 'end' the callout stays
+// open (recording) so you can finish another way; for 'start' nothing began.
+function cancelManualTime() {
+  const inputEl = document.getElementById('buffer-time-input');
+  closeManualTime();
+  if (inputEl) inputEl.blur();
+  updateBufferCard();
+}
+
+function setupManualTime() {
+  const inputEl = document.getElementById('buffer-time-input');
+  if (!inputEl) return;
+  // The global keydown handler ignores events whose target is an input, so the
+  // typed digits never leak out as tokens — only Enter/Escape need handling.
+  inputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); confirmManualTime(); }
+    else if (e.key === 'Escape') { e.preventDefault(); cancelManualTime(); }
+  });
 }
 
 // ── Buffer + event list rendering ───────────────────────────────────────────
