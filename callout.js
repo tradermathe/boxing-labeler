@@ -17,16 +17,14 @@
 //   6 = rear upper   (head)
 //   Shift+<digit> = same punch to the body (Shift+1 = jab_body)
 //   ↓ (ArrowDown) = mark the last typed punch as a body shot (post-hoc)
-// Defenses (same keys as the punch labeler, for muscle memory):
-//   q = lead slip    w = rear slip
-//   a = lead roll    d = rear roll
+// Defenses:
+//   s = slip         g = roll     (no direction — every slip/roll is labeled generically)
 //   r = pull back    f = step back
-//   s = slip         g = roll     (no direction — some apps just call "slip"/"roll")
 //   p = pivot        (footwork)
-//   b = block        (slip/roll/block/pivot are callout-only — no executed-punch equivalent)
+//   b = block        (all callout-only — no executed-punch equivalent)
 //
 // Segment semantics (like the punch labeler): Enter opens a callout and
-// stamps start_sec; you then type the combo tokens (e.g. `1-2b-lslip`)
+// stamps start_sec; you then type the combo tokens (e.g. `1-2b-slip`)
 // while it's being called; a second Enter stamps end_sec and commits ONE
 // event spanning [start_sec, end_sec]. Playback is independent of
 // recording — Space toggles play/pause, arrows seek, all mid-callout.
@@ -50,18 +48,13 @@ const PUNCH = {
   '6': { id: 'rear_uppercut_head', bodyId: 'rear_uppercut_body', label: 'rear upper' },
 };
 
-// Defense vocab: key -> compact display code + canonical id (matches the
-// punch labeler's PUNCH_TYPES ids so the data joins across both tools).
-// `slip`/`roll` (no direction), `block`, and `pivot` have no punch-labeler equivalent —
-// they're callout-only (a coach instruction, never an executed punch), so they
-// get their own ids. The direction-less slip/roll exist because some guided
-// apps just call "slip" / "roll" without specifying lead vs rear.
+// Defense vocab: key -> compact display code + canonical id. Slips and rolls
+// are labeled generically (no lead/rear) — coaches usually just call "slip" /
+// "roll", and the direction isn't reliable from the callout anyway. `pull_back`
+// and `step_back` reuse the punch labeler's ids so those join across tools;
+// `slip`, `roll`, `block`, `pivot` are callout-only ids.
 const DEFENSE = {
-  q: { id: 'lead_slip', code: 'lslip', label: 'lead slip' },
-  w: { id: 'rear_slip', code: 'rslip', label: 'rear slip' },
   s: { id: 'slip',      code: 'slip',  label: 'slip' },
-  a: { id: 'lead_roll', code: 'lroll', label: 'lead roll' },
-  d: { id: 'rear_roll', code: 'rroll', label: 'rear roll' },
   g: { id: 'roll',      code: 'roll',  label: 'roll' },
   r: { id: 'pull_back', code: 'pull',  label: 'pull back' },
   f: { id: 'step_back', code: 'step',  label: 'step back' },
@@ -76,7 +69,7 @@ const DIGIT_CODES = {
   Numpad1: '1', Numpad2: '2', Numpad3: '3', Numpad4: '4', Numpad5: '5', Numpad6: '6',
 };
 const DEFENSE_CODES = {
-  KeyQ: 'q', KeyW: 'w', KeyS: 's', KeyA: 'a', KeyD: 'd', KeyG: 'g', KeyR: 'r', KeyF: 'f', KeyB: 'b', KeyP: 'p',
+  KeyS: 's', KeyG: 'g', KeyR: 'r', KeyF: 'f', KeyB: 'b', KeyP: 'p',
 };
 
 Object.assign(state, {
@@ -98,12 +91,12 @@ const LS_KEY = 'callout_labeler_events_v2';   // v2: start_sec/end_sec segments
 const LS_META_KEY = 'callout_labeler_meta_v1';
 
 // ── Token helpers ─────────────────────────────────────────────────────────────
-// Compact code for the buffer/raw display (e.g. "1", "2b", "lslip").
+// Compact code for the buffer/raw display (e.g. "1", "2b", "slip").
 function tokenCode(item) {
   if (item.kind === 'punch') return item.digit + (item.body ? 'b' : '');
   return DEFENSE[item.key].code;
 }
-// Canonical id for downstream join (e.g. "jab_head", "cross_body", "lead_slip").
+// Canonical id for downstream join (e.g. "jab_head", "cross_body", "slip").
 function tokenId(item) {
   if (item.kind === 'punch') {
     const p = PUNCH[item.digit];
