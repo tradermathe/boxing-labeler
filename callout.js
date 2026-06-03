@@ -963,10 +963,16 @@ async function doAutoSave() {
   }
   const n = payload.events.length;
   setStatus(n > 0 ? `Saving ${n} callouts…` : 'Clearing callouts…');
-  const url = sheetUrl({ action: 'saveCalloutEvents', payload: JSON.stringify(payload) });
-  console.log(`[callout-save] sending ${n} callouts → request URL is ${url.length} characters`);
+  // Payload travels in the POST body, NOT the query string: a GET URL holding
+  // the whole event set overflows past ~50KB once a labeler racks up a couple
+  // hundred callouts, and Google rejects over-long URLs with HTTP 400 before
+  // the script runs. A plain-string body keeps this a CORS "simple" request
+  // (no preflight), and Apps Script's doPost reads it as e.postData.contents.
+  const url = sheetUrl({ action: 'saveCalloutEvents' });
+  const body = JSON.stringify(payload);
+  console.log(`[callout-save] POSTing ${n} callouts → body is ${body.length} characters (URL ${url.length})`);
   try {
-    const resp = await fetch(url, { method: 'GET' });
+    const resp = await fetch(url, { method: 'POST', body });
     const text = await resp.text();
     let parsed = null;
     try { parsed = JSON.parse(text); } catch { /* not JSON */ }
@@ -979,7 +985,7 @@ async function doAutoSave() {
       setStatus(`Auto-save failed: ${msg}`);
     }
   } catch (err) {
-    console.error(`[callout-save] ERROR: request never completed (URL was ${url.length} chars — too long to send, or a network problem). Message:`, err.message);
+    console.error(`[callout-save] ERROR: request never completed (body was ${body.length} chars — network problem). Message:`, err.message);
     setStatus(`Auto-save error: ${err.message}`);
   }
 }
