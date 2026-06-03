@@ -371,8 +371,8 @@ function openManualTime(which) {
   const timeEl = document.getElementById('buffer-time');
   if (!editEl || !inputEl) return;
   _manualField = which;
-  labelEl.textContent = which === 'start' ? 'start time (s)' : 'end time (s)';
-  inputEl.value = Number((video?.currentTime || 0).toFixed(3));   // default to playhead
+  labelEl.textContent = which === 'start' ? 'start time' : 'end time';
+  inputEl.value = formatTime(video?.currentTime || 0);   // default to playhead (m:ss.mmm)
   editEl.style.display = 'flex';
   if (timeEl) timeEl.style.display = 'none';
   setTimeout(() => { inputEl.focus(); inputEl.select(); }, 0);
@@ -391,8 +391,8 @@ function closeManualTime() {
 function confirmManualTime() {
   const video = document.getElementById('video-player');
   const inputEl = document.getElementById('buffer-time-input');
-  let t = Number(inputEl.value);
-  if (!isFinite(t)) { setStatus('Enter a time in seconds, e.g. 12.5'); return; }
+  let t = parseTime(inputEl.value);
+  if (!isFinite(t)) { setStatus('Enter a time like m:ss.mmm (e.g. 1:23.500), or plain seconds.'); return; }
   t = Math.max(0, t);
   if (video && video.duration) t = Math.min(t, video.duration);
   const field = _manualField;
