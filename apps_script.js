@@ -1618,8 +1618,9 @@ function doGetPunchDirections16(p, labeler, action) {
 // Each row stores the [start_sec, end_sec] window the callout was spoken
 // over + the compact combo string + the canonical token ids (pipe-joined).
 // `callout.js` submits the whole per-video set in one `saveCalloutEvents`
-// GET; re-submitting the same (labeler, video) supersedes the prior set so
-// it stays idempotent.
+// GET; re-submitting the same (labeler, video) hard-deletes the prior rows
+// and reappends the current set, so it stays idempotent and leaves no
+// superseded snapshots behind.
 // ============================================================
 var CALLOUT_SHEET_NAME = 'Callout Events';
 var CALLOUT_HEADERS = ['ts', 'labeler', 'video_filename', 'video_id', 'video_url',
@@ -1672,7 +1673,7 @@ function doGetCalloutEvents(p, labeler, action) {
     return jsonOut({ status: 'ok', rows: rows });
   }
 
-  // === SAVE the whole per-video set; supersedes this labeler's prior set ===
+  // === SAVE the whole per-video set; hard-deletes this labeler's prior rows ===
   if (action === 'saveCalloutEvents') {
     if (!p.payload) return jsonOut({ status: 'error', message: 'missing payload' });
     var payload;
@@ -1686,13 +1687,20 @@ function doGetCalloutEvents(p, labeler, action) {
     var submittedAt = payload.submitted_at || new Date().toISOString();
     var events = payload.events || [];
 
-    // Idempotent resubmit: mark this labeler's prior rows for this video deleted.
+    // Idempotent resubmit: hard-delete this labeler's prior rows for this video
+    // (live rows AND any old `deleted=1` tombstones) — we reappend the
+    // authoritative current set below, so superseded snapshots are just clutter.
+    // `data` is the snapshot we read at the top; collect matching 1-based row
+    // numbers and delete bottom-up so shifting indices don't desync the loop.
+    var toDelete = [];
     for (var i = 1; i < data.length; i++) {
-      if (String(data[i][idx.deleted]) === '1') continue;
       if (data[i][idx.labeler] !== lbl) continue;
       if (data[i][idx.video_filename] !== vfile) continue;
       if (data[i][idx.video_id] !== vid) continue;
-      sh.getRange(i + 1, idx.deleted + 1).setValue('1');
+      toDelete.push(i + 1);
+    }
+    for (var dRow = toDelete.length - 1; dRow >= 0; dRow--) {
+      sh.deleteRow(toDelete[dRow]);
     }
 
     var headerRow = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
