@@ -97,6 +97,13 @@ Object.assign(state, {
   // set isn't shown after switching videos.
   remoteEvents: [],
   remoteEventsKey: '',
+  // Valid rounds = the [round_start, round_end] windows a labeler marked for this
+  // video in the punch labeler (read from Combined Data). Callouts are only
+  // allowed inside a round — outside one there's no pose/punch data for the
+  // classifier. Keyed like remoteEvents so a stale set never gates another video.
+  roundWindows: [],
+  roundWindowsKey: '',
+  roundWindowsLoaded: false,
 });
 
 const LS_KEY = 'callout_labeler_events_v2';   // v2: start_sec/end_sec segments
@@ -167,8 +174,10 @@ window.addEventListener('DOMContentLoaded', () => {
     loadRemoteEvents();   // re-partition mine vs. others now the name is known
   });
 
-  // Pull every labeler's callouts for whatever video was restored on load.
+  // Pull every labeler's callouts for whatever video was restored on load, and
+  // derive its punch-data round windows so callouts are gated to them.
   loadRemoteEvents();
+  loadRoundWindows();
 });
 
 // ── Keyboard state machine ──────────────────────────────────────────────────
@@ -388,12 +397,20 @@ function endRecording(video, atSec = video.currentTime) {
     setStatus('Callout cancelled (no tokens).');
     return;
   }
+  const startSec = Number(Math.min(state.startSec, atSec).toFixed(3));
+  const endSec = Number(Math.max(state.startSec, atSec).toFixed(3));
+  // Refuse callouts that land outside every punch-data round — leave recording
+  // open so the user can seek into a round (un-shaded band) and end there.
+  if (!isWithinValidRound(startSec, endSec)) {
+    setStatus('✋ Outside round — not saved. Place the callout inside a round (un-shaded band).');
+    return;
+  }
   state.calloutEvents.push({
     id: makeEventId(),
     video_id: currentVideoId(),
     video_filename: state.videoFileName,
-    start_sec: Number(Math.min(state.startSec, atSec).toFixed(3)),
-    end_sec: Number(Math.max(state.startSec, atSec).toFixed(3)),
+    start_sec: startSec,
+    end_sec: endSec,
     callout_raw: state.buffer.map(tokenCode).join('-'),
     callout_ids: state.buffer.map(tokenId),
   });
@@ -607,9 +624,15 @@ function buildEventEditor(i, ev) {
     const dur = document.getElementById('video-player').duration;
     s = Math.max(0, s); e2 = Math.max(0, e2);
     if (dur) { s = Math.min(s, dur); e2 = Math.min(e2, dur); }
+    const newStart = Number(Math.min(s, e2).toFixed(3));
+    const newEnd = Number(Math.max(s, e2).toFixed(3));
+    if (!isWithinValidRound(newStart, newEnd)) {
+      setStatus('✋ Outside round — edit not saved. Keep the callout inside a round (un-shaded band).');
+      return;
+    }
     const evt = state.calloutEvents[i];
-    evt.start_sec = Number(Math.min(s, e2).toFixed(3));
-    evt.end_sec = Number(Math.max(s, e2).toFixed(3));
+    evt.start_sec = newStart;
+    evt.end_sec = newEnd;
     evt.callout_raw = parsed.raw;
     evt.callout_ids = parsed.ids;
     _editingIndex = null;
@@ -844,6 +867,9 @@ function renderTimelineOverlay() {
   overlay.innerHTML = '';
   if (!duration || duration <= 0) return;
 
+  // Shade no-punch-data stretches first, so callout segments paint on top.
+  renderRoundShading(overlay, duration);
+
   // Other labelers' segments first, so your own paint on top of theirs.
   for (const ev of currentRemoteEvents()) {
     const lPct = timeToViewportPct(ev.start_sec, duration);
@@ -919,6 +945,21 @@ function updateVideoOverlay() {
   if (!overlay || !video) return;
   updateWaveformPlayhead();   // keep the loudness-strip playhead in sync each frame
   const t = video.currentTime;
+
+  // Dim the video while the playhead sits outside every punch-data round, so it's
+  // obvious that a callout here won't be saved. Updated before the activeKey
+  // dedup below because it changes as you scrub, even when no callout is active.
+  const dimOverlay = document.getElementById('video-dim-overlay');
+  if (dimOverlay) {
+    const outside = roundWindowsReady() && !currentTimeInsideRound(t);
+    if (outside && !dimOverlay.classList.contains('active')) {
+      dimOverlay.classList.add('active');
+      dimOverlay.innerHTML = '<span class="dim-label">Outside Round</span>';
+    } else if (!outside && dimOverlay.classList.contains('active')) {
+      dimOverlay.classList.remove('active');
+      dimOverlay.innerHTML = '';
+    }
+  }
 
   const active = currentVideoEvents().filter(ev => t >= ev.start_sec && t <= ev.end_sec);
   // Only rebuild the DOM when the active set actually changes (player.js calls
@@ -1170,6 +1211,7 @@ function setupInputs() {
     renderEventList();           // switch the list to the newly-loaded video
     repaintTimeline();
     loadRemoteEvents();          // and pull everyone's callouts for it
+    loadRoundWindows();          // and derive its punch-data round windows
     decodeAudioForWaveform(f);   // build the loudness strip from the file's audio
   });
   // Drive link: persist locally on each keystroke; on blur (change) switch the
@@ -1181,6 +1223,7 @@ function setupInputs() {
     repaintTimeline();
     if (currentVideoEvents().length > 0) autoSave();
     loadRemoteEvents();   // show every labeler's callouts for the pasted video
+    loadRoundWindows();   // and re-derive the punch-data round windows
   });
 }
 
@@ -1243,6 +1286,112 @@ function currentVideoEvents() {
 // they were fetched for — so a stale set never paints over a different video.
 function currentRemoteEvents() {
   return (state.remoteEventsKey === currentVideoKey()) ? state.remoteEvents : [];
+}
+
+// ── Valid round windows (gating) ──────────────────────────────────────────────
+// A callout is only useful as a weak label if there's pose/punch data under it,
+// i.e. it falls inside a round. We read the video's round markers from the punch
+// labeler's data (Combined Data) and only allow callouts inside a round. Time
+// outside every round is shaded on the seek bar, dims the video ("Outside
+// Round"), and a commit that lands entirely outside every round is refused.
+
+// Pair round_start / round_end markers into [start, end] windows, exactly like
+// the punch labeler (app.js): each start takes the first end after it; an
+// unclosed final round runs to the video end. Marker times live in `startTime`.
+function buildRoundWindows(labels) {
+  const starts = labels.filter(l => l.punch === 'round_start').map(l => l.startTime).sort((a, b) => a - b);
+  const ends   = labels.filter(l => l.punch === 'round_end').map(l => l.startTime).sort((a, b) => a - b);
+  const rounds = [];
+  for (const s of starts) {
+    const e = ends.find(x => x > s);
+    rounds.push({ start: s, end: e !== undefined ? e : Infinity });
+  }
+  return rounds;
+}
+
+// Round windows only count while the loaded video matches the one they were
+// derived for, so a stale set never gates a different video.
+function currentRoundWindows() {
+  return (state.roundWindowsKey === currentVideoKey()) ? state.roundWindows : [];
+}
+// True once a successful fetch has given us a definitive answer for this video.
+function roundWindowsReady() {
+  return state.roundWindowsLoaded && state.roundWindowsKey === currentVideoKey();
+}
+// Gate: a [start,end] callout is allowed if it overlaps any round — or if we
+// don't yet have a definitive answer (fetch pending/failed ⇒ fail open, so a
+// network hiccup never blocks real work).
+function isWithinValidRound(start, end) {
+  if (!roundWindowsReady()) return true;
+  return currentRoundWindows().some(r => end >= r.start && start <= r.end);
+}
+function currentTimeInsideRound(t) {
+  return currentRoundWindows().some(r => t >= r.start && t <= r.end);
+}
+
+// Fetch the video's labels from Combined Data and pair its round markers into
+// windows. Matched by the Drive link (the punch labeler keys rows by Drive URL),
+// so gating needs the Drive Link filled in. Mirrors loadRemoteEvents'
+// offline-safety: a failed fetch leaves roundWindowsLoaded=false so gating opens.
+async function loadRoundWindows() {
+  const key = currentVideoKey();
+  const driveUrl = document.getElementById('drive-link').value.trim();
+  state.roundWindowsKey = key;
+  state.roundWindows = [];
+  state.roundWindowsLoaded = false;
+  if (!driveUrl) { repaintTimeline(); return; }   // rounds are matched by Drive URL
+  let labels;
+  try {
+    const url = sheetUrl({ action: 'list', labeler: 'combined', video: driveUrl });
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const body = await res.json();
+    if (body.status !== 'ok') throw new Error(body.message || 'unknown');
+    labels = body.labels || [];
+  } catch (e) {
+    console.warn('[callout] loadRoundWindows failed:', e);
+    return;   // sheet unreachable ⇒ leave gating open (offline-safe)
+  }
+  if (currentVideoKey() !== key) return;   // user switched videos mid-fetch
+  state.roundWindows = buildRoundWindows(labels);
+  state.roundWindowsLoaded = true;
+  repaintTimeline();
+  if (state.roundWindows.length === 0) {
+    setStatus('No marked rounds for this video — mark rounds in the punch labeler first; callouts are disabled here.');
+  }
+}
+
+// Shade the time outside every round (complement of the round windows) on the
+// seek bar, reusing the punch labeler's "outside-round" style. Only paints once
+// we have a definitive answer; loaded-but-empty shades the whole bar.
+function renderRoundShading(overlay, duration) {
+  if (!roundWindowsReady()) return;
+  const wins = currentRoundWindows()
+    .map(r => ({ start: Math.max(0, r.start), end: Math.min(duration, r.end) }))
+    .filter(r => r.end > r.start)
+    .sort((a, b) => a.start - b.start);
+  const merged = [];
+  for (const w of wins) {
+    const last = merged[merged.length - 1];
+    if (last && w.start <= last.end) last.end = Math.max(last.end, w.end);
+    else merged.push({ start: w.start, end: w.end });
+  }
+  const shade = (a, b) => {
+    const lPct = timeToViewportPct(a, duration);
+    const rPct = timeToViewportPct(b, duration);
+    if (rPct <= 0 || lPct >= 100) return;
+    const seg = document.createElement('div');
+    seg.className = 'seek-segment outside-round';
+    seg.style.left = Math.max(0, lPct) + '%';
+    seg.style.width = (Math.min(100, rPct) - Math.max(0, lPct)) + '%';
+    overlay.appendChild(seg);
+  };
+  let pos = 0;
+  for (const w of merged) {
+    if (w.start > pos) shade(pos, w.start);
+    pos = w.end;
+  }
+  if (pos < duration) shade(pos, duration);
 }
 
 // ── Load every labeler's callouts for the loaded video ────────────────────────
