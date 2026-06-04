@@ -1246,18 +1246,28 @@ function currentRemoteEvents() {
 }
 
 // ── Load every labeler's callouts for the loaded video ────────────────────────
-// The labeler is otherwise localStorage-only, so prior work (from another
-// machine/session) and other labelers' callouts are invisible. Fetch the whole
-// set for this video (labeler:'' ⇒ all labelers, mirroring the punch-direction
-// labeler), then: merge MY rows into the editable set by event_id so they sync
-// across machines without ever re-creating duplicates, and keep OTHERS' rows in
-// read-only state.remoteEvents for display. Matching is by canonical video key
-// (video_id || filename), so filename drift doesn't hide anyone's work.
+// Fetch the whole set for this video (labeler:'' ⇒ all labelers, mirroring the
+// punch-direction labeler), then make the SHEET authoritative for your own
+// events: this video's own events are rebuilt from the sheet, replacing
+// localStorage, so deletions made on the sheet propagate here on reload and your
+// work syncs across machines. A pending save is flushed first so just-committed
+// callouts aren't dropped, and a failed fetch keeps the local copy (offline-
+// safe). Other labelers' rows are kept in state.remoteEvents for display + edit.
+// Matching is by canonical video key (video_id || filename), so filename drift
+// doesn't hide anyone's work.
 async function loadRemoteEvents() {
   const key = currentVideoKey();
   state.remoteEventsKey = key;
   _editingRemote = null;   // the others list is about to be replaced — drop any open editor
   if (!key) { state.remoteEvents = []; renderEventList(); repaintTimeline(); return; }
+
+  // Flush a queued autosave first. Below we treat the sheet as the source of
+  // truth for your events, so any just-committed callout must reach the sheet
+  // before we read it back — otherwise the sheet-authoritative rebuild would
+  // drop it. (currentVideoKey is unchanged here, so this saves the right set.)
+  if (_saveTimer) { clearTimeout(_saveTimer); _saveTimer = null; await doAutoSave(); }
+  if (currentVideoKey() !== key) return;   // video switched during the flush
+
   let rows;
   try {
     const url = sheetUrl({ action: 'listCalloutEvents', video: key, labeler: '' });
@@ -1269,37 +1279,29 @@ async function loadRemoteEvents() {
   } catch (e) {
     console.warn('[callout] loadRemoteEvents failed:', e);
     setStatus('Could not load saved callouts: ' + e.message);
-    return;
+    return;   // sheet unreachable ⇒ keep the local copy (offline-safe)
   }
   if (currentVideoKey() !== key) return;   // user switched videos mid-fetch
 
+  // Partition the sheet rows: yours vs. everyone else's.
   const me = getLabeler();
-  const localIds = new Set(state.calloutEvents.map(ev => ev.id).filter(Boolean));
+  const mine = [];
   const others = [];
-  let mergedMine = 0;
   for (const r of rows) {
     const id = r.event_id || '';
     const cue = r.callout_raw || (r.callout_ids || []).join('-');
     if (me && r.labeler === me) {
-      // My own row. Merge into the editable set if this browser doesn't have it
-      // yet (requires the server's event_id so a later save reconciles, not
-      // duplicates). Without an id (pre-deploy backend) skip it — safe, no dup.
-      if (id && !localIds.has(id)) {
-        state.calloutEvents.push({
-          id,
-          video_id: r.video_id || '',
-          video_filename: r.video_filename || '',
-          start_sec: Number(r.start_sec),
-          end_sec: Number(r.end_sec),
-          callout_raw: cue,
-          callout_ids: r.callout_ids || [],
-        });
-        localIds.add(id);
-        mergedMine++;
-      }
-    } else if (!(id && localIds.has(id))) {
-      // Another labeler's row. The id guard avoids double-showing a row that's
-      // already mine locally. Carry everything an in-place edit needs (id +
+      mine.push({
+        id: id || makeEventId(),   // heal a legacy no-id row; the next save reconciles it
+        video_id: r.video_id || '',
+        video_filename: r.video_filename || '',
+        start_sec: Number(r.start_sec),
+        end_sec: Number(r.end_sec),
+        callout_raw: cue,
+        callout_ids: r.callout_ids || [],
+      });
+    } else {
+      // Another labeler's row. Carry everything an in-place edit needs (id +
       // labeler + video identity) so it can be saved back under its owner.
       others.push({
         id, labeler: r.labeler || '?',
@@ -1309,14 +1311,24 @@ async function loadRemoteEvents() {
       });
     }
   }
+
+  // Sheet-authoritative for YOUR events (like the punch-direction labeler):
+  // rebuild this video's own events from the sheet, replacing whatever was in
+  // localStorage — so a row you removed on the sheet actually disappears here on
+  // reload. Other videos' local events are left untouched. Only runs once a name
+  // is set (else we can't tell which rows are yours) and only after a successful
+  // fetch (a failed fetch returned above, so an offline refresh keeps your work).
+  if (me) {
+    state.calloutEvents = state.calloutEvents.filter(ev => eventVideoKey(ev) !== key).concat(mine);
+    saveToStorage();
+  }
+
   others.sort((a, b) => a.start_sec - b.start_sec);
   state.remoteEvents = others;
-  if (mergedMine > 0) saveToStorage();
   renderEventList();
   repaintTimeline();
   const mineN = currentVideoEvents().length;
-  setStatus(`Loaded ${mineN} of your callout(s)` + (others.length ? ` · ${others.length} from other labeler(s)` : '') +
-            (mergedMine ? ` · synced ${mergedMine} from the sheet` : '') + '.');
+  setStatus(`Loaded ${mineN} of your callout(s)` + (others.length ? ` · ${others.length} from other labeler(s)` : '') + '.');
 }
 
 // ── Auto-save ─────────────────────────────────────────────────────────────
