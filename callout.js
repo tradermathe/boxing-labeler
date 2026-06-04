@@ -19,8 +19,8 @@
 //   c + <digit>   = vague "combo of N punches" (c then 3 ⇒ a 3-punch combo,
 //                   used when the coach calls a combo without naming the punches)
 // Defenses:
-//   s = slip         g = roll     d = duck   (no direction — labeled generically)
-//   r = pull back    f = step back
+//   s = slip         r = roll     d = duck   (no direction — labeled generically)
+//   g = pull back    f = step back
 //   p = pivot        (footwork)
 //   b = block        (all callout-only — no executed-punch equivalent)
 //
@@ -59,9 +59,9 @@ const PUNCH = {
 // `slip`, `roll`, `duck`, `block`, `pivot` are callout-only ids.
 const DEFENSE = {
   s: { id: 'slip',      code: 'slip',  label: 'slip' },
-  g: { id: 'roll',      code: 'roll',  label: 'roll' },
+  r: { id: 'roll',      code: 'roll',  label: 'roll' },
   d: { id: 'duck',      code: 'duck',  label: 'duck' },
-  r: { id: 'pull_back', code: 'pull',  label: 'pull back' },
+  g: { id: 'pull_back', code: 'pull',  label: 'pull back' },
   f: { id: 'step_back', code: 'step',  label: 'step back' },
   p: { id: 'pivot',     code: 'pivot', label: 'pivot' },
   b: { id: 'block',     code: 'block', label: 'block' },
@@ -157,7 +157,7 @@ window.addEventListener('DOMContentLoaded', () => {
   try { labelerInput.value = localStorage.getItem('orient_labeler_name') || ''; } catch {}
   labelerInput.addEventListener('change', () => {
     try { localStorage.setItem('orient_labeler_name', labelerInput.value.trim()); } catch {}
-    if (state.calloutEvents.length > 0) autoSave();   // re-stamp once a name exists
+    if (currentVideoEvents().length > 0) autoSave();   // re-stamp once a name exists
   });
 });
 
@@ -260,11 +260,15 @@ function setupKeyboard() {
       }
       return;
     }
-    // z / Z ⇒ undo last committed event.
+    // z / Z ⇒ undo the last committed event for the CURRENT video.
     if (e.key === 'z' || e.key === 'Z') {
       e.preventDefault();
-      if (state.calloutEvents.length > 0) {
-        const removed = state.calloutEvents.pop();
+      let undoIdx = -1;
+      for (let i = state.calloutEvents.length - 1; i >= 0; i--) {
+        if (isCurrentVideoEvent(state.calloutEvents[i])) { undoIdx = i; break; }
+      }
+      if (undoIdx >= 0) {
+        const [removed] = state.calloutEvents.splice(undoIdx, 1);
         _editingIndex = null;
         saveToStorage();
         renderEventList();
@@ -324,7 +328,7 @@ function jumpToAdjacentCallout(dir) {
   if (!video) return;
   const now = video.currentTime;
   const EPS = 0.05;
-  const times = state.calloutEvents.map(ev => ev.start_sec).sort((a, b) => a - b);
+  const times = currentVideoEvents().map(ev => ev.start_sec).sort((a, b) => a - b);
   if (times.length === 0) { setStatus('No callouts to jump to yet.'); return; }
   let target = null;
   if (dir > 0) {
@@ -376,6 +380,8 @@ function endRecording(video, atSec = video.currentTime) {
   }
   state.calloutEvents.push({
     id: makeEventId(),
+    video_id: currentVideoId(),
+    video_filename: state.videoFileName,
     start_sec: Number(Math.min(state.startSec, atSec).toFixed(3)),
     end_sec: Number(Math.max(state.startSec, atSec).toFixed(3)),
     callout_raw: state.buffer.map(tokenCode).join('-'),
@@ -484,8 +490,13 @@ let _editingIndex = null;
 function renderEventList() {
   const listEl = document.getElementById('event-list');
   const countEl = document.getElementById('event-count');
-  countEl.textContent = String(state.calloutEvents.length);
-  if (state.calloutEvents.length === 0) {
+  // Only this video's events: compute the key once, filter on it. Row indices
+  // still point into the full state.calloutEvents array, so the index-based
+  // edit/delete handlers stay correct.
+  const key = currentVideoKey();
+  const isCur = ev => eventVideoKey(ev) === key;
+  countEl.textContent = String(state.calloutEvents.filter(isCur).length);
+  if (!state.calloutEvents.some(isCur)) {
     listEl.innerHTML = '<div class="empty-events">No events yet.</div>';
     return;
   }
@@ -493,6 +504,7 @@ function renderEventList() {
   // Show in reverse (newest first) so the labeler sees what they just did.
   for (let i = state.calloutEvents.length - 1; i >= 0; i--) {
     const ev = state.calloutEvents[i];
+    if (!isCur(ev)) continue;
     listEl.appendChild(i === _editingIndex ? buildEventEditor(i, ev) : buildEventRow(i, ev));
   }
 }
@@ -615,7 +627,7 @@ function renderTimelineOverlay() {
   overlay.innerHTML = '';
   if (!duration || duration <= 0) return;
 
-  for (const ev of state.calloutEvents) {
+  for (const ev of currentVideoEvents()) {
     const lPct = timeToViewportPct(ev.start_sec, duration);
     const rPct = timeToViewportPct(ev.end_sec, duration);
     if (rPct < 0 || lPct > 100) continue;        // off-screen at this zoom
@@ -642,7 +654,7 @@ function renderCalloutMinimap() {
   segContainer.innerHTML = '';
   if (!duration || duration <= 0) return;
 
-  for (const ev of state.calloutEvents) {
+  for (const ev of currentVideoEvents()) {
     const seg = document.createElement('div');
     seg.style.position = 'absolute';
     seg.style.top = '0';
@@ -663,7 +675,7 @@ function updateVideoOverlay() {
   updateWaveformPlayhead();   // keep the loudness-strip playhead in sync each frame
   const t = video.currentTime;
 
-  const active = state.calloutEvents.filter(ev => t >= ev.start_sec && t <= ev.end_sec);
+  const active = currentVideoEvents().filter(ev => t >= ev.start_sec && t <= ev.end_sec);
   // Only rebuild the DOM when the active set actually changes (player.js calls
   // this on every timeupdate).
   const key = active.map(ev => `${ev.start_sec}:${ev.callout_raw}`).join(',');
@@ -884,6 +896,17 @@ function restoreFromStorage() {
         document.getElementById('video-name').textContent = parsed.videoFileName;
       }
     }
+    // Backfill video tags on events saved before per-video tagging existed:
+    // attribute them to the restored (current) video so they stay visible in
+    // the now-filtered list and keep saving, instead of silently disappearing.
+    const vId = currentVideoId();
+    const vFile = state.videoFileName || '';
+    for (const ev of state.calloutEvents) {
+      if (ev.video_id === undefined && ev.video_filename === undefined) {
+        ev.video_id = vId;
+        ev.video_filename = vFile;
+      }
+    }
   } catch (err) {
     console.warn('[callout] localStorage restore failed:', err);
   }
@@ -899,14 +922,18 @@ function setupInputs() {
     if (!f) return;
     state.videoFileName = f.name;
     saveToStorage();
+    renderEventList();           // switch the list to the newly-loaded video
+    repaintTimeline();
     decodeAudioForWaveform(f);   // build the loudness strip from the file's audio
   });
-  // Drive link: persist locally on each keystroke; re-stamp the sheet on blur
-  // (change) once there are committed events.
+  // Drive link: persist locally on each keystroke; on blur (change) switch the
+  // view to that video and re-stamp the sheet if it has committed events.
   const driveLink = document.getElementById('drive-link');
   driveLink.addEventListener('input', saveToStorage);
   driveLink.addEventListener('change', () => {
-    if (state.calloutEvents.length > 0) autoSave();
+    renderEventList();
+    repaintTimeline();
+    if (currentVideoEvents().length > 0) autoSave();
   });
 }
 
@@ -917,6 +944,10 @@ function getLabeler() {
 
 function buildPayload() {
   const driveUrl = document.getElementById('drive-link').value.trim();
+  // Save only the loaded video's events — the backend reconciles per
+  // (labeler, video), so sending another video's events here would write them
+  // against the wrong video.
+  const events = currentVideoEvents();
   return {
     schema_version: 1,
     video_url: driveUrl,
@@ -924,8 +955,8 @@ function buildPayload() {
     video_filename: state.videoFileName,
     labeler: getLabeler(),
     submitted_at: new Date().toISOString(),
-    n_events: state.calloutEvents.length,
-    events: state.calloutEvents,
+    n_events: events.length,
+    events,
   };
 }
 
@@ -936,6 +967,30 @@ function extractDriveFileId(url) {
   const m2 = url.match(/[?&]id=([\w-]+)/);
   if (m2) return m2[1];
   return '';
+}
+
+// ── Per-video scoping ─────────────────────────────────────────────────────────
+// Events live in one global store but each is tagged with the video it was made
+// against (Drive id preferred, else local filename). Every events view — the
+// list, timeline overlays, undo, jump, and the saved payload — filters by the
+// currently-loaded video's key, so callouts from one video never bleed into
+// another's display or get re-saved against the wrong video.
+function currentVideoId() {
+  const el = document.getElementById('drive-link');
+  return extractDriveFileId(el ? el.value.trim() : '');
+}
+function currentVideoKey() {
+  return currentVideoId() || state.videoFileName || '';
+}
+function eventVideoKey(ev) {
+  return ev.video_id || ev.video_filename || '';
+}
+function isCurrentVideoEvent(ev) {
+  return eventVideoKey(ev) === currentVideoKey();
+}
+function currentVideoEvents() {
+  const key = currentVideoKey();
+  return state.calloutEvents.filter(ev => eventVideoKey(ev) === key);
 }
 
 // ── Auto-save ─────────────────────────────────────────────────────────────
