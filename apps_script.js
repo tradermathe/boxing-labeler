@@ -751,6 +751,7 @@ function onOpen() {
     .createMenu('MyCorner')
     .addItem('Rebuild Combined Data', 'rebuildCombinedData')
     .addItem('Rebuild Combined Form Labels', 'rebuildCombinedFormLabels')
+    .addItem('Dedupe Callout Events', 'dedupeCalloutEventsMenu')
     .addItem('Unify Duplicate UUIDs', 'unifyDuplicateUuids') // ONE-TIME: remove this line after running
     .addItem('Replace YouTube URLs with Drive URLs', 'replaceVideoUrls') // ONE-TIME: remove this line after running
     .addToUi();
@@ -1643,6 +1644,55 @@ var CALLOUT_SHEET_NAME = 'Callout Events';
 var CALLOUT_HEADERS = ['ts', 'labeler', 'video_filename', 'video_id', 'video_url',
                        'start_sec', 'end_sec', 'callout_raw', 'callout_ids', 'event_id', 'submitted_at', 'deleted'];
 
+// Canonical video key — mirrors the frontend's currentVideoKey() (Drive id
+// preferred, else filename). Video identity is DATA, never the match key; saves
+// reconcile on event_id, and this key only scopes which rows a delete may touch.
+function calloutKey(vid, vfile) {
+  return String(vid || '') || String(vfile || '');
+}
+
+// Inverse of the frontend's tokenCode(): canonical callout id -> compact code,
+// so a date-coerced callout_raw can be rebuilt from the intact callout_ids.
+var CALLOUT_ID_TO_CODE = {
+  jab_head: '1', jab_body: '1b',
+  cross_head: '2', cross_body: '2b',
+  lead_hook_head: '3', lead_hook_body: '3b',
+  rear_hook_head: '4', rear_hook_body: '4b',
+  lead_uppercut_head: '5', lead_uppercut_body: '5b',
+  rear_uppercut_head: '6', rear_uppercut_body: '6b',
+  slip: 'slip', roll: 'roll', duck: 'duck',
+  pull_back: 'pull', step_back: 'step', pivot: 'pivot', block: 'block',
+};
+// Rebuild a hyphen-joined callout_raw ("1-2b-slip") from the '|'-joined
+// callout_ids cell. Returns null if the cell is empty or holds any unknown id,
+// so callers can leave such rows alone instead of guessing.
+function calloutIdsToCode(idsJoined) {
+  var ids = String(idsJoined || '').split('|').map(function (s) { return s.trim(); }).filter(Boolean);
+  if (ids.length === 0) return null;
+  var codes = [];
+  for (var i = 0; i < ids.length; i++) {
+    var cm = ids[i].match(/^combo_([1-9])$/);
+    if (cm) { codes.push('c' + cm[1]); continue; }
+    if (CALLOUT_ID_TO_CODE[ids[i]]) { codes.push(CALLOUT_ID_TO_CODE[ids[i]]); continue; }
+    return null;
+  }
+  return codes.join('-');
+}
+
+// Force the callout_raw column to plain-text format so Sheets stops parsing
+// token strings like "1-2" or "5-6-1" into dates when setValues writes them.
+function ensureCalloutRawText(sh) {
+  var lastCol = sh.getLastColumn();
+  if (lastCol < 1) return;
+  var header = sh.getRange(1, 1, 1, lastCol).getValues()[0];
+  for (var c = 0; c < header.length; c++) {
+    if (String(header[c]) === 'callout_raw') {
+      sh.getRange(1, c + 1, sh.getMaxRows(), 1).setNumberFormat('@');
+      return;
+    }
+  }
+}
+
 function getOrCreateCalloutSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sh = ss.getSheetByName(CALLOUT_SHEET_NAME);
@@ -1650,12 +1700,11 @@ function getOrCreateCalloutSheet() {
     sh = ss.insertSheet(CALLOUT_SHEET_NAME);
     sh.appendRow(CALLOUT_HEADERS);
     sh.setFrozenRows(1);
-    return sh;
-  }
-  if (sh.getLastRow() === 0) {
+  } else if (sh.getLastRow() === 0) {
     sh.appendRow(CALLOUT_HEADERS);
     sh.setFrozenRows(1);
   }
+  ensureCalloutRawText(sh);   // keep callout_raw as text so "1-2" isn't date-coerced
   return sh;
 }
 
@@ -1739,64 +1788,216 @@ function doGetCalloutEvents(p, labeler, action) {
     }
     var headerRow = data[0];
 
-    // Index this labeler's existing rows for this video by event_id (-> 1-based
-    // row number). Scan every matching row regardless of the legacy `deleted`
-    // flag, so old tombstones and pre-id rows get swept on the first resave.
-    var existingById = {};
-    var matchRows = [];   // { row: 1-based, id: string }
+    // Index ALL of this labeler's rows by event_id — video is DATA, not part of
+    // the match key (mirrors the punch labeler keying on punch_uuid). A given
+    // event_id must end up on exactly ONE row per labeler, so when video drift
+    // left stale copies under a different filename/id we collapse them here on
+    // the next save. Separately, collect the rows belonging to the *currently
+    // saved* video by canonical key (video_id || video_filename, matching the
+    // frontend's currentVideoKey) so deletes of removed callouts stay scoped to
+    // this video alone and never touch another video's rows.
+    var curKey = calloutKey(vid, vfile);
+    var rowsById = {};          // event_id -> [1-based row, ...] (topmost first)
+    var currentVideoRows = [];  // { row: 1-based, id: string } for this video
     for (var i = 1; i < data.length; i++) {
       if (data[i][idx.labeler] !== lbl) continue;
-      if (data[i][idx.video_filename] !== vfile) continue;
-      if (data[i][idx.video_id] !== vid) continue;
       var rid = String(data[i][idx.event_id] || '');
-      matchRows.push({ row: i + 1, id: rid });
-      if (rid) existingById[rid] = i + 1;
+      if (rid) {
+        if (!rowsById[rid]) rowsById[rid] = [];
+        rowsById[rid].push(i + 1);
+      }
+      if (curKey && calloutKey(data[i][idx.video_id], data[i][idx.video_filename]) === curKey) {
+        currentVideoRows.push({ row: i + 1, id: rid });
+      }
     }
 
-    // Walk the incoming set: update changed rows in place (keeping their
-    // original ts), append brand-new ones, skip unchanged ones.
+    // Walk the incoming set. Match each event by id anywhere for this labeler:
+    // keep the topmost existing row, mark any extra copies for deletion (this
+    // collapses drift dups), and rewrite the keeper in place — which also re-
+    // tags it to the current video, healing a stale video identity. Brand-new
+    // ids get appended; a single, fully-unchanged row is left as-is.
     var incomingIds = {};
     var toAppend = [];
+    var toDelete = {};          // set of 1-based row numbers (deduped)
     var nUpdated = 0;
     for (var e = 0; e < events.length; e++) {
       var ev = events[e];
       var eid = String(ev.id || ev.event_id || '');
       if (!eid) eid = Utilities.getUuid();   // defensive: never reconcile a blank id
       incomingIds[eid] = true;
-      if (existingById[eid]) {
-        var rowNum = existingById[eid];
-        var cur = data[rowNum - 1];
-        var idsJoined = Array.isArray(ev.callout_ids) ? ev.callout_ids.join('|') : String(ev.callout_ids || '');
-        var unchanged = String(cur[idx.start_sec]) === String(ev.start_sec) &&
+
+      var existing = rowsById[eid] || [];
+      if (existing.length === 0) {
+        toAppend.push(buildCalloutRow(headerRow, ev, eid, lbl, vfile, vid, vurl, submittedAt, new Date().toISOString()));
+        continue;
+      }
+      var keepRow = existing[0];
+      for (var x = 1; x < existing.length; x++) toDelete[existing[x]] = true;
+
+      var cur = data[keepRow - 1];
+      var idsJoined = Array.isArray(ev.callout_ids) ? ev.callout_ids.join('|') : String(ev.callout_ids || '');
+      var sameContent = String(cur[idx.start_sec]) === String(ev.start_sec) &&
                         String(cur[idx.end_sec]) === String(ev.end_sec) &&
                         String(cur[idx.callout_raw]) === String(ev.callout_raw || '') &&
                         String(cur[idx.callout_ids]) === idsJoined;
-        if (unchanged) continue;
-        var keepTs = cur[idx.ts] || new Date().toISOString();
-        var updRow = buildCalloutRow(headerRow, ev, eid, lbl, vfile, vid, vurl, submittedAt, keepTs);
-        sh.getRange(rowNum, 1, 1, headerRow.length).setValues([updRow]);
-        nUpdated++;
-      } else {
-        toAppend.push(buildCalloutRow(headerRow, ev, eid, lbl, vfile, vid, vurl, submittedAt, new Date().toISOString()));
-      }
+      var sameVideo = String(cur[idx.video_id] || '') === String(vid) &&
+                      String(cur[idx.video_filename] || '') === String(vfile);
+      if (existing.length === 1 && sameContent && sameVideo) continue;
+
+      var keepTs = cur[idx.ts] || new Date().toISOString();
+      var updRow = buildCalloutRow(headerRow, ev, eid, lbl, vfile, vid, vurl, submittedAt, keepTs);
+      sh.getRange(keepRow, 1, 1, headerRow.length).setValues([updRow]);
+      nUpdated++;
     }
 
-    // Delete this video's rows whose id is gone from the incoming set (removed
-    // events) plus any legacy/blank-id or tombstone rows. Updates above don't
-    // change row count, so these snapshot row numbers are still valid; delete
-    // bottom-up so they stay valid as rows shift.
-    var toDelete = [];
-    for (var m = 0; m < matchRows.length; m++) {
-      if (!matchRows[m].id || !incomingIds[matchRows[m].id]) toDelete.push(matchRows[m].row);
+    // Delete this video's rows whose id is gone from the incoming set (the
+    // labeler removed that callout) plus any legacy blank-id / tombstone rows.
+    for (var m = 0; m < currentVideoRows.length; m++) {
+      var cr = currentVideoRows[m];
+      if (!cr.id || !incomingIds[cr.id]) toDelete[cr.row] = true;
     }
-    toDelete.sort(function (a, b) { return a - b; });
-    for (var d = toDelete.length - 1; d >= 0; d--) sh.deleteRow(toDelete[d]);
+
+    // Updates above don't change row count, so these snapshot row numbers are
+    // still valid; delete bottom-up so they stay valid as rows shift, then
+    // append the brand-new rows below the (now shorter) sheet.
+    var delRows = Object.keys(toDelete).map(Number).sort(function (a, b) { return a - b; });
+    for (var d = delRows.length - 1; d >= 0; d--) sh.deleteRow(delRows[d]);
 
     if (toAppend.length > 0) {
       sh.getRange(sh.getLastRow() + 1, 1, toAppend.length, headerRow.length).setValues(toAppend);
     }
-    return jsonOut({ status: 'ok', updated: nUpdated, added: toAppend.length, deleted: toDelete.length });
+    return jsonOut({ status: 'ok', updated: nUpdated, added: toAppend.length, deleted: delRows.length });
   }
 
   return jsonOut({ status: 'error', message: 'unknown callout action: ' + action });
+}
+
+// ============================================================
+// CLEANUP — collapse historical (labeler, event_id) duplicates and repair
+// date-coerced callout_raw cells. The save path above now keeps the sheet
+// clean going forward (one row per labeler+event_id, callout_raw written as
+// text); this is a one-shot sweep for rows saved before the fix that may never
+// be re-saved. Runs DRY by default — call dedupeCalloutEvents(false), or use
+// MyCorner > Dedupe Callout Events, to apply.
+// Keep-rule within a dup group: latest submitted_at, then latest ts, then
+// bottom-most row (the labeler's most recent save of that event wins).
+// ============================================================
+function dedupeCalloutEvents(dryRun) {
+  if (dryRun === undefined) dryRun = true;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(CALLOUT_SHEET_NAME);
+  if (!sh || sh.getLastRow() < 2) {
+    Logger.log('No callout data to clean.');
+    return { status: 'ok', rowsToDelete: 0, dupGroups: 0, rawFixes: 0, rawCorrupted: 0, rawUnfixable: 0, blankIdRows: 0 };
+  }
+  var data = sh.getDataRange().getValues();
+  var disp = sh.getDataRange().getDisplayValues();
+  var idx = punchDirHeaderIndex(data[0]);
+  if (idx.event_id === undefined) {
+    Logger.log('No event_id column — cannot dedupe.');
+    return { status: 'error', message: 'no event_id column' };
+  }
+
+  // Group rows by (labeler, event_id); blank-id rows can't be grouped safely.
+  var groups = {};   // key -> [ { row, submittedMs, tsMs } ]
+  var blankIdRows = 0;
+  for (var i = 1; i < data.length; i++) {
+    var eid = String(data[i][idx.event_id] || '');
+    if (!eid) { blankIdRows++; continue; }
+    var key = String(data[i][idx.labeler]) + ' ' + eid;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push({
+      row: i + 1,
+      submittedMs: calloutMillis(data[i][idx.submitted_at]),
+      tsMs: calloutMillis(data[i][idx.ts]),
+    });
+  }
+
+  // One keeper per dup group; the rest are deleted.
+  var toDelete = [];
+  var dupGroups = 0;
+  for (var k in groups) {
+    var g = groups[k];
+    if (g.length < 2) continue;
+    dupGroups++;
+    g.sort(function (a, b) {
+      if (a.submittedMs !== b.submittedMs) return a.submittedMs - b.submittedMs;
+      if (a.tsMs !== b.tsMs) return a.tsMs - b.tsMs;
+      return a.row - b.row;
+    });
+    var keep = g[g.length - 1].row;   // latest wins
+    for (var j = 0; j < g.length; j++) {
+      if (g[j].row !== keep) toDelete.push(g[j].row);
+    }
+  }
+
+  // Regenerate callout_raw from the intact callout_ids (idempotent). Detect
+  // corruption as a cell that reads back as a Date/number rather than a token
+  // string. Rows whose ids can't be rebuilt keep their displayed text.
+  var rawCol = idx.callout_raw;
+  var newRawColumn = [];   // one [value] per data row (2..N)
+  var rawFixes = 0, rawCorrupted = 0, rawUnfixable = 0;
+  for (var r = 1; r < data.length; r++) {
+    var curRaw = data[r][rawCol];
+    var isCorrupt = (curRaw instanceof Date) || (typeof curRaw === 'number');
+    if (isCorrupt) rawCorrupted++;
+    var regen = calloutIdsToCode(data[r][idx.callout_ids]);
+    if (regen === null) {
+      if (isCorrupt) rawUnfixable++;
+      newRawColumn.push([String(disp[r][rawCol])]);
+    } else {
+      if (String(curRaw) !== regen) rawFixes++;
+      newRawColumn.push([regen]);
+    }
+  }
+
+  Logger.log('Callout Events dedupe (%s):', dryRun ? 'DRY RUN' : 'APPLY');
+  Logger.log('  total data rows:        %s', data.length - 1);
+  Logger.log('  duplicate groups:       %s   rows to delete: %s', dupGroups, toDelete.length);
+  Logger.log('  blank-id rows (kept):   %s', blankIdRows);
+  Logger.log('  callout_raw corrupted:  %s', rawCorrupted);
+  Logger.log('  callout_raw to rebuild: %s   unfixable: %s', rawFixes, rawUnfixable);
+
+  if (dryRun) {
+    Logger.log('DRY RUN — nothing written. Run dedupeCalloutEvents(false) to apply.');
+    return { status: 'dryRun', rowsToDelete: toDelete.length, dupGroups: dupGroups,
+             rawFixes: rawFixes, rawCorrupted: rawCorrupted, rawUnfixable: rawUnfixable,
+             blankIdRows: blankIdRows };
+  }
+
+  // Apply: text-format the column, rewrite callout_raw in place (no row shift),
+  // then delete dup rows bottom-up.
+  ensureCalloutRawText(sh);
+  if (newRawColumn.length > 0) {
+    sh.getRange(2, rawCol + 1, newRawColumn.length, 1).setValues(newRawColumn);
+  }
+  toDelete.sort(function (a, b) { return a - b; });
+  for (var d = toDelete.length - 1; d >= 0; d--) sh.deleteRow(toDelete[d]);
+
+  Logger.log('APPLIED — deleted %s rows, rebuilt %s callout_raw cells.', toDelete.length, rawFixes);
+  return { status: 'ok', deleted: toDelete.length, rawFixes: rawFixes,
+           dupGroups: dupGroups, blankIdRows: blankIdRows };
+}
+
+// Parse a cell that may hold an ISO string OR a Date into epoch millis (0 if
+// empty/unparseable), for ordering dedupe keep-decisions.
+function calloutMillis(v) {
+  if (v instanceof Date) return v.getTime();
+  if (typeof v === 'number') return v;
+  var t = Date.parse(String(v || ''));
+  return isNaN(t) ? 0 : t;
+}
+
+// Menu entry: dry-run, show the counts, and apply only on confirm.
+function dedupeCalloutEventsMenu() {
+  var res = dedupeCalloutEvents(true);
+  var ui = SpreadsheetApp.getUi();
+  var msg = 'Dry run found:\n' +
+            '• duplicate rows to delete: ' + res.rowsToDelete + ' (in ' + res.dupGroups + ' groups)\n' +
+            '• callout_raw to rebuild: ' + res.rawFixes + ' (corrupted: ' + res.rawCorrupted + ', unfixable: ' + res.rawUnfixable + ')\n' +
+            '• blank-id rows left untouched: ' + res.blankIdRows + '\n\nApply these changes now?';
+  var ans = ui.alert('Dedupe Callout Events', msg, ui.ButtonSet.YES_NO);
+  if (ans !== ui.Button.YES) { ui.alert('Cancelled', 'No changes written.', ui.ButtonSet.OK); return; }
+  var applied = dedupeCalloutEvents(false);
+  ui.alert('Done', 'Deleted ' + applied.deleted + ' duplicate rows, rebuilt ' + applied.rawFixes + ' callout_raw cells.', ui.ButtonSet.OK);
 }
