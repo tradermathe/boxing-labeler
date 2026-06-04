@@ -186,6 +186,29 @@
       text-align: center;
       padding: 16px;
     }
+    /* Other labelers' callouts: a labeled subsection below your own. Rows are
+       tinted to read as "not mine" but stay editable in place — saved back
+       under their original owner, never re-attributed to you. */
+    .event-others-header {
+      margin: 10px 2px 4px;
+      padding-top: 8px;
+      border-top: 1px solid #2b3a5e;
+      font-size: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: #6f7da0;
+    }
+    .event-row--remote { grid-template-columns: 124px 1fr auto 20px 20px; }
+    .event-row--remote .er-cue { color: #b7c4e2; }
+    .event-row .er-who {
+      font-size: 10px;
+      color: #5fa8d8;
+      font-family: ui-monospace, monospace;
+      white-space: nowrap;
+      max-width: 84px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     #status-line {
       font-size: 12px;
       color: #888;

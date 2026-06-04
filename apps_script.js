@@ -1758,6 +1758,7 @@ function doGetCalloutEvents(p, labeler, action) {
         callout_raw: lr[idx.callout_raw],
         callout_ids: String(lr[idx.callout_ids] || '').split('|').filter(function (s) { return s; }),
         submitted_at: lr[idx.submitted_at],
+        event_id: idx.event_id !== undefined ? String(lr[idx.event_id] || '') : '',
       });
     }
     return jsonOut({ status: 'ok', rows: rows });

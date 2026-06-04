@@ -91,6 +91,12 @@ Object.assign(state, {
   recording: false,
   startSec: null,
   videoFileName: '',
+  // Read-only callouts from OTHER labelers for the loaded video, pulled from the
+  // sheet so a labeler sees everyone's work — never edited, never re-saved.
+  // remoteEventsKey records which video key they were fetched for, so a stale
+  // set isn't shown after switching videos.
+  remoteEvents: [],
+  remoteEventsKey: '',
 });
 
 const LS_KEY = 'callout_labeler_events_v2';   // v2: start_sec/end_sec segments
@@ -158,7 +164,11 @@ window.addEventListener('DOMContentLoaded', () => {
   labelerInput.addEventListener('change', () => {
     try { localStorage.setItem('orient_labeler_name', labelerInput.value.trim()); } catch {}
     if (currentVideoEvents().length > 0) autoSave();   // re-stamp once a name exists
+    loadRemoteEvents();   // re-partition mine vs. others now the name is known
   });
+
+  // Pull every labeler's callouts for whatever video was restored on load.
+  loadRemoteEvents();
 });
 
 // ── Keyboard state machine ──────────────────────────────────────────────────
@@ -486,6 +496,8 @@ function updateBufferCard() {
 
 // Index of the event currently open in the inline editor (null = none).
 let _editingIndex = null;
+// Index into state.remoteEvents of the other-labeler row open for editing.
+let _editingRemote = null;
 
 function renderEventList() {
   const listEl = document.getElementById('event-list');
@@ -496,16 +508,31 @@ function renderEventList() {
   const key = currentVideoKey();
   const isCur = ev => eventVideoKey(ev) === key;
   countEl.textContent = String(state.calloutEvents.filter(isCur).length);
-  if (!state.calloutEvents.some(isCur)) {
+  // Other labelers' callouts for this same video (read from the sheet), shown
+  // only if they were fetched for the video that's currently loaded.
+  const others = (state.remoteEventsKey === key) ? state.remoteEvents : [];
+
+  if (!state.calloutEvents.some(isCur) && others.length === 0) {
     listEl.innerHTML = '<div class="empty-events">No events yet.</div>';
     return;
   }
   listEl.innerHTML = '';
-  // Show in reverse (newest first) so the labeler sees what they just did.
+  // My own callouts, newest first so the labeler sees what they just did.
   for (let i = state.calloutEvents.length - 1; i >= 0; i--) {
     const ev = state.calloutEvents[i];
     if (!isCur(ev)) continue;
     listEl.appendChild(i === _editingIndex ? buildEventEditor(i, ev) : buildEventRow(i, ev));
+  }
+  // Other labelers' callouts (chronological), editable in place but kept under
+  // their original owner. Edit is only offered when the row has an event_id.
+  if (others.length > 0) {
+    const hdr = document.createElement('div');
+    hdr.className = 'event-others-header';
+    hdr.textContent = `Other labelers (${others.length})`;
+    listEl.appendChild(hdr);
+    for (let k = 0; k < others.length; k++) {
+      listEl.appendChild(k === _editingRemote ? buildRemoteEditor(k, others[k]) : buildRemoteRow(k, others[k]));
+    }
   }
 }
 
@@ -523,7 +550,7 @@ function buildEventRow(i, ev) {
     const v = document.getElementById('video-player');
     if (v) v.currentTime = ev.start_sec;
   });
-  const edit = () => { _editingIndex = i; renderEventList(); };
+  const edit = () => { _editingIndex = i; _editingRemote = null; renderEventList(); };
   row.querySelector('.er-cue').addEventListener('click', edit);
   row.querySelector('.er-edit').addEventListener('click', (e) => { e.stopPropagation(); edit(); });
   row.querySelector('.er-del').addEventListener('click', (e) => {
@@ -607,12 +634,202 @@ function buildEventEditor(i, ev) {
   return row;
 }
 
+// ── Other labelers' rows (read from the sheet, editable in place) ─────────────
+// Same affordances as your own rows — seek, edit, delete — but tinted as
+// "theirs" and saved back under the ORIGINAL labeler (never re-attributed to
+// you). Edit/delete need the row's event_id to reconcile; rows saved by the
+// pre-id backend (no event_id) are shown read-only until their owner re-saves.
+function buildRemoteRow(k, ev) {
+  const row = document.createElement('div');
+  row.className = 'event-row event-row--remote';
+  const editable = !!ev.id;
+  row.innerHTML = `
+    <span class="er-time" title="Jump to start">${formatTime(ev.start_sec)}–${formatTime(ev.end_sec)}</span>
+    <span class="er-cue"></span>
+    <span class="er-who"></span>
+    <span class="er-edit">${editable ? '✎' : ''}</span>
+    <span class="er-del">${editable ? '✕' : ''}</span>
+  `;
+  // callout_raw + labeler come from another user's sheet rows — set them as text
+  // (not interpolated into innerHTML) so a stray character can't break markup.
+  const cueEl = row.querySelector('.er-cue');
+  cueEl.textContent = ev.callout_raw;
+  const whoEl = row.querySelector('.er-who');
+  whoEl.textContent = ev.labeler;
+  whoEl.title = 'Labeled by ' + ev.labeler;
+  row.querySelector('.er-time').addEventListener('click', () => {
+    const v = document.getElementById('video-player');
+    if (v) v.currentTime = ev.start_sec;
+  });
+  if (editable) {
+    cueEl.title = 'Click to edit';
+    const edit = () => { _editingRemote = k; _editingIndex = null; renderEventList(); };
+    cueEl.addEventListener('click', edit);
+    const editEl = row.querySelector('.er-edit');
+    editEl.title = 'Edit this callout';
+    editEl.addEventListener('click', (e) => { e.stopPropagation(); edit(); });
+    const delEl = row.querySelector('.er-del');
+    delEl.title = `Delete this callout (${ev.labeler}'s)`;
+    delEl.addEventListener('click', (e) => { e.stopPropagation(); deleteRemoteEvent(k); });
+  }
+  return row;
+}
+
+// Inline editor for another labeler's row. Same fields as buildEventEditor, but
+// Save posts that labeler's whole set for this video (with this edit applied)
+// back under their name, so only their rows reconcile and the change is theirs.
+function buildRemoteEditor(k, ev) {
+  const row = document.createElement('div');
+  row.className = 'event-row event-row--editing';
+
+  const who = document.createElement('div');
+  who.className = 'event-others-header';
+  who.style.margin = '0 0 6px';
+  who.style.borderTop = 'none';
+  who.style.paddingTop = '0';
+  who.textContent = `Editing ${ev.labeler}'s callout`;
+
+  const cue = document.createElement('input');
+  cue.className = 'er-edit-cue';
+  cue.type = 'text';
+  cue.value = ev.callout_raw;
+  cue.title = 'Combo tokens, e.g. 1-2b-slip';
+
+  const row2 = document.createElement('div');
+  row2.className = 'er-edit-row2';
+  const start = document.createElement('input');
+  start.className = 'er-edit-num'; start.type = 'number'; start.step = '0.001';
+  start.value = ev.start_sec; start.title = 'Start (seconds)';
+  const dash = document.createElement('span');
+  dash.className = 'er-edit-dash'; dash.textContent = '–';
+  const end = document.createElement('input');
+  end.className = 'er-edit-num'; end.type = 'number'; end.step = '0.001';
+  end.value = ev.end_sec; end.title = 'End (seconds)';
+  const save = document.createElement('span');
+  save.className = 'er-save'; save.textContent = '✓'; save.title = 'Save changes';
+  const cancel = document.createElement('span');
+  cancel.className = 'er-cancel'; cancel.textContent = '✕'; cancel.title = 'Cancel';
+  row2.append(start, dash, end, save, cancel);
+  row.append(who, cue, row2);
+
+  const commit = () => {
+    const parsed = parseCalloutRaw(cue.value);
+    if (!parsed) {
+      setStatus('Invalid combo — use tokens like 1, 2b, slip, roll, pull, step, pivot, block.');
+      cue.focus();
+      return;
+    }
+    let s = Number(start.value), e2 = Number(end.value);
+    if (!isFinite(s) || !isFinite(e2)) { setStatus('Start/end must be numbers (seconds).'); return; }
+    const dur = document.getElementById('video-player').duration;
+    s = Math.max(0, s); e2 = Math.max(0, e2);
+    if (dur) { s = Math.min(s, dur); e2 = Math.min(e2, dur); }
+    commitRemoteEdit(k, parsed, Number(Math.min(s, e2).toFixed(3)), Number(Math.max(s, e2).toFixed(3)));
+  };
+  const cancelEdit = () => { _editingRemote = null; renderEventList(); };
+
+  save.addEventListener('click', commit);
+  cancel.addEventListener('click', cancelEdit);
+  for (const inp of [cue, start, end]) {
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); commit(); }
+      else if (e.key === 'Escape') { e.preventDefault(); cancelEdit(); }
+    });
+  }
+  setTimeout(() => { cue.focus(); cue.select(); }, 0);
+  return row;
+}
+
+// POST one labeler's COMPLETE set for the loaded video back under THEIR name.
+// The backend reconciles saves by (labeler, event_id), so sending their full
+// set (with one row edited or removed) updates/deletes only the changed row and
+// leaves their attribution intact. `anchor` supplies the video identity — taken
+// from one of their own rows so the re-tag is a no-op (never rewrites their
+// video to mine). Reuses the exact save path the autosave uses (POST body).
+async function saveRemoteSet(owner, anchor, events) {
+  const payload = {
+    schema_version: 1,
+    video_url: anchor.video_url || '',
+    video_id: anchor.video_id || '',
+    video_filename: anchor.video_filename || '',
+    labeler: owner,
+    submitted_at: new Date().toISOString(),
+    n_events: events.length,
+    events,
+  };
+  const url = sheetUrl({ action: 'saveCalloutEvents' });
+  const resp = await fetch(url, { method: 'POST', body: JSON.stringify(payload) });
+  const text = await resp.text();
+  let parsed = null;
+  try { parsed = JSON.parse(text); } catch { /* not JSON */ }
+  if (!(parsed && parsed.status === 'ok')) throw new Error(parsed?.message || ('HTTP ' + resp.status));
+  return parsed;
+}
+
+// A labeler's rows, mapped to save-shaped events (id + times + combo). Video
+// identity is payload-level, so it's omitted here.
+function remoteSaveEvents(rows) {
+  return rows.map(r => ({
+    id: r.id, start_sec: r.start_sec, end_sec: r.end_sec,
+    callout_raw: r.callout_raw, callout_ids: r.callout_ids,
+  }));
+}
+
+async function commitRemoteEdit(k, parsed, startSec, endSec) {
+  const target = state.remoteEvents[k];
+  if (!target || !target.id) { setStatus('Cannot edit this row (no id).'); return; }
+  const owner = target.labeler;
+  // Owner's whole set for this video, with the target row's values swapped in.
+  const events = remoteSaveEvents(state.remoteEvents.filter(r => r.labeler === owner))
+    .map(e => e.id === target.id
+      ? { id: target.id, start_sec: startSec, end_sec: endSec, callout_raw: parsed.raw, callout_ids: parsed.ids }
+      : e);
+  _editingRemote = null;
+  setStatus(`Saving ${owner}'s callout…`);
+  renderEventList();
+  try {
+    await saveRemoteSet(owner, target, events);
+  } catch (e) {
+    setStatus(`Couldn't save ${owner}'s edit: ${e.message}`);
+    return;
+  }
+  Object.assign(target, { start_sec: startSec, end_sec: endSec, callout_raw: parsed.raw, callout_ids: parsed.ids });
+  state.remoteEvents.sort((a, b) => a.start_sec - b.start_sec);
+  renderEventList();
+  repaintTimeline();
+  setStatus(`Updated ${owner}'s callout: ${parsed.raw} @ ${formatTime(startSec)}`);
+}
+
+async function deleteRemoteEvent(k) {
+  const target = state.remoteEvents[k];
+  if (!target || !target.id) return;
+  const owner = target.labeler;
+  if (!confirm(`Delete ${owner}'s callout "${target.callout_raw}" @ ${formatTime(target.start_sec)}?`)) return;
+  // Owner's whole set minus the dropped row ⇒ the backend deletes just that row.
+  const events = remoteSaveEvents(state.remoteEvents.filter(r => r.labeler === owner && r !== target));
+  _editingRemote = null;
+  setStatus(`Deleting ${owner}'s callout…`);
+  try {
+    await saveRemoteSet(owner, target, events);
+  } catch (e) {
+    setStatus(`Couldn't delete ${owner}'s callout: ${e.message}`);
+    return;
+  }
+  const at = state.remoteEvents.indexOf(target);
+  if (at >= 0) state.remoteEvents.splice(at, 1);
+  renderEventList();
+  repaintTimeline();
+  setStatus(`Deleted ${owner}'s callout.`);
+}
+
 // ── Timeline overlay (hooks player.js calls on metadata / zoom / timeupdate) ──
 // Mirrors the punch labeler: one segment per committed callout on the seek bar
 // + minimap, plus a chip on the video while the playhead is inside a callout.
 // Combos have no single punch type, so everything uses the one accent color and
-// the raw combo string is the label/tooltip.
+// the raw combo string is the label/tooltip. Other labelers' callouts get a
+// second, cooler color so a glance distinguishes "mine" (red) from "theirs".
 const CALLOUT_COLOR = '#e94560';
+const CALLOUT_COLOR_OTHER = '#5fa8d8';
 
 function repaintTimeline() {
   renderTimelineOverlay();
@@ -626,6 +843,21 @@ function renderTimelineOverlay() {
   const duration = video.duration;
   overlay.innerHTML = '';
   if (!duration || duration <= 0) return;
+
+  // Other labelers' segments first, so your own paint on top of theirs.
+  for (const ev of currentRemoteEvents()) {
+    const lPct = timeToViewportPct(ev.start_sec, duration);
+    const rPct = timeToViewportPct(ev.end_sec, duration);
+    if (rPct < 0 || lPct > 100) continue;        // off-screen at this zoom
+    const seg = document.createElement('div');
+    seg.className = 'seek-segment';
+    seg.style.left = Math.max(0, lPct) + '%';
+    seg.style.width = Math.max(Math.min(100, rPct) - Math.max(0, lPct), 0.15) + '%';
+    seg.style.backgroundColor = CALLOUT_COLOR_OTHER;
+    seg.style.opacity = '0.55';
+    seg.title = ev.callout_raw + ' · ' + ev.labeler;
+    overlay.appendChild(seg);
+  }
 
   for (const ev of currentVideoEvents()) {
     const lPct = timeToViewportPct(ev.start_sec, duration);
@@ -653,6 +885,19 @@ function renderCalloutMinimap() {
   const duration = video.duration;
   segContainer.innerHTML = '';
   if (!duration || duration <= 0) return;
+
+  for (const ev of currentRemoteEvents()) {
+    const seg = document.createElement('div');
+    seg.style.position = 'absolute';
+    seg.style.top = '0';
+    seg.style.height = '100%';
+    seg.style.borderRadius = '1px';
+    seg.style.left = (ev.start_sec / duration) * 100 + '%';
+    seg.style.width = Math.max(((ev.end_sec - ev.start_sec) / duration) * 100, 0.3) + '%';
+    seg.style.backgroundColor = CALLOUT_COLOR_OTHER;
+    seg.style.opacity = '0.45';
+    segContainer.appendChild(seg);
+  }
 
   for (const ev of currentVideoEvents()) {
     const seg = document.createElement('div');
@@ -924,6 +1169,7 @@ function setupInputs() {
     saveToStorage();
     renderEventList();           // switch the list to the newly-loaded video
     repaintTimeline();
+    loadRemoteEvents();          // and pull everyone's callouts for it
     decodeAudioForWaveform(f);   // build the loudness strip from the file's audio
   });
   // Drive link: persist locally on each keystroke; on blur (change) switch the
@@ -934,6 +1180,7 @@ function setupInputs() {
     renderEventList();
     repaintTimeline();
     if (currentVideoEvents().length > 0) autoSave();
+    loadRemoteEvents();   // show every labeler's callouts for the pasted video
   });
 }
 
@@ -991,6 +1238,85 @@ function isCurrentVideoEvent(ev) {
 function currentVideoEvents() {
   const key = currentVideoKey();
   return state.calloutEvents.filter(ev => eventVideoKey(ev) === key);
+}
+// Other labelers' callouts, but only while the loaded video matches the one
+// they were fetched for — so a stale set never paints over a different video.
+function currentRemoteEvents() {
+  return (state.remoteEventsKey === currentVideoKey()) ? state.remoteEvents : [];
+}
+
+// ── Load every labeler's callouts for the loaded video ────────────────────────
+// The labeler is otherwise localStorage-only, so prior work (from another
+// machine/session) and other labelers' callouts are invisible. Fetch the whole
+// set for this video (labeler:'' ⇒ all labelers, mirroring the punch-direction
+// labeler), then: merge MY rows into the editable set by event_id so they sync
+// across machines without ever re-creating duplicates, and keep OTHERS' rows in
+// read-only state.remoteEvents for display. Matching is by canonical video key
+// (video_id || filename), so filename drift doesn't hide anyone's work.
+async function loadRemoteEvents() {
+  const key = currentVideoKey();
+  state.remoteEventsKey = key;
+  _editingRemote = null;   // the others list is about to be replaced — drop any open editor
+  if (!key) { state.remoteEvents = []; renderEventList(); repaintTimeline(); return; }
+  let rows;
+  try {
+    const url = sheetUrl({ action: 'listCalloutEvents', video: key, labeler: '' });
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const body = await res.json();
+    if (body.status !== 'ok') throw new Error(body.message || 'unknown');
+    rows = body.rows || [];
+  } catch (e) {
+    console.warn('[callout] loadRemoteEvents failed:', e);
+    setStatus('Could not load saved callouts: ' + e.message);
+    return;
+  }
+  if (currentVideoKey() !== key) return;   // user switched videos mid-fetch
+
+  const me = getLabeler();
+  const localIds = new Set(state.calloutEvents.map(ev => ev.id).filter(Boolean));
+  const others = [];
+  let mergedMine = 0;
+  for (const r of rows) {
+    const id = r.event_id || '';
+    const cue = r.callout_raw || (r.callout_ids || []).join('-');
+    if (me && r.labeler === me) {
+      // My own row. Merge into the editable set if this browser doesn't have it
+      // yet (requires the server's event_id so a later save reconciles, not
+      // duplicates). Without an id (pre-deploy backend) skip it — safe, no dup.
+      if (id && !localIds.has(id)) {
+        state.calloutEvents.push({
+          id,
+          video_id: r.video_id || '',
+          video_filename: r.video_filename || '',
+          start_sec: Number(r.start_sec),
+          end_sec: Number(r.end_sec),
+          callout_raw: cue,
+          callout_ids: r.callout_ids || [],
+        });
+        localIds.add(id);
+        mergedMine++;
+      }
+    } else if (!(id && localIds.has(id))) {
+      // Another labeler's row. The id guard avoids double-showing a row that's
+      // already mine locally. Carry everything an in-place edit needs (id +
+      // labeler + video identity) so it can be saved back under its owner.
+      others.push({
+        id, labeler: r.labeler || '?',
+        video_id: r.video_id || '', video_filename: r.video_filename || '', video_url: r.video_url || '',
+        start_sec: Number(r.start_sec), end_sec: Number(r.end_sec),
+        callout_raw: cue, callout_ids: r.callout_ids || [],
+      });
+    }
+  }
+  others.sort((a, b) => a.start_sec - b.start_sec);
+  state.remoteEvents = others;
+  if (mergedMine > 0) saveToStorage();
+  renderEventList();
+  repaintTimeline();
+  const mineN = currentVideoEvents().length;
+  setStatus(`Loaded ${mineN} of your callout(s)` + (others.length ? ` · ${others.length} from other labeler(s)` : '') +
+            (mergedMine ? ` · synced ${mergedMine} from the sheet` : '') + '.');
 }
 
 // ── Auto-save ─────────────────────────────────────────────────────────────
