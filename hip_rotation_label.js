@@ -69,6 +69,7 @@ Object.assign(state, {
   coverageByUuid: new Map(),       // current video: punch_uuid -> Set<labeler> (any labeler)
   videoLoaded: false,
   labelCountsByVideo: new Map(),   // stem -> total punches labeled by anyone
+  contextOn: true,                 // X toggles the ±pad context vs punch-only loop
 });
 
 function keyFor(c) {
@@ -327,9 +328,10 @@ function seekToCurrent() {
   }
   const c = state.candidates[state.cursor];
   const video = document.getElementById('video-player');
-  const start = Math.max(0, c.start_sec - PUNCH_LEAD_IN_SEC);
-  const end   = c.end_sec + PUNCH_TRAIL_OUT_SEC;
-  state.loopWindow = { start, end };
+  const pad = state.contextOn === false ? 0 : 1;   // X toggles context padding
+  const start = Math.max(0, c.start_sec - PUNCH_LEAD_IN_SEC * pad);
+  const end   = c.end_sec + PUNCH_TRAIL_OUT_SEC * pad;
+  state.loopWindow = { start, end, punchStart: c.start_sec, punchEnd: c.end_sec };
 
   if (video && !isNaN(video.duration) && video.duration > 0) {
     video.currentTime = Math.min(Math.max(0, start), video.duration);
@@ -439,6 +441,47 @@ function gotoFirst() {
 
 function gotoNextUnlabeled() {
   advanceToNextUnlabeled(state.cursor + 1);
+}
+
+// ─── punch-vs-context visual cue ─────────────────────────────────────────────
+// On a loop the punch and its padding blur together. A rAF loop reads the
+// playhead each frame and (a) rings the video green only inside the labelled
+// [punchStart, punchEnd] window, (b) names the phase. timeupdate (~4 Hz) is too
+// coarse for a sub-second punch, hence rAF.
+function tickPhaseCue() {
+  const video = document.getElementById('video-player');
+  const cue = document.getElementById('phase-cue');
+  const viewport = document.getElementById('video-viewport');
+  const lw = state.loopWindow;
+  if (video && cue && lw && state.candidates.length && state.cursor < state.candidates.length) {
+    const t = video.currentTime;
+    let inPunch = false, text, cls;
+    if (t < lw.punchStart) { text = 'wind-up'; cls = 'ctx'; }
+    else if (t > lw.punchEnd) { text = 'follow-through'; cls = 'ctx'; }
+    else { text = '● PUNCH'; cls = 'punch'; inPunch = true; }
+    cue.textContent = text;
+    cue.className = 'phase-cue ' + cls;
+    if (viewport) viewport.classList.toggle('in-punch', inPunch);
+  } else if (cue) {
+    cue.textContent = '—';
+    cue.className = 'phase-cue';
+    if (viewport) viewport.classList.remove('in-punch');
+  }
+  requestAnimationFrame(tickPhaseCue);
+}
+
+function updateLoopMode() {
+  const el = document.getElementById('loop-mode');
+  if (!el) return;
+  el.textContent = state.contextOn === false
+    ? 'punch only'
+    : `±${PUNCH_LEAD_IN_SEC}s context`;
+}
+
+function toggleContext() {
+  state.contextOn = state.contextOn === false ? true : false;
+  updateLoopMode();
+  seekToCurrent();
 }
 
 function redrawProgress() {
@@ -600,7 +643,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (e.key === 'f' || e.key === 'F') { e.preventDefault(); gotoFirst(); return; }
     if (e.key === 'u' || e.key === 'U') { e.preventDefault(); gotoNextUnlabeled(); return; }
     if (e.key === 'c' || e.key === 'C') { e.preventDefault(); clearCurrent(); return; }
+    if (e.key === 'x' || e.key === 'X') { e.preventDefault(); toggleContext(); return; }
   });
+
+  updateLoopMode();
+  requestAnimationFrame(tickPhaseCue);
 
   setStatus('—');
   setCurrentLine('— type or pick a video name to begin —');

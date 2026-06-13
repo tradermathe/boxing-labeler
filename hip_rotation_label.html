@@ -29,6 +29,23 @@
       border-radius: 4px;
       margin-bottom: 12px;
     }
+    /* Punch-vs-context cue: ring the video green only during the labelled
+       punch window, so on a loop the punch visibly pulses. */
+    #video-viewport { transition: box-shadow 0.06s linear; }
+    #video-viewport.in-punch { box-shadow: inset 0 0 0 4px #5fd97a, 0 0 14px rgba(95,217,122,0.5); }
+    #phase-cue {
+      font-family: ui-monospace, monospace;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 8px;
+      border-radius: 4px;
+      background: #1a1a2e;
+      color: #9aa4bf;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    #phase-cue.ctx   { color: #f5b945; }
+    #phase-cue.punch { color: #0c1a0c; background: #5fd97a; }
     #rubric { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
     .rubric-btn {
       display: flex;
@@ -190,7 +207,8 @@
         <h3>Current punch</h3>
         <div id="orient-current">— pick a video to start —</div>
 
-        <h3>Hip rotation · 1–4</h3>
+        <h3>Hip rotation · 1–4 <span style="text-transform:none;letter-spacing:0;color:#5a6a90;font-weight:400">· loop: <span id="loop-mode">—</span> (X)</span></h3>
+        <div id="phase-cue">—</div>
         <div id="rubric"></div>
 
         <div class="orient-row">
@@ -232,6 +250,7 @@
       3 = Partial &nbsp;|&nbsp;
       4 = Full &nbsp;|&nbsp;
       S = Skip &nbsp;|&nbsp;
+      X = Punch-only / context loop &nbsp;|&nbsp;
       Space = Play/Pause &nbsp;|&nbsp;
       &larr;/&rarr; = ±1 frame &nbsp;|&nbsp;
       N = Next &nbsp;|&nbsp;
