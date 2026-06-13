@@ -233,6 +233,14 @@ function doGet(e) {
     return doGetPunchDirections16(p, labeler, action);
   }
 
+  // Hip-rotation rubric labeler — separate sheet, ordinal 1–4 score per
+  // qualified punch. Candidate listing reuses listPunchesForVideo above
+  // (the page filters to the rule's APPLIES_TO types client-side).
+  if (action === 'listHipRotation' || action === 'saveHipRotation' ||
+      action === 'deleteHipRotation') {
+    return doGetHipRotation(p, labeler, action);
+  }
+
   // Callout labeler — separate sheet. One row per called-out punch / combo /
   // defense, keyed by (labeler, video). These annotate the *instruction* a
   // coach app calls out, not the executed punch; they become weak labels for
@@ -1528,6 +1536,119 @@ var PUNCH_DIR16_VALID_BINS = [
   0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5, 180,
   -22.5, -45, -67.5, -90, -112.5, -135, -157.5, -180,
 ];
+
+// ── Hip-rotation rubric labeler — ordinal 1–4 score per qualified punch.
+// Separate sheet; candidate listing reuses listPunchesForVideo (the page
+// filters to the hip_rotation rule's APPLIES_TO types client-side). Stores
+// punch_type + start/end so the label set is self-describing for the
+// downstream metric-vs-label analysis (no join back to Combined Data needed).
+var HIP_ROTATION_SHEET_NAME = 'Hip Rotation Rubric';
+var HIP_ROTATION_HEADERS = ['ts', 'labeler', 'punch_uuid', 'video', 'punch_type', 'start_sec', 'end_sec', 'label', 'deleted'];
+var HIP_ROTATION_VALID_SCORES = [1, 2, 3, 4];
+
+function getOrCreateHipRotationSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(HIP_ROTATION_SHEET_NAME);
+  if (!sh) {
+    sh = ss.insertSheet(HIP_ROTATION_SHEET_NAME);
+    sh.appendRow(HIP_ROTATION_HEADERS);
+    sh.setFrozenRows(1);
+    return sh;
+  }
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(HIP_ROTATION_HEADERS);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function doGetHipRotation(p, labeler, action) {
+  var sh = getOrCreateHipRotationSheet();
+  var data = sh.getDataRange().getValues();
+  var idx = punchDirHeaderIndex(data[0]);
+
+  // === LIST rubric labels (optionally filtered by labeler / video) ===
+  if (action === 'listHipRotation') {
+    var video = p.video || '';
+    var filterLabeler = p.labeler || '';
+    var rows = [];
+    for (var li = 1; li < data.length; li++) {
+      var lr = data[li];
+      if (String(lr[idx.deleted]) === '1') continue;
+      if (video && lr[idx.video] !== video) continue;
+      if (filterLabeler && lr[idx.labeler] !== filterLabeler) continue;
+      rows.push({
+        ts: lr[idx.ts],
+        labeler: lr[idx.labeler],
+        punch_uuid: lr[idx.punch_uuid],
+        video: lr[idx.video],
+        punch_type: lr[idx.punch_type],
+        start_sec: lr[idx.start_sec],
+        end_sec: lr[idx.end_sec],
+        label: lr[idx.label] === '' ? null : Number(lr[idx.label]),
+      });
+    }
+    return jsonOut({ status: 'ok', rows: rows });
+  }
+
+  // === SAVE a label keyed by (labeler, punch_uuid). Supersedes prior. ===
+  // Blank/missing label = "skip" (can't tell), stored as an empty cell.
+  if (action === 'saveHipRotation') {
+    var required = ['labeler', 'punch_uuid', 'video'];
+    for (var k = 0; k < required.length; k++) {
+      if (p[required[k]] === undefined || p[required[k]] === '') {
+        return jsonOut({ status: 'error', message: 'missing field: ' + required[k] });
+      }
+    }
+    var lbl;
+    if (p.label === undefined || p.label === '' || p.label === 'null') {
+      lbl = '';   // skip / can't tell
+    } else if (HIP_ROTATION_VALID_SCORES.indexOf(Number(p.label)) === -1) {
+      return jsonOut({ status: 'error', message: 'invalid label: ' + p.label });
+    } else {
+      lbl = Number(p.label);
+    }
+
+    for (var i2 = 1; i2 < data.length; i2++) {
+      if (String(data[i2][idx.deleted]) === '1') continue;
+      if (data[i2][idx.labeler] !== p.labeler) continue;
+      if (data[i2][idx.punch_uuid] !== p.punch_uuid) continue;
+      sh.getRange(i2 + 1, idx.deleted + 1).setValue('1');
+    }
+    var newRow = [];
+    var headerRow = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+    for (var c = 0; c < headerRow.length; c++) {
+      var col = String(headerRow[c]);
+      if (col === 'ts') newRow.push(new Date().toISOString());
+      else if (col === 'labeler') newRow.push(p.labeler);
+      else if (col === 'punch_uuid') newRow.push(p.punch_uuid);
+      else if (col === 'video') newRow.push(p.video);
+      else if (col === 'punch_type') newRow.push(p.punch_type || '');
+      else if (col === 'start_sec') newRow.push(p.start_sec === undefined ? '' : p.start_sec);
+      else if (col === 'end_sec') newRow.push(p.end_sec === undefined ? '' : p.end_sec);
+      else if (col === 'label') newRow.push(lbl);
+      else if (col === 'deleted') newRow.push('');
+      else newRow.push('');
+    }
+    sh.appendRow(newRow);
+    return jsonOut({ status: 'ok' });
+  }
+
+  // === DELETE: mark every current row for (labeler, punch_uuid) deleted ===
+  if (action === 'deleteHipRotation') {
+    var found = 0;
+    for (var i3 = 1; i3 < data.length; i3++) {
+      if (String(data[i3][idx.deleted]) === '1') continue;
+      if (data[i3][idx.labeler] !== p.labeler) continue;
+      if (data[i3][idx.punch_uuid] !== p.punch_uuid) continue;
+      sh.getRange(i3 + 1, idx.deleted + 1).setValue('1');
+      found++;
+    }
+    return jsonOut({ status: 'ok', deleted: found });
+  }
+
+  return jsonOut({ status: 'error', message: 'unknown hip-rotation action: ' + action });
+}
 
 function getOrCreatePunchDirection16Sheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
