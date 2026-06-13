@@ -31,8 +31,27 @@
     }
     /* Punch-vs-context cue: ring the video green only during the labelled
        punch window, so on a loop the punch visibly pulses. */
-    #video-viewport { transition: box-shadow 0.06s linear; }
+    #video-viewport { position: relative; transition: box-shadow 0.06s linear; }
     #video-viewport.in-punch { box-shadow: inset 0 0 0 4px #5fd97a, 0 0 14px rgba(95,217,122,0.5); }
+    /* Top-of-video banner mirroring the phase: pre-buffer / PUNCH / post-buffer. */
+    #punch-banner {
+      position: absolute;
+      top: 10px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 30;
+      font-family: ui-monospace, monospace;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 4px 12px;
+      border-radius: 4px;
+      background: rgba(26,26,46,0.85);
+      color: #f5b945;
+      border: 1px solid rgba(255,255,255,0.12);
+      pointer-events: none;
+    }
+    #punch-banner.punch { background: #5fd97a; color: #0c1a0c; border-color: #5fd97a; }
+    #punch-banner.ctx { color: #f5b945; }
+    #punch-banner.hidden { display: none; }
     #phase-cue {
       font-family: ui-monospace, monospace;
       font-size: 13px;
@@ -159,6 +178,7 @@
           <video id="video-player" preload="auto"></video>
           <div id="video-dim-overlay"></div>
           <div id="video-overlay"></div>
+          <div id="punch-banner" class="hidden"></div>
           <video id="thumb-video" preload="auto" muted style="display:none"></video>
         </div>
         <div id="video-controls">
@@ -252,7 +272,7 @@
       S = Skip &nbsp;|&nbsp;
       X = Punch-only / context loop &nbsp;|&nbsp;
       Space = Play/Pause &nbsp;|&nbsp;
-      &larr;/&rarr; = ±1 frame &nbsp;|&nbsp;
+      &larr;/&rarr; = step ±1 frame &nbsp;|&nbsp;
       N = Next &nbsp;|&nbsp;
       P = Previous &nbsp;|&nbsp;
       F = First &nbsp;|&nbsp;

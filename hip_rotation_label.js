@@ -451,22 +451,23 @@ function gotoNextUnlabeled() {
 function tickPhaseCue() {
   const video = document.getElementById('video-player');
   const cue = document.getElementById('phase-cue');
+  const banner = document.getElementById('punch-banner');
   const viewport = document.getElementById('video-viewport');
   const lw = state.loopWindow;
-  if (video && cue && lw && state.candidates.length && state.cursor < state.candidates.length) {
+  let text = '—', cls = '', inPunch = false, active = false;
+  if (video && lw && state.candidates.length && state.cursor < state.candidates.length) {
+    active = true;
     const t = video.currentTime;
-    let inPunch = false, text, cls;
-    if (t < lw.punchStart) { text = 'wind-up'; cls = 'ctx'; }
-    else if (t > lw.punchEnd) { text = 'follow-through'; cls = 'ctx'; }
+    if (t < lw.punchStart) { text = 'pre-buffer'; cls = 'ctx'; }
+    else if (t > lw.punchEnd) { text = 'post-buffer'; cls = 'ctx'; }
     else { text = '● PUNCH'; cls = 'punch'; inPunch = true; }
-    cue.textContent = text;
-    cue.className = 'phase-cue ' + cls;
-    if (viewport) viewport.classList.toggle('in-punch', inPunch);
-  } else if (cue) {
-    cue.textContent = '—';
-    cue.className = 'phase-cue';
-    if (viewport) viewport.classList.remove('in-punch');
   }
+  if (cue) { cue.textContent = text; cue.className = 'phase-cue ' + cls; }
+  if (banner) {
+    banner.textContent = active ? text.toUpperCase() : '';
+    banner.className = 'punch-banner ' + (active ? cls : 'hidden');
+  }
+  if (viewport) viewport.classList.toggle('in-punch', inPunch);
   requestAnimationFrame(tickPhaseCue);
 }
 
@@ -644,6 +645,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (e.key === 'u' || e.key === 'U') { e.preventDefault(); gotoNextUnlabeled(); return; }
     if (e.key === 'c' || e.key === 'C') { e.preventDefault(); clearCurrent(); return; }
     if (e.key === 'x' || e.key === 'X') { e.preventDefault(); toggleContext(); return; }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); stepFrames(-1); return; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); stepFrames(1); return; }
+    if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); togglePlay(); return; }
   });
 
   updateLoopMode();
