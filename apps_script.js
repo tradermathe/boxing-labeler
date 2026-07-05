@@ -20,6 +20,44 @@ function backfillCombinedIds() {
   Logger.log('Backfilled ' + count + ' IDs in Combined Data');
 }
 
+// ONE-TIME: Run this from Apps Script to restore "MM:SS.mmm" text in the
+// start_sec/end_sec columns of every "Labeled Data ..." sheet. Rows saved
+// after 2026-05-04 were written as raw numeric seconds (displayed like
+// "67,333" depending on locale); this rewrites them as text and sets the
+// columns to plain-text format so Sheets can never date-coerce a future
+// write. Existing text cells are left as-is. Safe to re-run.
+function restoreSecTextFormat() {
+  var sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
+  for (var s = 0; s < sheets.length; s++) {
+    var sheet = sheets[s];
+    if (sheet.getName().indexOf(LABELER_PREFIX) !== 0) continue;
+    var data = sheet.getDataRange().getValues();
+    if (data.length < 2) continue;
+    var cols = findColumns(data[0]);
+    var secCols = [cols.start, cols.end];
+    for (var t = 0; t < secCols.length; t++) {
+      if (secCols[t] < 0) continue;
+      var col = secCols[t] + 1;
+      // '@' on the whole column, not just the data rows, so appended rows
+      // are covered too.
+      sheet.getRange(2, col, sheet.getMaxRows() - 1, 1).setNumberFormat('@');
+      var range = sheet.getRange(2, col, data.length - 1, 1);
+      var vals = range.getValues();
+      var converted = 0;
+      for (var i = 0; i < vals.length; i++) {
+        var v = vals[i][0];
+        if (v instanceof Date) { vals[i][0] = secondsToSheetTime(toSeconds(v)); converted++; }
+        // Plain numbers in these columns are raw seconds. Do NOT route them
+        // through toSeconds: its <1 branch reads 0.5 as a day fraction and
+        // would turn a genuine 0.5s into 12 hours.
+        else if (typeof v === 'number') { vals[i][0] = secondsToSheetTime(v); converted++; }
+      }
+      range.setValues(vals);
+      Logger.log(sheet.getName() + ' col ' + col + ': ' + converted + ' cells converted to text');
+    }
+  }
+}
+
 function doPost(e) {
   // Large callout sets overflow GET URLs — Google rejects URLs past a few tens
   // of KB with HTTP 400 before the script even runs — so the callout labeler
@@ -54,6 +92,17 @@ function toSeconds(val) {
   if (parts.length === 3) return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseFloat(parts[2]);
   if (parts.length === 2) return parseInt(parts[0]) * 60 + parseFloat(parts[1]);
   return parseFloat(s) || 0;
+}
+
+// Inverse of toSeconds: canonical "MM:SS.mmm" sheet text. Rounds to whole
+// milliseconds first so 59.9996s carries to "06:00.000" instead of "05:60.000".
+function secondsToSheetTime(sec) {
+  var ms = Math.round(sec * 1000);
+  var mins = Math.floor(ms / 60000);
+  var rem = ms - mins * 60000;
+  var whole = Math.floor(rem / 1000);
+  var frac = rem - whole * 1000;
+  return (mins < 10 ? '0' : '') + mins + ':' + (whole < 10 ? '0' : '') + whole + '.' + ('00' + frac).slice(-3);
 }
 
 function findColumns(header) {
@@ -317,8 +366,12 @@ function doGet(e) {
     if (cols.fighter >= 0) row[cols.fighter] = p.fighter || '';
     if (cols.angle >= 0) row[cols.angle] = p.angle || '';
     if (cols.punch >= 0) row[cols.punch] = p.punchId || '';
-    if (cols.start >= 0) row[cols.start] = p.startTime || '';
-    if (cols.end >= 0) row[cols.end] = p.endTime || '';
+    // Canonical "MM:SS.mmm" text. Safe only because the _sec cells are set
+    // to plain-text format before the values land (below) — in a general
+    // cell Sheets coerces time-looking strings to serial dates, corrupting
+    // the timing on round-trip (why this briefly wrote raw numbers instead).
+    if (cols.start >= 0) row[cols.start] = p.startTime ? secondsToSheetTime(toSeconds(p.startTime)) : '';
+    if (cols.end >= 0) row[cols.end] = p.endTime ? secondsToSheetTime(toSeconds(p.endTime)) : '';
     // Insert in time order among rows for the same video, instead of appending
     var newVideo = normalizeDriveUrl(p.videoName) || '';
     var newStart = toSeconds(p.startTime);
@@ -332,12 +385,17 @@ function doGet(e) {
         }
       }
     }
+    var targetRow;
     if (insertBeforeRow > 0) {
       sheet.insertRowBefore(insertBeforeRow);
-      sheet.getRange(insertBeforeRow, 1, 1, row.length).setValues([row]);
+      targetRow = insertBeforeRow;
     } else {
-      sheet.appendRow(row);
+      targetRow = data.length + 1;
+      if (targetRow > sheet.getMaxRows()) sheet.insertRowsAfter(sheet.getMaxRows(), 1);
     }
+    if (cols.start >= 0) sheet.getRange(targetRow, cols.start + 1).setNumberFormat('@');
+    if (cols.end >= 0) sheet.getRange(targetRow, cols.end + 1).setNumberFormat('@');
+    sheet.getRange(targetRow, 1, 1, row.length).setValues([row]);
     return ContentService
       .createTextOutput(JSON.stringify({
         status: 'ok', action: 'added', id: newId,
@@ -362,8 +420,8 @@ function doGet(e) {
     if (p.trainingType && cols.trainingType >= 0) { sheet.getRange(row, cols.trainingType + 1).setValue(p.trainingType); updated.push('trainingType'); }
     if (p.stance && cols.stance >= 0) { sheet.getRange(row, cols.stance + 1).setValue(p.stance); updated.push('stance'); }
     if (p.fighter && cols.fighter >= 0) { sheet.getRange(row, cols.fighter + 1).setValue(p.fighter); updated.push('fighter'); }
-    if (p.startTime && cols.start >= 0) { sheet.getRange(row, cols.start + 1).setValue(p.startTime); updated.push('start'); }
-    if (p.endTime && cols.end >= 0) { sheet.getRange(row, cols.end + 1).setValue(p.endTime); updated.push('end'); }
+    if (p.startTime && cols.start >= 0) { var sc = sheet.getRange(row, cols.start + 1); sc.setNumberFormat('@'); sc.setValue(secondsToSheetTime(toSeconds(p.startTime))); updated.push('start'); }
+    if (p.endTime && cols.end >= 0) { var ec = sheet.getRange(row, cols.end + 1); ec.setNumberFormat('@'); ec.setValue(secondsToSheetTime(toSeconds(p.endTime))); updated.push('end'); }
     return ContentService
       .createTextOutput(JSON.stringify({ status: 'ok', action: 'updated', sheet: sheetName, row: row, cols: cols, updated: updated }))
       .setMimeType(ContentService.MimeType.JSON);
