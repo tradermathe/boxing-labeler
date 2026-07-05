@@ -38,20 +38,32 @@ function restoreSecTextFormat() {
     for (var t = 0; t < secCols.length; t++) {
       if (secCols[t] < 0) continue;
       var col = secCols[t] + 1;
-      // '@' on the whole column, not just the data rows, so appended rows
-      // are covered too.
-      sheet.getRange(2, col, sheet.getMaxRows() - 1, 1).setNumberFormat('@');
+      // Read BEFORE touching the format: applying '@' converts existing
+      // numbers to text in place in Google Sheets, so a format-first pass
+      // sees only strings and converts nothing.
       var range = sheet.getRange(2, col, data.length - 1, 1);
       var vals = range.getValues();
       var converted = 0;
       for (var i = 0; i < vals.length; i++) {
         var v = vals[i][0];
-        if (v instanceof Date) { vals[i][0] = secondsToSheetTime(toSeconds(v)); converted++; }
+        var out = null;
+        if (v instanceof Date) out = secondsToSheetTime(toSeconds(v));
         // Plain numbers in these columns are raw seconds. Do NOT route them
         // through toSeconds: its <1 branch reads 0.5 as a day fraction and
         // would turn a genuine 0.5s into 12 hours.
-        else if (typeof v === 'number') { vals[i][0] = secondsToSheetTime(v); converted++; }
+        else if (typeof v === 'number') out = secondsToSheetTime(v);
+        // Numeric strings ("67.333" / "67,333") are raw seconds that were
+        // already stringified — e.g. by a previous format-first pass.
+        // Anything with a ':' is already MM:SS.mmm and stays untouched.
+        else if (typeof v === 'string' && v !== '' && v.indexOf(':') < 0) {
+          var n = parseFloat(String(v).replace(',', '.'));
+          if (!isNaN(n)) out = secondsToSheetTime(n);
+        }
+        if (out !== null) { vals[i][0] = out; converted++; }
       }
+      // '@' on the whole column, not just the data rows, so appended rows
+      // are covered too — set before writing so the strings can't coerce.
+      sheet.getRange(2, col, sheet.getMaxRows() - 1, 1).setNumberFormat('@');
       range.setValues(vals);
       Logger.log(sheet.getName() + ' col ' + col + ': ' + converted + ' cells converted to text');
     }
