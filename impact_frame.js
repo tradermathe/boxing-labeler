@@ -212,7 +212,7 @@ function updateCapturePanel() {
   el.classList.toggle('captured', state.mode === 'captured');
   if (state.mode === 'captured') {
     el.innerHTML = `Captured <b>frame ${state.capturedFrame}</b>.<br>` +
-      '<b>&larr;/&rarr;</b> nudge · <b>Enter</b>/<b>Space</b> confirm · <b>U</b> cancel';
+      '<b>&larr;/&rarr;</b> nudge · <b>Enter</b>/<b>Space</b> confirm · <b>Esc</b> cancel';
   } else if (state.mode === 'skipping') {
     el.innerHTML = 'Skip reason: <b>1</b> occluded · <b>2</b> unclear · <b>3</b> bad clip · <b>Esc</b> cancel';
   } else {
@@ -404,7 +404,7 @@ function captureFrame() {
   state.mode = 'captured';
   state.capturedFrame = frame;
   seekToCapturedFrame();
-  setBanner(`CAPTURED f ${frame} — ←/→ nudge · Enter confirm · U cancel`, 'captured');
+  setBanner(`CAPTURED f ${frame} — ←/→ nudge · Enter confirm · Esc cancel`, 'captured');
   updateCapturePanel();
 }
 
@@ -421,7 +421,7 @@ function nudgeCaptured(delta) {
   if (!bounds || state.capturedFrame === null) return;
   state.capturedFrame = Math.max(bounds.start, Math.min(bounds.end, state.capturedFrame + delta));
   seekToCapturedFrame();
-  setBanner(`CAPTURED f ${state.capturedFrame} — ←/→ nudge · Enter confirm · U cancel`, 'captured');
+  setBanner(`CAPTURED f ${state.capturedFrame} — ←/→ nudge · Enter confirm · Esc cancel`, 'captured');
   updateCapturePanel();
 }
 
@@ -510,12 +510,11 @@ function persistLabel(labeler, label) {
   });
 }
 
-// U: cancel a pending capture, or clear the current punch's saved label so it
-// can be relabelled.
+// U: clear the current punch's saved label so it can be relabelled.
+// (Esc — not U — backs out of a pending capture or the skip menu.)
 async function undoAction() {
   if (state.mode === 'captured' || state.mode === 'skipping') {
-    cancelToScrub();
-    setStatus('Capture cancelled.', null);
+    setStatus('Esc cancels the pending capture.', null);
     return;
   }
   if (!state.currentStem) return;
