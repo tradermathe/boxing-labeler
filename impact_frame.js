@@ -24,11 +24,9 @@ const SKIP_REASONS = [
 
 const SPEED_CYCLE = [0.25, 0.5, 1];
 
-// Clip window around the labelled punch — generous lead-in/out so the full
-// forward motion is visible (slow punches are often clipped by the event
-// window itself).
-const PUNCH_LEAD_IN_SEC = 0.5;
-const PUNCH_TRAIL_OUT_SEC = 0.5;
+// Loop the labelled punch window. 0/0 lead-in/trail-out = pure punch only.
+const PUNCH_LEAD_IN_SEC = 0;
+const PUNCH_TRAIL_OUT_SEC = 0;
 
 Object.assign(state, {
   knownVideos: [],          // from videos.json — only source of labelable videos
