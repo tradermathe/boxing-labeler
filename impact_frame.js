@@ -41,6 +41,7 @@ Object.assign(state, {
   labelCountsByVideo: new Map(),   // stem -> total punches labeled by anyone
   mode: 'scrub',            // 'scrub' | 'captured' | 'skipping'
   capturedFrame: null,      // absolute frame index while mode === 'captured'
+  autoJumpOnSync: false,    // hop to first unlabeled punch when the sheet sync lands
   lastMediaTime: null,      // PTS of the most recently presented frame (rVFC)
 });
 
@@ -217,10 +218,15 @@ function updateCapturePanel() {
     const c = state.candidates[state.cursor];
     const existing = c ? state.labelByKey.get(keyFor(c)) : undefined;
     if (existing !== undefined) {
-      el.innerHTML = `Saved: <b>${formatImpactLabel(existing)}</b>.<br>` +
+      // Already-labelled punch: unmissable on-video banner + colored panel text.
+      const isSkip = !!existing.skip_reason;
+      setBanner(isSkip ? `SKIPPED: ${existing.skip_reason}` : `LABELED f ${existing.impact_frame}`,
+                isSkip ? 'skipping' : 'captured');
+      el.innerHTML = `Saved: <b class="${isSkip ? 'lbl-skip' : 'lbl-done'}">${formatImpactLabel(existing)}</b>.<br>` +
         '<b>Enter</b> re-captures (overwrites) · <b>U</b> clears';
     } else {
-      el.innerHTML = 'Play the loop, hit <b>Enter</b> on the impact frame.';
+      setBanner(null);
+      el.innerHTML = c ? 'Play the loop, hit <b>Enter</b> on the impact frame.' : '—';
     }
   }
 }
@@ -270,9 +276,11 @@ async function tryGenerateCandidates() {
   setModeBadge(state.candidates.length + ' punches');
   redrawProgress();
   // Loop the first punch immediately — don't make the labeler sit through the
-  // (slow) sheet sync; it fills in existing labels in the background.
+  // (slow) sheet sync; it fills in existing labels in the background and then
+  // hops to the first unlabeled punch.
   state.cursor = 0;
   seekToCurrent();
+  state.autoJumpOnSync = true;
   syncFromSheet();
 }
 
@@ -304,9 +312,16 @@ async function syncFromSheet() {
     }
     setStatus(`Loaded ${state.doneKeys.size} of your label(s) · ${state.coverageByUuid.size} labeled in total.`, 'ok');
     updateOptionCount(state.currentStem, state.coverageByUuid.size);
+    // On initial load, hop to the first unlabeled punch — unless the labeler
+    // already started navigating/capturing while the sync was in flight, or
+    // it IS the punch already looping (no pointless loop restart).
+    if (state.autoJumpOnSync && state.mode === 'scrub') {
+      const firstIdx = state.candidates.findIndex(cc => !state.doneKeys.has(keyFor(cc)));
+      if (firstIdx !== state.cursor) advanceToNextUnlabeled(0);   // also handles all-labelled
+    }
     // Refresh the current punch's text with any label the sync brought in,
     // but don't re-seek — the punch is already looping (and the labeler may
-    // be mid-capture). Use "next unlabeled" (G) to jump to where you left off.
+    // be mid-capture).
     const c = state.candidates[state.cursor];
     if (c) {
       const total = `${state.cursor + 1}/${state.candidates.length}`;
@@ -317,6 +332,7 @@ async function syncFromSheet() {
   } catch (e) {
     setStatus("Couldn't fetch labels: " + e.message, 'err');
   }
+  state.autoJumpOnSync = false;
 }
 
 function advanceToNextUnlabeled(fromIdx) {
@@ -383,6 +399,7 @@ function requireLabeler() {
 }
 
 function captureFrame() {
+  state.autoJumpOnSync = false;
   if (!state.currentStem || !state.candidates.length) {
     setStatus('Pick a video and load the file first.', 'err'); return;
   }
@@ -436,6 +453,7 @@ function confirmCapture() {
 }
 
 function beginSkip() {
+  state.autoJumpOnSync = false;
   if (!state.currentStem || !state.candidates.length) return;
   const video = document.getElementById('video-player');
   if (video && !video.paused) {
@@ -543,6 +561,7 @@ async function undoAction() {
 }
 
 function gotoPrev() {
+  state.autoJumpOnSync = false;
   if (!state.candidates.length) return;
   state.cursor = Math.max(0, state.cursor - 1);
   seekToCurrent();
@@ -550,18 +569,21 @@ function gotoPrev() {
 
 // Sequential next — moves to the following punch whether or not it's labelled.
 function gotoNext() {
+  state.autoJumpOnSync = false;
   if (!state.candidates.length) return;
   state.cursor = Math.min(state.candidates.length - 1, state.cursor + 1);
   seekToCurrent();
 }
 
 function gotoFirst() {
+  state.autoJumpOnSync = false;
   if (!state.candidates.length) return;
   state.cursor = 0;
   seekToCurrent();
 }
 
 function gotoNextUnlabeled() {
+  state.autoJumpOnSync = false;
   advanceToNextUnlabeled(state.cursor + 1);
 }
 
