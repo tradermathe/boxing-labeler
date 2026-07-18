@@ -2,9 +2,10 @@
 // impact_frame.js — impact-frame labeler, one frame index per punch
 //
 // A focused duplicate of punch_dir_16.js. Same candidate source (Combined
-// Data via listPunchesForVideo — all punch types, not just straights), same
-// queue / progress / optimistic-save machinery, but the label is the absolute
-// frame index (in the source video) where the glove first touches the bag.
+// Data via listPunchesForVideo — offensive punches only; slips/rolls and
+// other defensive events are excluded), same queue / progress /
+// optimistic-save machinery, but the label is the absolute frame index
+// (in the source video) where the glove first touches the bag.
 // Saved to the "Impact Frames" sheet via saveImpactFrame / listImpactFrames /
 // deleteImpactFrame Apps Script actions.
 //
@@ -59,7 +60,17 @@ function formatImpactLabel(v) {
   return 'f ' + v.impact_frame;
 }
 
-// ─── candidate fetch (Combined Data, every punch type) ─────────────────────
+// Offense only — slips / rolls / pull-backs / step-backs / "unsure" have no
+// impact frame. Whitelist by punch family so future defense types are
+// excluded automatically.
+function isPunch(punchType) {
+  const t = String(punchType || '').toLowerCase();
+  return t.startsWith('jab') || t.startsWith('cross') ||
+         t.startsWith('lead_hook') || t.startsWith('rear_hook') ||
+         t.startsWith('lead_uppercut') || t.startsWith('rear_uppercut');
+}
+
+// ─── candidate fetch (Combined Data, offensive punches) ────────────────────
 // Mirrors dump_labels.py's timestamp parser since the Sheet stores mm:ss(.mmm)
 // or numeric seconds.
 function parseTimestamp(ts) {
@@ -84,6 +95,7 @@ async function fetchPunchCandidates(videoStem) {
   if (body.status !== 'ok') throw new Error('listPunchesForVideo: ' + (body.message || 'unknown'));
   const out = [];
   for (const r of body.punches || []) {
+    if (!isPunch(r.label)) continue;
     const start = parseTimestamp(r.start_sec);
     const end   = parseTimestamp(r.end_sec);
     if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
