@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boxing Impact-Frame Labeler</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* Impact-frame panel — capture state + skip reasons instead of a dial. */
+    #impact-panel {
+      padding: 12px;
+      background: #16213e;
+      border-left: 1px solid #0f3460;
+      width: 340px;
+      overflow-y: auto;
+    }
+    #impact-panel h3 {
+      margin: 6px 0 4px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #888;
+    }
+    #impact-current {
+      font-family: ui-monospace, monospace;
+      font-size: 13px;
+      padding: 8px;
+      background: #1a1a2e;
+      border-radius: 4px;
+      margin-bottom: 12px;
+    }
+    #impact-state {
+      font-family: ui-monospace, monospace;
+      font-size: 13px;
+      padding: 10px;
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      line-height: 1.6;
+      min-height: 44px;
+    }
+    #impact-state.captured { border-color: #5fd97a; }
+    .impact-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+    .impact-btn-action {
+      background: #0f3460;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .impact-btn-action.secondary { background: #444; }
+    .impact-btn-action.skip { background: #524422; }
+    .impact-btn-action.skip:hover { background: #6a5a2e; }
+    .impact-progress {
+      height: 18px;
+      background: #1a1a2e;
+      border: 1px solid #0f3460;
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+      margin: 6px 0;
+    }
+    .impact-progress-bar { height: 100%; background: #5fd97a; transition: width 0.2s; }
+    .impact-progress-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      mix-blend-mode: difference;
+      font-size: 11px;
+    }
+    .impact-dist {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      color: #888;
+      margin-top: 4px;
+      line-height: 1.6;
+    }
+    #impact-status {
+      font-size: 12px;
+      color: #888;
+      margin-top: 8px;
+      min-height: 16px;
+    }
+    #impact-status.ok { color: #5fd97a; }
+    #impact-status.err { color: #e85a5a; }
+
+    /* On-video chrome: frame HUD (always on) + state banner. */
+    #impact-hud {
+      position: absolute;
+      top: 10px; left: 10px;
+      z-index: 30;
+      font-family: ui-monospace, monospace;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 4px 10px;
+      border-radius: 4px;
+      background: rgba(26,26,46,0.85);
+      color: #e0e0e0;
+      border: 1px solid rgba(255,255,255,0.12);
+      pointer-events: none;
+      white-space: pre;
+    }
+    #impact-banner {
+      position: absolute;
+      top: 10px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 30;
+      font-family: ui-monospace, monospace;
+      font-size: 13px; font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 4px 12px;
+      border-radius: 4px;
+      background: rgba(26,26,46,0.85);
+      color: #f5b945;
+      border: 1px solid rgba(255,255,255,0.12);
+      pointer-events: none;
+    }
+    #impact-banner.captured { background: #5fd97a; color: #0c1a0c; border-color: #5fd97a; }
+    #impact-banner.skipping { background: #524422; color: #f5d98a; border-color: #f5b945; }
+    #impact-banner.hidden { display: none; }
+
+    /* Persistent labeling-definition hint. */
+    #impact-hint {
+      padding: 6px 16px;
+      background: #121a30;
+      border-top: 1px solid #0f3460;
+      font-size: 12px;
+      color: #c9b458;
+      line-height: 1.45;
+    }
+    #impact-hint b { color: #e0d090; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Top bar -->
+    <div id="top-bar">
+      <div id="video-loader">
+        <button id="btn-pick-file" onclick="document.getElementById('video-file').click()">Open Video File</button>
+        <input type="file" id="video-file" accept="video/*" style="display:none">
+        <span id="video-name">No video loaded</span>
+        <span id="labeler-badge" style="background:#0f3460; color:#e94560; padding:2px 10px; border-radius:10px; font-size:13px; font-weight:bold; display:none;"></span>
+      </div>
+    </div>
+    <input type="hidden" id="script-url">
+
+    <!-- Setup bar — labeler name + video picker -->
+    <div id="drive-link-bar" style="padding:4px 16px; background:#121a30; border-bottom:1px solid #0f3460; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+      <label for="labeler-input" style="font-size:13px; color:#aaa; white-space:nowrap;">Your name:</label>
+      <input type="text" id="labeler-input" placeholder="e.g. Mathe" style="background:#1a1a2e; border:1px solid #0f3460; color:#e0e0e0; padding:6px 10px; border-radius:4px; font-size:13px; min-width:120px">
+      <label for="video-select" style="font-size:13px; color:#aaa; white-space:nowrap;">Video:</label>
+      <select id="video-select"
+              style="flex:1; min-width:280px; max-width:520px; background:#1a1a2e; border:1px solid #0f3460; color:#e0e0e0; padding:6px 10px; border-radius:4px; font-size:13px;">
+        <option value="">— pick a video —</option>
+      </select>
+      <span id="video-mode" style="font-size:11px; color:#888; min-width:90px; text-align:right;">no video</span>
+    </div>
+
+    <!-- Main layout: video player center + labeling sidebar right -->
+    <div id="main-layout">
+      <!-- Video player (same IDs as index.html so player.js works) -->
+      <div id="video-container">
+        <div id="video-viewport">
+          <video id="video-player" preload="auto"></video>
+          <div id="video-dim-overlay"></div>
+          <div id="video-overlay"></div>
+          <div id="impact-hud">— no punch —</div>
+          <div id="impact-banner" class="hidden"></div>
+          <video id="thumb-video" preload="auto" muted style="display:none"></video>
+        </div>
+        <div id="video-controls">
+          <div id="timeline-minimap" style="display:none">
+            <div id="minimap-segments"></div>
+            <div id="minimap-viewport"></div>
+            <div id="minimap-playhead"></div>
+          </div>
+          <div id="seek-bar-wrapper">
+            <div id="timeline-ticks"></div>
+            <div id="seek-bar-overlay"></div>
+            <input type="range" id="seek-bar" min="0" max="1000" value="0">
+            <div id="seek-thumbnail">
+              <canvas id="thumb-canvas" width="192" height="108"></canvas>
+              <span id="thumb-time"></span>
+            </div>
+          </div>
+          <div id="controls-row">
+            <button id="btn-play" onclick="togglePlay()">Play</button>
+            <button id="btn-mute" onclick="toggleMute()">&#128266;</button>
+            <button onclick="stepFrames(-2)" title="Back 2 frames">&laquo;</button>
+            <button onclick="stepFrames(-1)" title="Back 1 frame">&lsaquo;</button>
+            <button onclick="stepFrames(1)" title="Forward 1 frame">&rsaquo;</button>
+            <button onclick="stepFrames(2)" title="Forward 2 frames">&raquo;</button>
+            <div id="speed-controls">
+              <label>Speed:</label>
+              <button onclick="setSpeed(0.25)" class="speed-active">0.25x</button>
+              <button onclick="setSpeed(0.5)">0.5x</button>
+              <button onclick="setSpeed(1)">1x</button>
+            </div>
+            <span id="time-display">0:00.000 / 0:00.000</span>
+            <button id="btn-overlay" onclick="toggleOverlay()" title="Toggle overlay (L)">Labels: ON</button>
+            <div id="zoom-controls">
+              <button id="btn-zoom-out" onclick="zoomOut()" title="Zoom out (Ctrl+-)">&#8722;</button>
+              <span id="zoom-level-display">1x</span>
+              <button id="btn-zoom-in" onclick="zoomIn()" title="Zoom in (Ctrl+=)">+</button>
+              <button id="btn-zoom-fit" onclick="zoomFit()" title="Fit all (Ctrl+0)">Fit</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: labeling panel -->
+      <div id="impact-panel">
+        <h3>Current punch</h3>
+        <div id="impact-current">— pick a video to start —</div>
+
+        <h3>Capture</h3>
+        <div id="impact-state">Play the loop, hit <b>Enter</b> on the impact frame.</div>
+
+        <div class="impact-row">
+          <button class="impact-btn-action" id="btn-capture">capture (Enter)</button>
+          <button class="impact-btn-action secondary" id="btn-undo">undo / relabel (U)</button>
+        </div>
+
+        <h3>Skip (S, then reason)</h3>
+        <div class="impact-row">
+          <button class="impact-btn-action skip" id="btn-skip-occluded">occluded (1)</button>
+          <button class="impact-btn-action skip" id="btn-skip-unclear">unclear (2)</button>
+          <button class="impact-btn-action skip" id="btn-skip-badclip">bad clip (3)</button>
+        </div>
+
+        <h3>Navigate</h3>
+        <div class="impact-row">
+          <button class="impact-btn-action secondary" id="btn-first">⏮ first (F)</button>
+          <button class="impact-btn-action secondary" id="btn-prev">‹ prev (P)</button>
+          <button class="impact-btn-action secondary" id="btn-next">next (N) ›</button>
+          <button class="impact-btn-action secondary" id="btn-next-unlabeled">next unlabeled (G)</button>
+        </div>
+
+        <h3>Progress</h3>
+        <div class="impact-progress">
+          <div class="impact-progress-bar" id="impact-bar" style="width:0%"></div>
+          <div class="impact-progress-text" id="impact-progress-text">—</div>
+        </div>
+        <div class="impact-dist" id="impact-dist">—</div>
+        <div id="impact-status">—</div>
+
+        <h3>Calibration export</h3>
+        <div class="impact-row">
+          <button class="impact-btn-action secondary" id="btn-export">Export per-labeler CSVs</button>
+        </div>
+
+        <h3>Conventions</h3>
+        <p style="font-size:11px;color:#888;line-height:1.5;margin:0">
+          Clip loops the punch window ±0.5s at 0.25x.<br>
+          <b>Enter</b> = capture the displayed frame, then <b>&larr;/&rarr;</b>
+          nudge by one frame, <b>Enter</b>/<b>Space</b> = confirm &amp; next.<br>
+          <b>U</b> = undo capture / clear this punch's saved label.<br>
+          <b>S</b> then <b>1/2/3</b> = skip (occluded / unclear / bad clip).<br>
+          <b>X</b> = cycle speed 0.25 / 0.5 / 1x.
+        </p>
+      </div>
+    </div>
+
+    <!-- Persistent labeling definition -->
+    <div id="impact-hint">
+      <b>Impact</b> = first frame the glove touches the bag. If there is no bag
+      (shadowboxing), the first frame the fist stops moving toward its target.
+      <b>Not</b> retraction start. <b>Not</b> maximum extension.
+    </div>
+
+    <!-- Shortcuts bar -->
+    <div id="shortcuts-bar">
+      <strong>Shortcuts:</strong>
+      Enter = capture / confirm &nbsp;|&nbsp;
+      Space = play/pause (confirm once captured) &nbsp;|&nbsp;
+      &larr;/&rarr; = ±1 frame &nbsp;|&nbsp;
+      U = undo &nbsp;|&nbsp;
+      S = skip &nbsp;|&nbsp;
+      N = Next &nbsp;|&nbsp;
+      P = Previous &nbsp;|&nbsp;
+      F = First &nbsp;|&nbsp;
+      G = Next unlabeled &nbsp;|&nbsp;
+      X = speed
+    </div>
+  </div>
+
+  <script src="player.js"></script>
+  <script src="impact_frame.js"></script>
+</body>
+</html>

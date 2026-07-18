@@ -234,6 +234,14 @@ function doGet(e) {
     return doGetHipRotation(p, labeler, action);
   }
 
+  // Impact-frame labeler — separate sheet, one absolute frame index per
+  // punch (or a skip reason). Candidate listing reuses listPunchesForVideo
+  // above (the impact_frame page takes all punch types).
+  if (action === 'listImpactFrames' || action === 'saveImpactFrame' ||
+      action === 'deleteImpactFrame') {
+    return doGetImpactFrames(p, labeler, action);
+  }
+
   // Callout labeler — separate sheet. One row per called-out punch / combo /
   // defense, keyed by (labeler, video). These annotate the *instruction* a
   // coach app calls out, not the executed punch; they become weak labels for
@@ -1682,6 +1690,131 @@ function doGetPunchDirections16(p, labeler, action) {
   }
 
   return jsonOut({ status: 'error', message: 'unknown punch-direction-16 action: ' + action });
+}
+
+// ── Impact-frame labeler ──────────────────────────────────────────────────
+// Same per-(labeler, punch_uuid) model as Punch Directions 16, but the label
+// is the absolute frame index (in the source video) where the glove first
+// touches the bag. A punch is either labelled (impact_frame set, skip_reason
+// empty) or skipped (impact_frame empty, skip_reason set). `fps` records the
+// frame rate the page used for the time↔frame mapping, so downstream can
+// round-trip to seconds without re-deriving it. Candidate listing reuses
+// listPunchesForVideo.
+var IMPACT_FRAME_SHEET_NAME = 'Impact Frames';
+var IMPACT_FRAME_HEADERS = ['ts', 'labeler', 'punch_uuid', 'video', 'impact_frame', 'fps', 'skip_reason', 'deleted'];
+var IMPACT_FRAME_SKIP_REASONS = ['occluded', 'unclear', 'bad_clip'];
+
+function getOrCreateImpactFrameSheet() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(IMPACT_FRAME_SHEET_NAME);
+  if (!sh) {
+    sh = ss.insertSheet(IMPACT_FRAME_SHEET_NAME);
+    sh.appendRow(IMPACT_FRAME_HEADERS);
+    sh.setFrozenRows(1);
+    return sh;
+  }
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(IMPACT_FRAME_HEADERS);
+    sh.setFrozenRows(1);
+  }
+  return sh;
+}
+
+function doGetImpactFrames(p, labeler, action) {
+  var sh = getOrCreateImpactFrameSheet();
+  var data = sh.getDataRange().getValues();
+  var idx = punchDirHeaderIndex(data[0]);
+
+  // === LIST impact labels (optionally filtered by labeler / video) ===
+  if (action === 'listImpactFrames') {
+    var video = p.video || '';
+    var filterLabeler = p.labeler || '';
+    var rows = [];
+    for (var li = 1; li < data.length; li++) {
+      var lr = data[li];
+      if (String(lr[idx.deleted]) === '1') continue;
+      if (video && lr[idx.video] !== video) continue;
+      if (filterLabeler && lr[idx.labeler] !== filterLabeler) continue;
+      rows.push({
+        ts: lr[idx.ts],
+        labeler: lr[idx.labeler],
+        punch_uuid: lr[idx.punch_uuid],
+        video: lr[idx.video],
+        impact_frame: lr[idx.impact_frame] === '' ? null : Number(lr[idx.impact_frame]),
+        fps: lr[idx.fps] === '' ? null : Number(lr[idx.fps]),
+        skip_reason: lr[idx.skip_reason] === '' ? null : String(lr[idx.skip_reason]),
+      });
+    }
+    return jsonOut({ status: 'ok', rows: rows });
+  }
+
+  // === SAVE a label keyed by (labeler, punch_uuid). Supersedes prior. ===
+  // Exactly one of impact_frame / skip_reason must be set.
+  if (action === 'saveImpactFrame') {
+    var required = ['labeler', 'punch_uuid', 'video'];
+    for (var k = 0; k < required.length; k++) {
+      if (p[required[k]] === undefined || p[required[k]] === '') {
+        return jsonOut({ status: 'error', message: 'missing field: ' + required[k] });
+      }
+    }
+    var hasFrame = p.impact_frame !== undefined && p.impact_frame !== '';
+    var hasSkip = p.skip_reason !== undefined && p.skip_reason !== '';
+    if (hasFrame === hasSkip) {
+      return jsonOut({ status: 'error', message: 'need exactly one of impact_frame / skip_reason' });
+    }
+    var frameVal = '';
+    var skipVal = '';
+    if (hasFrame) {
+      frameVal = Number(p.impact_frame);
+      if (!isFinite(frameVal) || frameVal < 0 || frameVal !== Math.floor(frameVal)) {
+        return jsonOut({ status: 'error', message: 'invalid impact_frame: ' + p.impact_frame });
+      }
+    } else {
+      if (IMPACT_FRAME_SKIP_REASONS.indexOf(String(p.skip_reason)) === -1) {
+        return jsonOut({ status: 'error', message: 'invalid skip_reason: ' + p.skip_reason });
+      }
+      skipVal = String(p.skip_reason);
+    }
+    var fpsVal = (p.fps === undefined || p.fps === '') ? '' : Number(p.fps);
+
+    for (var i2 = 1; i2 < data.length; i2++) {
+      if (String(data[i2][idx.deleted]) === '1') continue;
+      if (data[i2][idx.labeler] !== p.labeler) continue;
+      if (data[i2][idx.punch_uuid] !== p.punch_uuid) continue;
+      sh.getRange(i2 + 1, idx.deleted + 1).setValue('1');
+    }
+    var newRow = [];
+    var headerRow = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+    for (var c = 0; c < headerRow.length; c++) {
+      var col = String(headerRow[c]);
+      if (col === 'ts') newRow.push(new Date().toISOString());
+      else if (col === 'labeler') newRow.push(p.labeler);
+      else if (col === 'punch_uuid') newRow.push(p.punch_uuid);
+      else if (col === 'video') newRow.push(p.video);
+      else if (col === 'impact_frame') newRow.push(frameVal);
+      else if (col === 'fps') newRow.push(fpsVal);
+      else if (col === 'skip_reason') newRow.push(skipVal);
+      else if (col === 'deleted') newRow.push('');
+      else newRow.push('');
+    }
+    sh.appendRow(newRow);
+    return jsonOut({ status: 'ok' });
+  }
+
+  // === DELETE: mark every current row for (labeler, punch_uuid) deleted ===
+  if (action === 'deleteImpactFrame') {
+    var found = 0;
+    for (var i3 = 1; i3 < data.length; i3++) {
+      if (String(data[i3][idx.deleted]) === '1') continue;
+      if (data[i3][idx.labeler] !== p.labeler) continue;
+      if (data[i3][idx.punch_uuid] !== p.punch_uuid) continue;
+      sh.getRange(i3 + 1, idx.deleted + 1).setValue('1');
+      found++;
+    }
+    return jsonOut({ status: 'ok', deleted: found });
+  }
+
+  return jsonOut({ status: 'error', message: 'unknown impact-frame action: ' + action });
 }
 
 // ============================================================
