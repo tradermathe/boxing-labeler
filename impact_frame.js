@@ -19,6 +19,7 @@
 const SKIP_REASONS = [
   { key: '1', reason: 'occluded', label: 'occluded' },
   { key: '2', reason: 'unclear', label: 'unclear' },
+  { key: '3', reason: 'no_punch', label: 'no punch in clip' },
 ];
 
 const SPEED_CYCLE = [0.25, 0.5, 1];
@@ -212,7 +213,7 @@ function updateCapturePanel() {
     el.innerHTML = `Captured <b>frame ${state.capturedFrame}</b>.<br>` +
       '<b>&larr;/&rarr;</b> nudge · <b>Enter</b>/<b>Space</b> confirm · <b>Esc</b> cancel';
   } else if (state.mode === 'skipping') {
-    el.innerHTML = 'Skip reason: <b>1</b> occluded · <b>2</b> unclear · <b>Esc</b> cancel';
+    el.innerHTML = 'Skip reason: <b>1</b> occluded · <b>2</b> unclear · <b>3</b> no punch in clip · <b>Esc</b> cancel';
   } else {
     const c = state.candidates[state.cursor];
     const existing = c ? state.labelByKey.get(keyFor(c)) : undefined;
@@ -462,7 +463,7 @@ function beginSkip() {
   }
   state.mode = 'skipping';
   state.capturedFrame = null;
-  setBanner('SKIP: [1] occluded · [2] unclear · [Esc] cancel', 'skipping');
+  setBanner('SKIP: [1] occluded · [2] unclear · [3] no punch · [Esc] cancel', 'skipping');
   updateCapturePanel();
 }
 
@@ -795,6 +796,7 @@ window.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-undo').addEventListener('click', undoAction);
   document.getElementById('btn-skip-occluded').addEventListener('click', () => skipWith('occluded'));
   document.getElementById('btn-skip-unclear').addEventListener('click', () => skipWith('unclear'));
+  document.getElementById('btn-skip-nopunch').addEventListener('click', () => skipWith('no_punch'));
   document.getElementById('btn-first').addEventListener('click', gotoFirst);
   document.getElementById('btn-prev').addEventListener('click', gotoPrev);
   document.getElementById('btn-next').addEventListener('click', gotoNext);

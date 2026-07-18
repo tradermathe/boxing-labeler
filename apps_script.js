@@ -1702,7 +1702,7 @@ function doGetPunchDirections16(p, labeler, action) {
 // listPunchesForVideo.
 var IMPACT_FRAME_SHEET_NAME = 'Impact Frames';
 var IMPACT_FRAME_HEADERS = ['ts', 'labeler', 'punch_uuid', 'video', 'impact_frame', 'fps', 'skip_reason', 'deleted'];
-var IMPACT_FRAME_SKIP_REASONS = ['occluded', 'unclear', 'bad_clip'];
+var IMPACT_FRAME_SKIP_REASONS = ['occluded', 'unclear', 'no_punch', 'bad_clip'];
 
 function getOrCreateImpactFrameSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
