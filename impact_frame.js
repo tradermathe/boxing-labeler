@@ -271,6 +271,10 @@ async function tryGenerateCandidates() {
   }
   setModeBadge(state.candidates.length + ' punches');
   redrawProgress();
+  // Loop the first punch immediately — don't make the labeler sit through the
+  // (slow) sheet sync; it fills in existing labels in the background.
+  state.cursor = 0;
+  seekToCurrent();
   syncFromSheet();
 }
 
@@ -302,10 +306,15 @@ async function syncFromSheet() {
     }
     setStatus(`Loaded ${state.doneKeys.size} of your label(s) · ${state.coverageByUuid.size} labeled in total.`, 'ok');
     updateOptionCount(state.currentStem, state.coverageByUuid.size);
-    // Land on the first punch so any existing label is visible immediately;
-    // use "next unlabeled" (G) to jump to where labelling left off.
-    state.cursor = 0;
-    seekToCurrent();
+    // Refresh the current punch's text with any label the sync brought in,
+    // but don't re-seek — the punch is already looping (and the labeler may
+    // be mid-capture). Use "next unlabeled" (G) to jump to where you left off.
+    const c = state.candidates[state.cursor];
+    if (c) {
+      const total = `${state.cursor + 1}/${state.candidates.length}`;
+      setCurrentLine(describeCandidate(c, total, formatImpactLabel(state.labelByKey.get(keyFor(c)))));
+    }
+    updateCapturePanel();
     redrawProgress();
   } catch (e) {
     setStatus("Couldn't fetch labels: " + e.message, 'err');
