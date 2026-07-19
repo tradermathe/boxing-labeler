@@ -40,7 +40,6 @@
       line-height: 1.6;
       min-height: 44px;
     }
-    #impact-state.captured { border-color: #5fd97a; }
     #impact-state .lbl-done { color: #5fd97a; }
     #impact-state .lbl-skip { color: #f5b945; }
     .impact-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
@@ -222,10 +221,10 @@
         <div id="impact-current">— pick a video to start —</div>
 
         <h3>Capture</h3>
-        <div id="impact-state">Play the loop, hit <b>Enter</b> on the impact frame.</div>
+        <div id="impact-state">Line up the impact frame (<b>Space</b> pause · <b>&larr;/&rarr;</b> step), then <b>Enter</b> saves &amp; advances.</div>
 
         <div class="impact-row">
-          <button class="impact-btn-action" id="btn-capture">capture (Enter)</button>
+          <button class="impact-btn-action" id="btn-capture">save frame (Enter)</button>
           <button class="impact-btn-action secondary" id="btn-undo">clear label (U)</button>
         </div>
 
@@ -260,9 +259,9 @@
         <h3>Conventions</h3>
         <p style="font-size:11px;color:#888;line-height:1.5;margin:0">
           Clip loops the punch window at 0.25x.<br>
-          <b>Enter</b> = capture the displayed frame, then <b>&larr;/&rarr;</b>
-          nudge by one frame, <b>Enter</b>/<b>Space</b> = confirm &amp; next.<br>
-          <b>Esc</b> = cancel a capture or the skip menu.<br>
+          <b>Space</b> = pause/play · <b>&larr;/&rarr;</b> = step one frame.<br>
+          <b>Enter</b> = save the displayed frame as impact &amp; advance.<br>
+          <b>Esc</b> = cancel the skip menu.<br>
           <b>U</b> = clear this punch's saved label.<br>
           <b>S</b> then <b>1/2/3</b> = skip (occluded / unclear / no punch in clip).<br>
           <b>X</b> = cycle speed 0.25 / 0.5 / 1x.
@@ -281,10 +280,10 @@
     <!-- Shortcuts bar -->
     <div id="shortcuts-bar">
       <strong>Shortcuts:</strong>
-      Enter = capture / confirm &nbsp;|&nbsp;
-      Space = play/pause (confirm once captured) &nbsp;|&nbsp;
+      Enter = save impact frame &nbsp;|&nbsp;
+      Space = play/pause &nbsp;|&nbsp;
       &larr;/&rarr; = ±1 frame &nbsp;|&nbsp;
-      Esc = cancel &nbsp;|&nbsp;
+      Esc = cancel skip &nbsp;|&nbsp;
       U = clear label &nbsp;|&nbsp;
       S = skip &nbsp;|&nbsp;
       N = Next &nbsp;|&nbsp;

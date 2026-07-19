@@ -11,10 +11,10 @@
 // Saved to the "Impact Frames" sheet via saveImpactFrame / listImpactFrames /
 // deleteImpactFrame Apps Script actions.
 //
-// Interaction: the punch loops as a slow-motion clip (±0.5s around the event
-// window). Enter captures the currently displayed frame and pauses; ←/→
-// nudge by single frames; Enter/Space confirms and advances. U undoes.
-// S then 1/2/3 skips with a reason (occluded / unclear / bad_clip).
+// Interaction: the punch loops as a slow-motion clip of its event window.
+// Space pauses, ←/→ step single frames; a single Enter saves the displayed
+// frame as the impact and advances. U clears a saved label. S then 1/2/3
+// skips with a reason (occluded / unclear / no_punch).
 //
 // Reuses player.js for the video chrome, sheetUrl(), and shared `state`.
 // ============================================================
@@ -42,8 +42,7 @@ Object.assign(state, {
   coverageByUuid: new Map(),       // current video: punch_uuid -> Set<labeler>
   videoLoaded: false,
   labelCountsByVideo: new Map(),   // stem -> total punches labeled by anyone
-  mode: 'scrub',            // 'scrub' | 'captured' | 'skipping'
-  capturedFrame: null,      // absolute frame index while mode === 'captured'
+  mode: 'scrub',            // 'scrub' | 'skipping'
   autoJumpOnSync: false,    // hop to first unlabeled punch when the sheet sync lands
   lastMediaTime: null,      // PTS of the most recently presented frame (rVFC)
 });
@@ -222,11 +221,7 @@ function setBanner(text, cls) {
 function updateCapturePanel() {
   const el = document.getElementById('impact-state');
   if (!el) return;
-  el.classList.toggle('captured', state.mode === 'captured');
-  if (state.mode === 'captured') {
-    el.innerHTML = `Captured <b>frame ${state.capturedFrame}</b>.<br>` +
-      '<b>&larr;/&rarr;</b> nudge · <b>Enter</b>/<b>Space</b> confirm · <b>Esc</b> cancel';
-  } else if (state.mode === 'skipping') {
+  if (state.mode === 'skipping') {
     el.innerHTML = 'Skip reason: <b>1</b> occluded · <b>2</b> unclear · <b>3</b> no punch in clip · <b>Esc</b> cancel';
   } else {
     const c = state.candidates[state.cursor];
@@ -240,7 +235,9 @@ function updateCapturePanel() {
         '<b>Enter</b> re-captures (overwrites) · <b>U</b> clears';
     } else {
       setBanner(null);
-      el.innerHTML = c ? 'Play the loop, hit <b>Enter</b> on the impact frame.' : '—';
+      el.innerHTML = c
+        ? 'Line up the impact frame (<b>Space</b> pause · <b>&larr;/&rarr;</b> step), then <b>Enter</b> saves &amp; advances.'
+        : '—';
     }
   }
 }
@@ -367,7 +364,6 @@ function advanceToNextUnlabeled(fromIdx) {
 
 function enterScrub() {
   state.mode = 'scrub';
-  state.capturedFrame = null;
   setBanner(null);
   updateCapturePanel();
 }
@@ -412,58 +408,22 @@ function requireLabeler() {
   return labeler;
 }
 
-function captureFrame() {
+// One keystroke: save the currently displayed frame as the impact and advance.
+// Line the frame up first — Space pauses, ←/→ step single frames.
+function captureAndSave() {
   state.autoJumpOnSync = false;
   if (!state.currentStem || !state.candidates.length) {
     setStatus('Pick a video and load the file first.', 'err'); return;
   }
+  const labeler = requireLabeler();
+  if (!labeler) return;
   const c = state.candidates[state.cursor];
   if (!c) return;
-  const video = document.getElementById('video-player');
   const bounds = clipFrameBounds();
   let frame = displayedFrameNow();
   if (frame === null || !bounds) return;
   frame = Math.max(bounds.start, Math.min(bounds.end, frame));
-
-  if (video && !video.paused) {
-    video.pause();
-    const btn = document.getElementById('btn-play');
-    if (btn) btn.textContent = 'Play';
-  }
-  state.mode = 'captured';
-  state.capturedFrame = frame;
-  seekToCapturedFrame();
-  setBanner(`CAPTURED f ${frame} — ←/→ nudge · Enter confirm · Esc cancel`, 'captured');
-  updateCapturePanel();
-}
-
-function seekToCapturedFrame() {
-  const video = document.getElementById('video-player');
-  if (!video || state.capturedFrame === null) return;
-  // Mid-frame target so the seek reliably lands inside the frame's display
-  // interval instead of on a boundary that floats could put either side of.
-  video.currentTime = (state.capturedFrame + 0.5) / fpsNow();
-}
-
-function nudgeCaptured(delta) {
-  const bounds = clipFrameBounds();
-  if (!bounds || state.capturedFrame === null) return;
-  state.capturedFrame = Math.max(bounds.start, Math.min(bounds.end, state.capturedFrame + delta));
-  seekToCapturedFrame();
-  setBanner(`CAPTURED f ${state.capturedFrame} — ←/→ nudge · Enter confirm · Esc cancel`, 'captured');
-  updateCapturePanel();
-}
-
-function captureOrConfirm() {
-  if (state.mode === 'captured') confirmCapture();
-  else if (state.mode === 'scrub') captureFrame();
-}
-
-function confirmCapture() {
-  if (state.mode !== 'captured' || state.capturedFrame === null) return;
-  const labeler = requireLabeler();
-  if (!labeler) return;
-  persistLabel(labeler, { impact_frame: state.capturedFrame, skip_reason: null });
+  persistLabel(labeler, { impact_frame: frame, skip_reason: null });
 }
 
 function beginSkip() {
@@ -476,7 +436,6 @@ function beginSkip() {
     if (btn) btn.textContent = 'Play';
   }
   state.mode = 'skipping';
-  state.capturedFrame = null;
   setBanner('SKIP: [1] occluded · [2] unclear · [3] no punch · [Esc] cancel', 'skipping');
   updateCapturePanel();
 }
@@ -541,10 +500,10 @@ function persistLabel(labeler, label) {
 }
 
 // U: clear the current punch's saved label so it can be relabelled.
-// (Esc — not U — backs out of a pending capture or the skip menu.)
+// (Esc — not U — closes the skip menu.)
 async function undoAction() {
-  if (state.mode === 'captured' || state.mode === 'skipping') {
-    setStatus('Esc cancels the pending capture.', null);
+  if (state.mode === 'skipping') {
+    setStatus('Esc closes the skip menu.', null);
     return;
   }
   if (!state.currentStem) return;
@@ -806,7 +765,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (video.currentTime > lw.end + 0.05) video.currentTime = lw.start;
   });
 
-  document.getElementById('btn-capture').addEventListener('click', captureOrConfirm);
+  document.getElementById('btn-capture').addEventListener('click', captureAndSave);
   document.getElementById('btn-undo').addEventListener('click', undoAction);
   document.getElementById('btn-skip-occluded').addEventListener('click', () => skipWith('occluded'));
   document.getElementById('btn-skip-unclear').addEventListener('click', () => skipWith('unclear'));
@@ -835,27 +794,10 @@ window.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    if (e.key === 'Enter') { e.preventDefault(); captureOrConfirm(); return; }
-    if (e.key === ' ') {
-      e.preventDefault();
-      if (state.mode === 'captured') confirmCapture();
-      else togglePlay();
-      return;
-    }
-    if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      if (state.mode === 'captured') nudgeCaptured(-1); else stepFrames(-1);
-      return;
-    }
-    if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      if (state.mode === 'captured') nudgeCaptured(1); else stepFrames(1);
-      return;
-    }
-    if (e.key === 'Escape') {
-      if (state.mode === 'captured') { e.preventDefault(); cancelToScrub(); }
-      return;
-    }
+    if (e.key === 'Enter') { e.preventDefault(); captureAndSave(); return; }
+    if (e.key === ' ') { e.preventDefault(); togglePlay(); return; }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); stepFrames(-1); return; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); stepFrames(1); return; }
     if (e.key === 'u' || e.key === 'U') { e.preventDefault(); undoAction(); return; }
     if (e.key === 's' || e.key === 'S') { e.preventDefault(); beginSkip(); return; }
     if (e.key === 'n' || e.key === 'N') { e.preventDefault(); gotoNext(); return; }
