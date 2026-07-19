@@ -1694,8 +1694,9 @@ function doGetPunchDirections16(p, labeler, action) {
 
 // ── Impact-frame labeler ──────────────────────────────────────────────────
 // Same per-(labeler, punch_uuid) model as Punch Directions 16, but the label
-// is the absolute frame index (in the source video) where the glove first
-// touches the bag. A punch is either labelled (impact_frame set, skip_reason
+// is the absolute frame index (in the source video) of the punch's turnaround
+// frame (forward motion → back to guard; usually bag contact, sometimes 1–2
+// frames later). A punch is either labelled (impact_frame set, skip_reason
 // empty) or skipped (impact_frame empty, skip_reason set). `fps` records the
 // frame rate the page used for the time↔frame mapping, so downstream can
 // round-trip to seconds without re-deriving it. Candidate listing reuses

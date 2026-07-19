@@ -5,7 +5,9 @@
 // Data via listPunchesForVideo — offensive punches only; slips/rolls and
 // other defensive events are excluded), same queue / progress /
 // optimistic-save machinery, but the label is the absolute frame index
-// (in the source video) where the glove first touches the bag.
+// (in the source video) of the punch's turnaround: the deepest frame,
+// where forward motion flips to the return to guard (usually bag contact,
+// sometimes 1–2 frames later).
 // Saved to the "Impact Frames" sheet via saveImpactFrame / listImpactFrames /
 // deleteImpactFrame Apps Script actions.
 //
