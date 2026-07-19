@@ -394,6 +394,7 @@ function seekToCurrent() {
   const total = `${state.cursor + 1}/${state.candidates.length}`;
   setCurrentLine(describeCandidate(c, total, formatImpactLabel(label)));
   updateCapturePanel();
+  updateOverviewHighlight();
   updateHud();
 }
 
@@ -499,6 +500,34 @@ function persistLabel(labeler, label) {
   });
 }
 
+// Clear the saved label of the punch at `idx` (used by U and the overview ✕).
+async function clearLabelAt(idx) {
+  if (!state.currentStem) return;
+  const labeler = document.getElementById('labeler-input').value.trim();
+  if (!labeler) return;
+  const c = state.candidates[idx];
+  if (!c) return;
+  const k = keyFor(c);
+  if (!state.doneKeys.has(k)) return;
+  state.doneKeys.delete(k);
+  state.labelByKey.delete(k);
+  const who = state.coverageByUuid.get(c.punch_uuid);
+  if (who) { who.delete(labeler); if (who.size === 0) state.coverageByUuid.delete(c.punch_uuid); }
+  redrawProgress();
+  updateOptionCount(state.currentStem, state.coverageByUuid.size);
+  if (idx === state.cursor) {
+    updateCapturePanel();
+    const total = `${idx + 1}/${state.candidates.length}`;
+    setCurrentLine(describeCandidate(c, total, 'unlabeled'));
+  }
+  try {
+    await deleteImpactFrame({ labeler, punch_uuid: c.punch_uuid });
+    setStatus("Cleared that punch's label — relabel it any time.", 'ok');
+  } catch (e) {
+    setStatus('Clear failed: ' + e.message, 'err');
+  }
+}
+
 // U: clear the current punch's saved label so it can be relabelled.
 // (Esc — not U — closes the skip menu.)
 async function undoAction() {
@@ -506,31 +535,13 @@ async function undoAction() {
     setStatus('Esc closes the skip menu.', null);
     return;
   }
-  if (!state.currentStem) return;
-  const labeler = document.getElementById('labeler-input').value.trim();
-  if (!labeler) return;
   const c = state.candidates[state.cursor];
   if (!c) return;
-  const k = keyFor(c);
-  if (!state.doneKeys.has(k)) {
+  if (!state.doneKeys.has(keyFor(c))) {
     setStatus('Nothing to undo on this punch.', null);
     return;
   }
-  state.doneKeys.delete(k);
-  state.labelByKey.delete(k);
-  const who = state.coverageByUuid.get(c.punch_uuid);
-  if (who) { who.delete(labeler); if (who.size === 0) state.coverageByUuid.delete(c.punch_uuid); }
-  redrawProgress();
-  updateOptionCount(state.currentStem, state.coverageByUuid.size);
-  updateCapturePanel();
-  const total = `${state.cursor + 1}/${state.candidates.length}`;
-  setCurrentLine(describeCandidate(c, total, 'unlabeled'));
-  try {
-    await deleteImpactFrame({ labeler, punch_uuid: c.punch_uuid });
-    setStatus("Cleared this punch's label — relabel now.", 'ok');
-  } catch (e) {
-    setStatus('Clear failed: ' + e.message, 'err');
-  }
+  await clearLabelAt(state.cursor);
 }
 
 function gotoPrev() {
@@ -583,6 +594,57 @@ function redrawProgress() {
   if (framed) parts.push('impact: ' + framed);
   for (const s of SKIP_REASONS) if (skips[s.reason]) parts.push(s.reason + ': ' + skips[s.reason]);
   document.getElementById('impact-dist').textContent = parts.length ? parts.join(' · ') : '—';
+  rebuildOverview();
+}
+
+// ─── overview list — one row per punch, click to jump, ✕ to clear ──────────
+function rebuildOverview() {
+  const list = document.getElementById('impact-overview');
+  if (!list) return;
+  list.innerHTML = '';
+  if (!state.candidates.length) { list.textContent = '—'; return; }
+  state.candidates.forEach((c, idx) => {
+    const row = document.createElement('div');
+    row.className = 'ov-row';
+    row.dataset.idx = String(idx);
+    const v = state.labelByKey.get(keyFor(c));
+    let labelTxt = '—', labelCls = 'none';
+    if (v !== undefined) {
+      if (v.skip_reason) { labelTxt = 'skip:' + v.skip_reason; labelCls = 'skip'; }
+      else { labelTxt = 'f ' + v.impact_frame; labelCls = 'done'; }
+    }
+    row.innerHTML =
+      `<span class="ov-idx">${idx + 1}</span>` +
+      `<span class="ov-type">${c.punch_type} · ${c.start_sec.toFixed(1)}s</span>` +
+      `<span class="ov-label ${labelCls}">${labelTxt}</span>`;
+    if (v !== undefined) {
+      const x = document.createElement('button');
+      x.className = 'ov-clear';
+      x.title = 'clear this label';
+      x.textContent = '✕';
+      x.addEventListener('click', (e) => { e.stopPropagation(); clearLabelAt(idx); });
+      row.appendChild(x);
+    }
+    row.addEventListener('click', () => {
+      state.autoJumpOnSync = false;
+      state.cursor = idx;
+      seekToCurrent();
+    });
+    list.appendChild(row);
+  });
+  updateOverviewHighlight();
+}
+
+function updateOverviewHighlight() {
+  const list = document.getElementById('impact-overview');
+  if (!list) return;
+  let currentRow = null;
+  for (const row of list.querySelectorAll('.ov-row')) {
+    const is = Number(row.dataset.idx) === state.cursor;
+    row.classList.toggle('current', is);
+    if (is) currentRow = row;
+  }
+  if (currentRow) currentRow.scrollIntoView({ block: 'nearest' });
 }
 
 // ─── calibration export — one CSV per labeler ──────────────────────────────

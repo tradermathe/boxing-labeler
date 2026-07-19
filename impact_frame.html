@@ -42,6 +42,44 @@
     }
     #impact-state .lbl-done { color: #5fd97a; }
     #impact-state .lbl-skip { color: #f5b945; }
+
+    /* Overview list — one row per punch, mirroring the main labeler's log. */
+    #impact-overview {
+      max-height: 260px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .ov-row {
+      font-size: 12px;
+      padding: 4px 8px;
+      background: #1a1a2e;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-left: 3px solid #533483;
+      cursor: pointer;
+    }
+    .ov-row:hover { background: #2a2a3e; }
+    .ov-row.current { border-left-color: #e94560; background: #241a2e; }
+    .ov-row .ov-idx { color: #6a7aa0; min-width: 28px; font-family: ui-monospace, monospace; }
+    .ov-row .ov-type { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ov-row .ov-label { font-family: ui-monospace, monospace; }
+    .ov-row .ov-label.done { color: #5fd97a; }
+    .ov-row .ov-label.skip { color: #f5b945; }
+    .ov-row .ov-label.none { color: #555; }
+    .ov-row .ov-clear {
+      background: none;
+      border: none;
+      color: #e94560;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 0 2px;
+      opacity: 0.5;
+    }
+    .ov-row .ov-clear:hover { opacity: 1; }
     .impact-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
     .impact-btn-action {
       background: #0f3460;
@@ -250,6 +288,9 @@
         </div>
         <div class="impact-dist" id="impact-dist">—</div>
         <div id="impact-status">—</div>
+
+        <h3>Overview</h3>
+        <div id="impact-overview">—</div>
 
         <h3>Calibration export</h3>
         <div class="impact-row">
