@@ -50,10 +50,11 @@ function secondsToSheetTime(sec) {
 }
 
 function findColumns(header) {
-  var cols = { id: -1, uuid: -1, videoName: -1, video: -1, trainingType: -1, stance: -1, fighter: -1, angle: -1, punch: -1, start: -1, end: -1 };
+  var cols = { id: -1, uuid: -1, videoName: -1, video: -1, trainingType: -1, stance: -1, fighter: -1, angle: -1, punch: -1, start: -1, end: -1, ts: -1 };
   for (var c = 0; c < header.length; c++) {
     var h = String(header[c]).toLowerCase().trim();
     if (h === 'id') cols.id = c;
+    else if (h === 'ts') cols.ts = c;
     else if (h === 'punch_uuid') cols.uuid = c;
     else if (h === 'video_name') cols.videoName = c;
     else if (h === 'video_file') cols.video = c;
@@ -100,6 +101,21 @@ function ensureUuidColumn(sheet, data, cols) {
     var uuid = Utilities.getUuid();
     data[rowIdx][cols.uuid] = uuid;
     sheet.getRange(rowIdx + 1, cols.uuid + 1).setValue(uuid);
+  }
+  return { data: data, cols: cols };
+}
+
+// Ensure the sheet has a `ts` column (ISO timestamp of when a label was
+// written), mirroring the impact-frame sheet. Appends the header if absent
+// but never backfills old rows — we don't know when historical labels were
+// made, so a blank `ts` honestly means "unknown", not "now". Idempotent.
+function ensureTsColumn(sheet, data, cols) {
+  if (!data || data.length === 0) return { data: data, cols: cols };
+  if (cols.ts < 0) {
+    var newCol = (data[0] ? data[0].length : 0) + 1;
+    sheet.getRange(1, newCol).setValue('ts');
+    cols.ts = newCol - 1;
+    for (var r = 0; r < data.length; r++) data[r][cols.ts] = (r === 0 ? 'ts' : '');
   }
   return { data: data, cols: cols };
 }
@@ -304,9 +320,13 @@ function doGet(e) {
     // Make sure the punch_uuid header exists before we assign row[cols.uuid]
     var ensured = ensureUuidColumn(sheet, data, cols);
     data = ensured.data; cols = ensured.cols;
+    // Same for the `ts` (label write-time) column.
+    var ensuredTs = ensureTsColumn(sheet, data, cols);
+    data = ensuredTs.data; cols = ensuredTs.cols;
     var newId = nextId(data, cols);
     var row = new Array(data[0].length).fill('');
     if (cols.id >= 0) row[cols.id] = newId;
+    if (cols.ts >= 0) row[cols.ts] = new Date().toISOString();
     // Client-generated UUID preferred (lets the client cache it before the
     // backend responds). Fall back to server-generated if absent — some
     // older clients don't send one.
@@ -761,7 +781,7 @@ var COMBINED_ARCHIVE_NAME = 'Combined Data Archive';
 var COMBINED_HEADERS = [
   'id', 'video_name', 'video_file', 'training_type', 'stance',
   'fighter', 'angle', 'label', 'start_sec', 'end_sec',
-  'labeler', 'reviewed', 'punch_uuid'
+  'labeler', 'reviewed', 'punch_uuid', 'ts'
 ];
 
 function onOpen() {
@@ -928,7 +948,8 @@ function rebuildCombinedData() {
         pickFromRow(aRow, aIdx, 'end_sec'),
         pickFromRow(aRow, aIdx, 'labeler'),
         'yes',
-        pickFromRow(aRow, aIdx, 'punch_uuid')
+        pickFromRow(aRow, aIdx, 'punch_uuid'),
+        pickFromRow(aRow, aIdx, 'ts')
       ]);
       archiveCount++;
     }
@@ -984,7 +1005,8 @@ function rebuildCombinedData() {
         pickFromRow(rowVals, idx, 'end_sec'),
         labelerName,
         'yes',
-        pickFromRow(rowVals, idx, 'punch_uuid')
+        pickFromRow(rowVals, idx, 'punch_uuid'),
+        pickFromRow(rowVals, idx, 'ts')
       ]);
     }
   }
@@ -993,7 +1015,7 @@ function rebuildCombinedData() {
   // logical event has the same UUID across Archive and labeler sheets.
   var seenU = {}, deduped = [], dupesDropped = 0;
   for (var di = 0; di < rows.length; di++) {
-    var u = rows[di][12]; // punch_uuid (last column in COMBINED_HEADERS)
+    var u = rows[di][12]; // punch_uuid (index 12 in COMBINED_HEADERS)
     if (u && seenU[u]) { dupesDropped++; continue; }
     if (u) seenU[u] = true;
     deduped.push(rows[di]);
