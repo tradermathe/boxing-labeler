@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cornerman · Orientation labeler</title>
+  <style>
+    :root {
+      --bg: #1a1a1a; --panel: #232323; --ink: #eee; --muted: #888;
+      --accent: #5fd97a; --warn: #f5b945; --bad: #e85a5a; --border: #3a3a3a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background: var(--bg); color: var(--ink); line-height: 1.5;
+    }
+    header {
+      padding: 14px 22px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    header h1 { font-size: 18px; margin: 0; }
+    header .build { color: var(--muted); font-size: 12px; }
+    main {
+      display: grid; grid-template-columns: 1fr 360px; gap: 16px;
+      padding: 16px; max-width: 1600px; margin: 0 auto;
+    }
+    @media (max-width: 1000px) { main { grid-template-columns: 1fr; } }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+    .card h2 { margin: 0 0 10px 0; font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+    .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+    .field label { font-size: 12px; color: var(--muted); }
+    .field select, .field input {
+      background: #141414; color: var(--ink); border: 1px solid var(--border);
+      border-radius: 4px; padding: 7px 9px; font-family: inherit; font-size: 14px;
+    }
+    .row { display: flex; gap: 8px; align-items: center; }
+    .btn {
+      padding: 7px 12px; background: #2563eb; color: white; border: none;
+      border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 13px;
+    }
+    .btn.secondary { background: #444; }
+    .btn:hover { filter: brightness(1.15); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .video-wrap {
+      background: #000; aspect-ratio: 16/9; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .video-wrap video { width: 100%; height: 100%; object-fit: contain; }
+    .video-wrap .empty { color: var(--muted); padding: 24px; text-align: center; }
+    .frame-banner {
+      position: absolute; top: 8px; left: 8px; right: 8px;
+      background: rgba(0,0,0,0.7); color: white; font-family: ui-monospace, monospace;
+      font-size: 12px; padding: 6px 10px; border-radius: 4px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .orient-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0;
+    }
+    .orient-btn {
+      background: #1a1a1a; color: var(--ink); border: 1px solid var(--border);
+      border-radius: 6px; padding: 12px 6px; cursor: pointer; font-family: inherit;
+      text-align: center; font-size: 12px; line-height: 1.3;
+    }
+    .orient-btn:hover { background: #2a2a2a; border-color: #666; }
+    .orient-btn.selected { background: #2d4d2d; border-color: var(--accent); }
+    .orient-btn.skip.selected { background: #524422; border-color: var(--warn); }
+    .orient-key { color: var(--muted); font-size: 10px; }
+    .orient-ang { font-weight: 600; margin-top: 2px; font-size: 13px; }
+
+    .progress {
+      height: 18px; background: #141414; border: 1px solid var(--border);
+      border-radius: 4px; overflow: hidden; position: relative; margin: 6px 0;
+    }
+    .progress-bar { height: 100%; background: var(--accent); transition: width 0.2s; }
+    .progress-text {
+      position: absolute; inset: 0; display: flex; align-items: center;
+      justify-content: center; color: white; mix-blend-mode: difference; font-size: 11px;
+    }
+    .dist {
+      font-family: ui-monospace, monospace; font-size: 11px;
+      color: var(--muted); margin-top: 4px;
+    }
+    .status { color: var(--muted); font-size: 12px; margin-top: 8px; min-height: 16px; }
+    .status.err { color: var(--bad); }
+    .status.ok  { color: var(--accent); }
+
+    kbd { background: #141414; border: 1px solid var(--border); border-radius: 3px;
+      padding: 1px 5px; font-family: ui-monospace, monospace; font-size: 11px; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Cornerman · Orientation labeler</h1>
+  <span class="build" id="build">build —</span>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Frame</h2>
+    <div class="video-wrap" id="video-wrap">
+      <div class="empty" id="video-empty">
+        Pick a video above, then choose its local <code>.mp4</code> file when prompted.<br/>
+        The first frame appears once both are set.
+      </div>
+      <video id="video" preload="auto" muted playsinline></video>
+      <div class="frame-banner" id="frame-banner" hidden>
+        <span id="frame-info">—</span>
+        <span id="frame-progress">—</span>
+      </div>
+    </div>
+    <p class="status" id="frame-status">—</p>
+  </section>
+
+  <aside>
+    <div class="card">
+      <h2>Setup</h2>
+      <div class="field">
+        <label for="labeler-input">Your name (saved to this browser)</label>
+        <input id="labeler-input" type="text" placeholder="e.g. Mathe" />
+      </div>
+      <div class="field">
+        <label for="video-select">Video</label>
+        <select id="video-select"><option>— loading videos.json —</option></select>
+      </div>
+      <div class="row">
+        <button class="btn" id="pick-file">Pick local .mp4 file…</button>
+        <input type="file" id="file-input" accept="video/mp4,video/quicktime" hidden />
+      </div>
+      <p class="status" id="setup-status">—</p>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Label (numpad layout)</h2>
+      <div class="orient-grid" id="orient-grid">
+        <button class="orient-btn" data-key="7"><div class="orient-key">[7]</div><div class="orient-ang">-135°</div></button>
+        <button class="orient-btn" data-key="8"><div class="orient-key">[8]</div><div class="orient-ang">180°</div></button>
+        <button class="orient-btn" data-key="9"><div class="orient-key">[9]</div><div class="orient-ang">+135°</div></button>
+        <button class="orient-btn" data-key="4"><div class="orient-key">[4]</div><div class="orient-ang">-90°</div></button>
+        <button class="orient-btn" data-key="5"><div class="orient-key">[5]</div><div class="orient-ang">0°</div></button>
+        <button class="orient-btn" data-key="6"><div class="orient-key">[6]</div><div class="orient-ang">+90°</div></button>
+        <button class="orient-btn" data-key="1"><div class="orient-key">[1]</div><div class="orient-ang">-45°</div></button>
+        <button class="orient-btn skip" data-key="2"><div class="orient-key">[2]</div><div class="orient-ang">skip</div></button>
+        <button class="orient-btn" data-key="3"><div class="orient-key">[3]</div><div class="orient-ang">+45°</div></button>
+      </div>
+      <div class="row">
+        <button class="btn secondary" id="prev-frame">⏮ prev (P)</button>
+        <button class="btn secondary" id="clear-frame">clear (C)</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Progress</h2>
+      <div class="progress">
+        <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+        <div class="progress-text" id="progress-text">—</div>
+      </div>
+      <div class="dist" id="dist">—</div>
+      <p class="status" id="sheet-status">—</p>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h2>Conventions</h2>
+      <p style="font-size:12px;color:var(--muted);margin:0 0 6px 0">
+        <kbd>0°</kbd> = boxer facing the camera (chest toward you).<br/>
+        <kbd>±90°</kbd> = boxer is sideways.<br/>
+        <kbd>±180°</kbd> = boxer's back to the camera.<br/>
+        <kbd>±45°/±135°</kbd> = quarter-turn cases.<br/>
+        <kbd>skip</kbd> = can't tell / occluded / between rotations.
+      </p>
+    </div>
+  </aside>
+</main>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>

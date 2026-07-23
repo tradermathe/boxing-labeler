@@ -1,1 +1,6 @@
 .claude/
+
+# Untracked runtime config: Apps Script deployment URLs (write credentials
+# for the labels Sheet). This repo is public — never commit these.
+orientation/config.local.json
+config.local.json
